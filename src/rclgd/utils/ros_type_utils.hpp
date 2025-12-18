@@ -132,7 +132,7 @@ struct Ros2Godot {
     static void call(Variant &r_ret, Message::SharedPtr p_msg) {
         if constexpr (std::is_same_v<T, CompoundMessage>) {
             Ref<RosMsg> sub; sub.instantiate();
-            sub->init(std::static_pointer_cast<CompoundMessage>(p_msg));
+            sub->init_babel(std::static_pointer_cast<CompoundMessage>(p_msg));
             r_ret = sub;
         } else if constexpr (std::is_base_of_v<ArrayMessageBase, T>) {
             auto &base_arr = p_msg->as<ArrayMessageBase>();
@@ -162,7 +162,7 @@ struct Godot2Ros {
     static void call(const Variant &p_val, Message &p_ros_msg) {
         if constexpr (std::is_same_v<T, CompoundMessage>) {
             Ref<RosMsg> sub = p_val;
-            if (sub.is_valid() && sub->get_msg()) p_ros_msg.as<CompoundMessage>() = *(sub->get_msg());
+            if (sub.is_valid() && sub->get_babel()) p_ros_msg.as<CompoundMessage>() = *(sub->get_babel());
         } else if constexpr (std::is_base_of_v<ArrayMessageBase, T>) {
             auto &base_arr = p_ros_msg.as<ArrayMessageBase>();
             if (base_arr.elementType() == MessageTypes::Compound) {
@@ -172,7 +172,7 @@ struct Godot2Ros {
                 size_t limit = std::min((size_t)ros_array.size(), (size_t)g_arr.size());
                 for (size_t i = 0; i < limit; ++i) {
                     Ref<RosMsg> sub = g_arr[i];
-                    if (sub.is_valid() && sub->get_msg()) ros_array[i] = *(sub->get_msg());
+                    if (sub.is_valid() && sub->get_babel()) ros_array[i] = *(sub->get_babel());
                 }
             } else {
                 RBF2_TEMPLATE_CALL_ARRAY_TYPES(RosTypeMapping::GodotToRosProvider::handle, base_arr, p_val);

@@ -8,7 +8,10 @@
 #include <godot_cpp/variant/string.hpp>
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/templates/hash_map.hpp> // Critical include
+#include <godot_cpp/templates/hash_map.hpp> 
+#include <godot_cpp/classes/dir_access.hpp>
+#include <godot_cpp/classes/file_access.hpp>
+#include <godot_cpp/templates/hash_set.hpp>
 
 //BabelFish
 #include <ros_babel_fish/babel_fish.hpp>
@@ -48,14 +51,34 @@ using namespace godot;
         RosMsg();
         ~RosMsg();
 
-        // Internal initialization, makes the RosMsgType point to a Compound Message object
-        void init(CompoundMessage::SharedPtr p_msg);
+        //Internal initializer
+        void init_babel(const CompoundMessage::SharedPtr msg);
 
-        //Factory Builder method
-        static Ref<RosMsg> from_type(const String &ros_typename);
+        // Internal Fish Message Instance Getter nad getter
+        CompoundMessage::SharedPtr get_babel() const { return msg_; }
 
-        //Internal Fish Message Instance Getter
-        CompoundMessage::SharedPtr get_msg() const { return msg_; }
+        //GODOT EXPOSED
+
+        //Internal recursive generator
+        static void _gen_recursive(const String &p_type, const String &p_dest_folder, HashSet<String> &p_processed);
+
+        //Initialization Method, makes the RosMsgType point to a Compound Message object
+        void init(const String &ros_type_name);
+
+        // Factory Builder method
+        static Ref<RosMsg> from_type(const String &ros_type_name);
+
+        // Generates editor autocomplete support in target folder
+        static void gen_editor_support(const String &p_type, const String &p_dest_folder);
+
+        //Alternate accesors to prevent recursion on inherited classes
+        void set_member(const StringName &p_name, const Variant &p_value);
+        Variant get_member(const StringName &p_name) const;
+
+        // Return typename
+        String get_type_name() const;
+        String get_ros_interface_name() const ;
+
      
     };
 

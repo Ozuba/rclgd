@@ -20,9 +20,10 @@ func _ready() -> void:
 	ros_node.init("godot_controller_node")
 
 	# 3. Setup Publisher & Subscriber
-	demo_pub = ros_node.create_publisher("/gd_topic", "std_msgs/msg/String.msg")
-	demo_sub = ros_node.create_subscriber("/gd_topic", "std_msgs/msg/String.msg", _on_status_received)
-
+	demo_pub = ros_node.create_publisher("/gd_topic", "std_msgs/msg/String")
+	demo_sub = ros_node.create_subscriber("/gd_topic", "std_msgs/msg/String", _on_status_received)
+	
+	RosMsg.gen_editor_support("std_msgs/msg/String","res://addons/rclgd/gen")
 	# 4. Start a periodic timer to publish
 	get_tree().create_timer(1.0).timeout.connect(publish_test_msg)
 	
@@ -33,7 +34,7 @@ func publish_test_msg():
 	once created you can access their fields as you would normally do in any 
 	other rcl implementation.
 	"""
-	var msg = RosMsg.from_type("std_msgs/msg/String.msg")
+	var msg = RosStdMsgsString.new()
 	msg.data = "Hi there from Godot!"
 	demo_pub.publish(msg)
 

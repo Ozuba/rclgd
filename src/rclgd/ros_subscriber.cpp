@@ -21,7 +21,8 @@ void RosSubscriber::_ros_callback(const ros_babel_fish::CompoundMessage::SharedP
         // 1. Wrap the raw BabelFish message into our Godot RosMsg object
         Ref<RosMsg> wrapper;
         wrapper.instantiate();
-        wrapper->init(msg);
+        //Initialize type support for instance
+        wrapper->init_babel(msg);
 
         // 2. Safely hand it off to the Godot Main Thread
         callback_.call_deferred(wrapper);
