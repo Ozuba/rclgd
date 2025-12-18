@@ -1,14 +1,9 @@
 #!/bin/bash
 
-# This script downloads the architecture-specific Godot executable,
-# places it in a target directory, and names it "godot".
-
+# This script FORCES a re-download and replacement of the Godot executable.
 set -euo pipefail
 
 # === Arguments ===
-# $1: The directory where the final 'godot' executable should be placed (e.g., CMAKE_BINARY_DIR)
-# $2: The architecture suffix (e.g., x86_64 or arm64)
-
 if [ "$#" -ne 2 ]; then
   echo "Error: Two arguments are required: <target_dir> <arch_suffix>"
   exit 1
@@ -18,39 +13,44 @@ GODOT_EXE_DIR="$1"
 ARCH_SUFFIX="$2"
 
 # === Definitions ===
-GODOT_VERSION="4.4.1-stable"
+GODOT_VERSION="4.5.1"
+VERSION_STATUS="stable"
 TARGET_GODOT_NAME="godot"
-FINAL_EXE_PATH="${GODOT_EXE_DIR}/${TARGET_GODOT_NAME}"
 
-FILE_NAME="Godot_v${GODOT_VERSION}_linux.${ARCH_SUFFIX}"
+# Naming and URL construction
+FILE_NAME="Godot_v${GODOT_VERSION}-${VERSION_STATUS}_linux.${ARCH_SUFFIX}"
 ZIP_NAME="${FILE_NAME}.zip"
-URL="https://github.com/godotengine/godot-builds/releases/download/4.4.1-stable/${ZIP_NAME}"
+URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${VERSION_STATUS}/${ZIP_NAME}"
 
 ZIP_PATH="${GODOT_EXE_DIR}/${ZIP_NAME}"
+FINAL_EXE_PATH="${GODOT_EXE_DIR}/${TARGET_GODOT_NAME}"
 
-# === Step 1: Check if the final executable already exists ===
-if [ -f "$FINAL_EXE_PATH" ]; then
-  echo "Godot executable already exists at ${FINAL_EXE_PATH}. Skipping download."
-  exit 0
+# === Step 1: Force Cleanup ===
+echo "Force cleaning existing Godot files..."
+rm -f "$FINAL_EXE_PATH"
+rm -f "$ZIP_PATH"
+mkdir -p "$GODOT_EXE_DIR"
+
+# === Step 2: Download, Extract, and Replace ===
+echo "Downloading Godot ${GODOT_VERSION} (${ARCH_SUFFIX}) from ${URL}..."
+
+# -fSL ensures it fails on 404 and follows redirects
+curl -fSL "$URL" -o "$ZIP_PATH" || { echo "Download failed!"; exit 1; }
+
+echo "Extracting..."
+unzip -q -o "$ZIP_PATH" -d "$GODOT_EXE_DIR" || { echo "Unzip failed!"; exit 1; }
+
+# Atomic move and rename
+EXTRACTED_FILE="${GODOT_EXE_DIR}/${FILE_NAME}"
+if [ -f "$EXTRACTED_FILE" ]; then
+    mv -f "$EXTRACTED_FILE" "$FINAL_EXE_PATH"
+else
+    # Fallback to catch any Godot binary in the zip
+    find "$GODOT_EXE_DIR" -maxdepth 1 -name "Godot_v*" -type f -not -name "*.zip" -exec mv -f {} "$FINAL_EXE_PATH" \;
 fi
 
-echo "Downloading Godot ${ARCH_SUFFIX} from ${URL}..."
-
-# === Step 2: Download, Extract, and Rename ===
-
-# Download the zip file
-curl -fSL "$URL" -o "$ZIP_PATH" || { echo "Download failed for $URL"; exit 1; }
-
-# Unzip into the target directory
-unzip -q "$ZIP_PATH" -d "$GODOT_EXE_DIR" || { echo "Extraction failed for $ZIP_PATH"; exit 1; }
-
-# Rename the specific downloaded file to the generic "godot"
-mv "${GODOT_EXE_DIR}/${FILE_NAME}" "$FINAL_EXE_PATH" || { echo "Failed to rename executable"; exit 1; }
-
-# Clean up the zip file
-rm -f "$ZIP_PATH" || { echo "Failed to remove $ZIP_PATH"; exit 1; }
-
-# Ensure the executable has correct permissions
+# Cleanup and Permissions
+rm -f "$ZIP_PATH"
 chmod +x "$FINAL_EXE_PATH"
 
-echo "Godot successfully installed as ${FINAL_EXE_PATH}"
+echo "Godot successfully replaced at: ${FINAL_EXE_PATH}"
