@@ -32,7 +32,7 @@ rclgd is a self contained gdextension integrating rclgd in your own godot projec
 Attach a script to you favourite node and start publishing and subscribing things!
 
 
-```{GDcript}
+```GDscript
 extends Node
 
 var ros_node: RosNode
