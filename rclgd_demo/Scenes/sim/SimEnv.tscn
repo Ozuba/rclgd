@@ -1,0 +1,107 @@
+[gd_scene load_steps=20 format=3 uid="uid://bgdafh7stxdw8"]
+
+[ext_resource type="Material" uid="uid://bsv8ux5upf4hf" path="res://Assets/Textures/Asphalt/Asphalt.tres" id="1_ahvmt"]
+[ext_resource type="Script" uid="uid://chw8dsw3ii7qg" path="res://Scenes/sim/sim_env.gd" id="1_ux211"]
+[ext_resource type="Script" uid="uid://diysurgbljif6" path="res://addons/freecam_3D/freecam.gd" id="3_dglw2"]
+[ext_resource type="Script" uid="uid://wffvndmhovr6" path="res://Scenes/sim/GPULidar.gd" id="5_nw7cm"]
+[ext_resource type="Script" uid="uid://dhevjoffhq23b" path="res://Scripts/LidarCompositor.gd" id="6_45jcj"]
+[ext_resource type="Shader" uid="uid://b6f78cx0v4ufp" path="res://Scenes/sim/debug.gdshader" id="7_0sr3w"]
+[ext_resource type="Texture2D" uid="uid://cxqco7urmdbgq" path="res://addons/kloofendal_48d_partly_cloudy_puresky_2k.exr" id="7_hccvn"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ok5qf"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_gnuhh"]
+points = PackedVector3Array(-100, 0, -100, -100, 0, 100, 100, 0, -100, 100, 0, 100)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_uv2q3"]
+lightmap_size_hint = Vector2i(1002, 1002)
+material = ExtResource("1_ahvmt")
+add_uv2 = true
+size = Vector2(200, 200)
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_0sr3w"]
+panorama = ExtResource("7_hccvn")
+energy_multiplier = 2.0
+
+[sub_resource type="Sky" id="Sky_640h4"]
+sky_material = SubResource("PanoramaSkyMaterial_0sr3w")
+
+[sub_resource type="Environment" id="Environment_dtsg1"]
+background_mode = 2
+background_color = Color(0.529412, 0.807843, 0.921569, 1)
+sky = SubResource("Sky_640h4")
+ambient_light_color = Color(1, 1, 1, 1)
+ssao_enabled = true
+ssil_enabled = true
+sdfgi_read_sky_light = false
+
+[sub_resource type="Texture2DRD" id="Texture2DRD_hccvn"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jnaws"]
+render_priority = 0
+shader = ExtResource("7_0sr3w")
+shader_parameter/tex = SubResource("Texture2DRD_hccvn")
+
+[sub_resource type="QuadMesh" id="QuadMesh_45jcj"]
+material = SubResource("ShaderMaterial_jnaws")
+size = Vector2(20, 20)
+
+[sub_resource type="TorusMesh" id="TorusMesh_hccvn"]
+outer_radius = 2.4
+
+[sub_resource type="CompositorEffect" id="CompositorEffect_hccvn"]
+resource_local_to_scene = false
+resource_name = ""
+enabled = true
+effect_callback_type = 4
+needs_motion_vectors = false
+needs_normal_roughness = false
+script = ExtResource("6_45jcj")
+metadata/_custom_type_script = "uid://dhevjoffhq23b"
+
+[sub_resource type="Compositor" id="Compositor_nw7cm"]
+compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_hccvn")])
+
+[node name="SimEnviroment" type="Node"]
+script = ExtResource("1_ux211")
+
+[node name="Freecam3D" type="Camera3D" parent="."]
+transform = Transform3D(0.998583, -0.0266038, 0.0460789, 6.14673e-08, 0.866025, 0.5, -0.0532074, -0.499292, 0.864798, 1.70291e-07, 33.6885, 19.4058)
+current = true
+script = ExtResource("3_dglw2")
+
+[node name="Ground" type="StaticBody3D" parent="."]
+physics_material_override = SubResource("PhysicsMaterial_ok5qf")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+top_level = true
+shape = SubResource("ConvexPolygonShape3D_gnuhh")
+
+[node name="GroundMesh" type="MeshInstance3D" parent="Ground"]
+mesh = SubResource("PlaneMesh_uv2q3")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866024, -0.433016, 0.250001, 0, 0.499998, 0.866026, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_dtsg1")
+
+[node name="Display" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21.0563, -10.2716)
+mesh = SubResource("QuadMesh_45jcj")
+
+[node name="Toroid" type="MeshInstance3D" parent="."]
+transform = Transform3D(0.995073, -0.0991461, 8.69631e-09, 0.0988181, 0.991781, -0.0812776, 0.00805834, 0.0808771, 0.996691, 0, 24.6683, 20.9071)
+mesh = SubResource("TorusMesh_hccvn")
+skeleton = NodePath("../SubViewport/LidarCamera")
+
+[node name="SubViewport" type="SubViewport" parent="." node_paths=PackedStringArray("displayPlane")]
+render_target_update_mode = 4
+script = ExtResource("5_nw7cm")
+displayPlane = NodePath("../Display")
+
+[node name="LidarCamera" type="Camera3D" parent="SubViewport"]
+transform = Transform3D(0.995073, -0.0991461, -7.29464e-08, 0.0699832, 0.702381, 0.708352, -0.0702303, -0.704862, 0.705859, -1.22479e-08, 27.8217, 23.9071)
+compositor = SubResource("Compositor_nw7cm")

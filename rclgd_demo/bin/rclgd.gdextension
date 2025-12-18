@@ -1,0 +1,14 @@
+[configuration]
+
+entry_symbol = "rclgd_init"
+compatibility_minimum = "4.3"
+reloadable = false
+
+[libraries]
+linux.editor.x86_64 = "librclgd.so"
+linux.debug.x86_64 = "librclgd.so"
+linux.release.x86_64 = "librclgd.so"
+
+linux.editor.arm64 = "librclgd.so"
+linux.debug.arm64 = "librclgd.so"
+linux.release.arm64 = "librclgd.so"

@@ -1,0 +1,13 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dm0q6mv2wd5vr"
+valid=false
+
+[deps]
+
+source_file="res://Scripts/debugLidar.glsl"
+
+[params]
+
