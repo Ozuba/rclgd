@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bth57p0f7vctc"
+path="res://.godot/imported/LidarShader.glsl-da8b4e5038cb80651f810fe4d836534a.res"
+
+[deps]
+
+source_file="res://Scripts/LidarShader.glsl"
+dest_files=["res://.godot/imported/LidarShader.glsl-da8b4e5038cb80651f810fe4d836534a.res"]
+
+[params]
+

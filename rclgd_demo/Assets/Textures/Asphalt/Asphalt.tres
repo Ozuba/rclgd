@@ -1,0 +1,32 @@
+[gd_resource type="StandardMaterial3D" load_steps=6 format=3 uid="uid://bsv8ux5upf4hf"]
+
+[ext_resource type="Texture2D" uid="uid://bb5rbv8swghnn" path="res://Assets/Textures/Asphalt/asphalt_0002_color_1k.jpg" id="1_17bh7"]
+[ext_resource type="Texture2D" uid="uid://blm3vwqfsq42u" path="res://Assets/Textures/Asphalt/asphalt_0002_ao_1k.jpg" id="2_ix43f"]
+[ext_resource type="Texture2D" uid="uid://dupm41dgnx2bh" path="res://Assets/Textures/Asphalt/asphalt_0002_height_1k.png" id="2_qnj2v"]
+[ext_resource type="Texture2D" uid="uid://qno5o8bsrs0p" path="res://Assets/Textures/Asphalt/asphalt_0002_normal_opengl_1k.png" id="3_g0gcb"]
+[ext_resource type="Texture2D" uid="uid://o5pl34nggoia" path="res://Assets/Textures/Asphalt/asphalt_0002_roughness_1k.jpg" id="4_8ixw5"]
+
+[resource]
+resource_name = "Asphalt"
+albedo_texture = ExtResource("1_17bh7")
+albedo_texture_force_srgb = true
+metallic = 1.0
+metallic_specular = 0.2
+metallic_texture = ExtResource("4_8ixw5")
+metallic_texture_channel = 3
+roughness = 0.75
+roughness_texture = ExtResource("4_8ixw5")
+roughness_texture_channel = 3
+normal_enabled = true
+normal_texture = ExtResource("3_g0gcb")
+rim_enabled = true
+anisotropy = -0.14
+ao_enabled = true
+ao_light_affect = 1.0
+ao_texture = ExtResource("2_ix43f")
+ao_texture_channel = 3
+heightmap_enabled = true
+heightmap_texture = ExtResource("2_qnj2v")
+refraction_enabled = true
+uv1_scale = Vector3(100, 100, 100)
+grow_amount = -0.09
