@@ -30,5 +30,5 @@ void RosPublisher::publish(const Ref<RosMsg> &msg) {
 
     // BabelFishPublisher::publish takes a CompoundMessage
     // msg->get_babel_msg() should return the internal Babel Fish message pointer
-    pub_->publish(*msg->get_msg());
+    pub_->publish(*msg->get_babel());
 }
