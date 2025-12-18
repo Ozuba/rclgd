@@ -1,11 +1,17 @@
 extends Node
 
 var ros_node: RosNode
-var car_pub: RosPublisher
-var car_sub: RosSubscriber
+var demo_pub: RosPublisher
+var demo_sub: RosSubscriber
 
 func _ready() -> void:
 	# 1. Initialize Global ROS Context
+	"""
+	The rclgd singleton manages the rclcpp Context
+	and should be started by the user, in rclgd for now, theres no need to handle
+	node spinning as it is done in a background thread safely in order to avoid blocking
+	the godot main thread.
+	"""
 	if not rclgd.ok():
 		rclgd.init([])
 
@@ -14,21 +20,23 @@ func _ready() -> void:
 	ros_node.init("godot_controller_node")
 
 	# 3. Setup Publisher & Subscriber
-	car_pub = ros_node.create_publisher("/car_cmd", "mirena_common/msg/Car")
-	car_sub = ros_node.create_subscriber("/car_cmd", "mirena_common/msg/Car", _on_status_received)
+	demo_pub = ros_node.create_publisher("/gd_topic", "std_msgs/msg/String.msg")
+	demo_sub = ros_node.create_subscriber("/gd_topic", "std_msgs/msg/String.msg", _on_status_received)
 
 	# 4. Start a periodic timer to publish
 	get_tree().create_timer(1.0).timeout.connect(publish_test_msg)
 	
 
 func publish_test_msg():
-	var msg = RosMsg.from_type("mirena_common/msg/Car")
-	msg.x = 1.5
-	msg.y = 0.0
-	
-	car_pub.publish(msg)
-	print("Published command: x=1.5")
+	"""
+	Message Types are instantiated by the from_type static method,
+	once created you can access their fields as you would normally do in any 
+	other rcl implementation.
+	"""
+	var msg = RosMsg.from_type("std_msgs/msg/String.msg")
+	msg.data = "Hi there from Godot!"
+	demo_pub.publish(msg)
 
-# This runs safely on the Main Thread
+# Callbacks from subscriber are triggered on message
 func _on_status_received(msg: RosMsg):
 	print(msg)
