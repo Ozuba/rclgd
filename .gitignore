@@ -3,3 +3,4 @@ log
 install
 **/core.*
 **/*.import
+**/*.uid
