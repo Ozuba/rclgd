@@ -50,12 +50,15 @@ func _prepare_msg_template():
 		_create_field("z", 8, 7),
 		_create_field("intensity", 12, 7)
 	]
-	cached_msg = RosMsg.from_type("sensor_msgs/msg/PointCloud2")
+	RosMsg.gen_editor_support("sensor_msgs/msg/PointCloud2","res://addons/rclgd/gen")
+	#cached_msg = RosMsg.from_type("sensor_msgs/msg/PointCloud2")
+	cached_msg = RosSensorMsgsPointCloud2.new()
 	cached_msg.height = 1
 	cached_msg.is_dense = true
 	cached_msg.point_step = 16 
 	cached_msg.fields = cached_fields
 	cached_msg.header.frame_id = "map"
+	
 
 func _create_field(name: String, offset: int, datatype: int) -> RosMsg:
 	var f = RosMsg.from_type("sensor_msgs/msg/PointField")

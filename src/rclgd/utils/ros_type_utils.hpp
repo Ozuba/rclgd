@@ -130,11 +130,14 @@ namespace RosTypeMapping {
 struct Ros2Godot {
     template <typename T>
     static void call(Variant &r_ret, Message::SharedPtr p_msg) {
+        //Handle Compound
         if constexpr (std::is_same_v<T, CompoundMessage>) {
             Ref<RosMsg> sub; sub.instantiate();
             sub->init_babel(std::static_pointer_cast<CompoundMessage>(p_msg));
             r_ret = sub;
-        } else if constexpr (std::is_base_of_v<ArrayMessageBase, T>) {
+        } 
+        //Handle Array
+        else if constexpr (std::is_base_of_v<ArrayMessageBase, T>) {
             auto &base_arr = p_msg->as<ArrayMessageBase>();
             if (base_arr.elementType() == MessageTypes::Compound) {
                 auto &ros_array = p_msg->as<CompoundArrayMessage>();
@@ -148,10 +151,14 @@ struct Ros2Godot {
             } else {
                 RBF2_TEMPLATE_CALL_ARRAY_TYPES(RosTypeMapping::RosToGodotProvider::handle, base_arr, r_ret);
             }
-        } else {
+        }
+        //Handle Primitive
+        else {
             auto &val_msg = p_msg->as<ValueMessage<T>>();
             if constexpr (std::is_same_v<T, std::string>) r_ret = String(val_msg.getValue().c_str());
-            else if constexpr (std::is_arithmetic_v<T>) r_ret = static_cast<double>(val_msg.getValue());
+            else if constexpr (std::is_integral_v<T>) r_ret = (int64_t)val_msg.getValue();
+            else if constexpr (std::is_floating_point_v<T>) r_ret = (double)val_msg.getValue();
+            else if constexpr (std::is_same_v<T, bool>) r_ret = val_msg.getValue();
             else r_ret = Variant();
         }
     }
@@ -180,7 +187,9 @@ struct Godot2Ros {
         } else {
             auto &val_msg = p_ros_msg.as<ValueMessage<T>>();
             if constexpr (std::is_same_v<T, std::string>) val_msg.setValue(p_val.operator String().utf8().get_data());
-            else if constexpr (std::is_arithmetic_v<T>) val_msg.setValue(static_cast<T>(p_val.operator double()));
+            else if constexpr (std::is_integral_v<T>) val_msg.setValue((T)p_val.operator int64_t());
+            else if constexpr (std::is_floating_point_v<T>) val_msg.setValue((T)p_val.operator double());
+            else if constexpr (std::is_same_v<T, bool>) val_msg.setValue(p_val.operator bool());
         }
     }
 };
