@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://wffvndmhovr6" path="res://Scenes/sim/GPULidar.gd" id="5_nw7cm"]
 [ext_resource type="Script" uid="uid://dhevjoffhq23b" path="res://Scripts/LidarCompositor.gd" id="6_45jcj"]
 [ext_resource type="Shader" uid="uid://b6f78cx0v4ufp" path="res://Scenes/sim/debug.gdshader" id="7_0sr3w"]
-[ext_resource type="Texture2D" uid="uid://cxqco7urmdbgq" path="res://addons/kloofendal_48d_partly_cloudy_puresky_2k.exr" id="7_hccvn"]
+[ext_resource type="Texture2D" uid="uid://d2sohta4a0brk" path="res://Assets/Textures/Sky/kloofendal_48d_partly_cloudy_puresky_2k.exr" id="7_hccvn"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ok5qf"]
 

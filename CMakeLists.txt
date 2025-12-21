@@ -101,8 +101,8 @@ target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 # Copy Library to Extension Folder
 add_custom_command(
     TARGET rclgd POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/rclgd_demo/bin
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rclgd> ${CMAKE_SOURCE_DIR}/rclgd_demo/bin/librclgd.so
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/rclgd_demo/addons/rclgd/bin
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rclgd> ${CMAKE_SOURCE_DIR}/rclgd_demo/addons/rclgd/bin/librclgd.so
     COMMENT "Deploying GDExtension library"
 )
 
