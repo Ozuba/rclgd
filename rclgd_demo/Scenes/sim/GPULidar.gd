@@ -50,7 +50,6 @@ func _prepare_msg_template():
 		_create_field("z", 8, 7),
 		_create_field("intensity", 12, 7)
 	]
-	RosMsg.gen_editor_support("sensor_msgs/msg/PointCloud2","res://addons/rclgd/gen")
 	#cached_msg = RosMsg.from_type("sensor_msgs/msg/PointCloud2")
 	cached_msg = RosSensorMsgsPointCloud2.new()
 	cached_msg.height = 1
@@ -61,7 +60,7 @@ func _prepare_msg_template():
 	
 
 func _create_field(name: String, offset: int, datatype: int) -> RosMsg:
-	var f = RosMsg.from_type("sensor_msgs/msg/PointField")
+	var f = RosSensorMsgsPointField.new()
 	f.name = name
 	f.offset = offset
 	f.datatype = datatype
@@ -89,5 +88,4 @@ func _on_texture_data_ready(raw_bytes: PackedByteArray):
 	cached_msg.row_step = raw_bytes.size()
 	cached_msg.data = raw_bytes 
 	cached_msg.header.stamp = ros_node.now() 
-
 	lidar_pub.publish(cached_msg)

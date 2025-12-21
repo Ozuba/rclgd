@@ -24,7 +24,7 @@ window/size/mode=2
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/freecam_3D/plugin.cfg")
+enabled=PackedStringArray("res://addons/freecam_3D/plugin.cfg", "res://addons/rclgd/plugin.cfg")
 
 [filesystem]
 
