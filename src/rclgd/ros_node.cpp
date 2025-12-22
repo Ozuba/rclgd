@@ -2,42 +2,52 @@
 #include "rclgd.hpp"
 #include <godot_cpp/variant/utility_functions.hpp>
 
-void RosNode::_bind_methods() {
+void RosNode::_bind_methods()
+{
     ClassDB::bind_method(D_METHOD("init", "node_name"), &RosNode::init);
     ClassDB::bind_method(D_METHOD("create_publisher", "topic", "type"), &RosNode::create_publisher);
     ClassDB::bind_method(D_METHOD("create_subscriber", "topic", "type", "callback"), &RosNode::create_subscriber);
+    ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), &RosNode::create_client);
+    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), &RosNode::create_service);
     ClassDB::bind_method(D_METHOD("now"), &RosNode::now);
 }
 
-void RosNode::init(const String &p_node_name) {
-    if (node_) return; // Prevent double initialization
+void RosNode::init(const String &p_node_name)
+{
+    if (node_)
+        return; // Prevent double initialization
 
     std::string std_name = p_node_name.utf8().get_data();
     node_ = std::make_shared<rclcpp::Node>(std_name);
 
-    if (rclgd::get_singleton()) {
+    if (rclgd::get_singleton())
+    {
         rclgd::get_singleton()->add_node(node_);
         UtilityFunctions::print("Standalone ROS Node initialized: ", p_node_name);
     }
 }
 
-RosNode::~RosNode() {
+RosNode::~RosNode()
+{
     // When the GDScript variable is freed, we should remove the node from the ROS executor
-    if (node_ && rclgd::get_singleton()) {
+    if (node_ && rclgd::get_singleton())
+    {
         rclgd::get_singleton()->remove_node(node_);
     }
 }
 
-Ref<RosPublisher> RosNode::create_publisher(const String &topic, const String &type) {
+Ref<RosPublisher> RosNode::create_publisher(const String &topic, const String &type)
+{
     ERR_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating publishers.");
-    
+
     Ref<RosPublisher> pub;
     pub.instantiate();
     pub->setup(node_, topic, type);
     return pub;
 }
 
-Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const String &type, const Callable &callback) {
+Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const String &type, const Callable &callback)
+{
     ERR_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating subscribers.");
 
     Ref<RosSubscriber> sub;
@@ -46,9 +56,34 @@ Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const String 
     return sub;
 }
 
+Ref<RosClient> RosNode::create_client(const String &p_srv_name, const String &p_srv_type)
+{
+    ERR_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating clients.");
+
+    Ref<RosClient> client;
+    client.instantiate();
+    // The factory logic happens here
+    client->setup(node_, p_srv_name, p_srv_type);
+    return client;
+}
 
 
-Ref<RosMsg> RosNode::now() {
+Ref<RosService> RosNode::create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback) {
+    ERR_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating services.");
+
+    if (p_callback.is_null()) {
+        UtilityFunctions::push_error("ROS2: Cannot create service with a null callback.");
+        return nullptr;
+    }
+
+    Ref<RosService> srv;
+    srv.instantiate();
+    srv->setup(node_, p_srv_name, p_srv_type, p_callback);
+    return srv;
+}
+
+Ref<RosMsg> RosNode::now()
+{
     // 1. Create the specific ROS Time message
     Ref<RosMsg> time_msg;
     time_msg.instantiate();
@@ -56,10 +91,11 @@ Ref<RosMsg> RosNode::now() {
     // This should match your "RosMsg::from_type" logic
     time_msg->from_type("builtin_interfaces/msg/Time");
 
-    if (node_) {
+    if (node_)
+    {
         rclcpp::Time now = node_->now();
-        
-        // 2. Set the values using your existing _set logic 
+
+        // 2. Set the values using your existing _set logic
         // (or direct BabelFish access for speed)
         time_msg->set("sec", (int32_t)now.seconds());
         time_msg->set("nanosec", (uint32_t)(now.nanoseconds() % 1000000000));

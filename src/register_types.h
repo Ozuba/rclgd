@@ -6,11 +6,12 @@
 #include <rclcpp/rclcpp.hpp>
 //Modules
 #include "rclgd/rclgd.hpp"
+#include "rclgd/ros_msg.hpp"
 #include "rclgd/ros_node.hpp"
 #include "rclgd/ros_publisher.hpp"
 #include "rclgd/ros_subscriber.hpp"
-#include "rclgd/ros_msg.hpp"
-
+#include "rclgd/ros_client.hpp"
+#include "rclgd/ros_service.hpp"
 
 using namespace godot;
 

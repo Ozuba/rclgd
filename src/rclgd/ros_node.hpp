@@ -6,10 +6,14 @@
 
 #include "ros_publisher.hpp"
 #include "ros_subscriber.hpp"
+#include "ros_client.hpp"
+#include "ros_service.hpp"
+#include "ros_msg.hpp"
 
 using namespace godot;
 
-class RosNode : public RefCounted {
+class RosNode : public RefCounted
+{
     GDCLASS(RosNode, RefCounted)
 
 private:
@@ -29,6 +33,9 @@ public:
     Ref<RosPublisher> create_publisher(const String &topic, const String &type);
     Ref<RosSubscriber> create_subscriber(const String &topic, const String &type, const Callable &callback);
 
-    //Time related
+    // Service client and subscriber
+    Ref<RosClient> create_client(const String &p_srv_name, const String &p_srv_type);
+    Ref<RosService> create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback);
+    // Time related
     Ref<RosMsg> now();
 };

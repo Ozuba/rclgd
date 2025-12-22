@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://bgdafh7stxdw8"]
+[gd_scene load_steps=21 format=3 uid="uid://bgdafh7stxdw8"]
 
 [ext_resource type="Material" uid="uid://bsv8ux5upf4hf" path="res://Assets/Textures/Asphalt/Asphalt.tres" id="1_ahvmt"]
 [ext_resource type="Script" uid="uid://chw8dsw3ii7qg" path="res://Scenes/sim/sim_env.gd" id="1_ux211"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dhevjoffhq23b" path="res://Scripts/LidarCompositor.gd" id="6_45jcj"]
 [ext_resource type="Shader" uid="uid://b6f78cx0v4ufp" path="res://Scenes/sim/debug.gdshader" id="7_0sr3w"]
 [ext_resource type="Texture2D" uid="uid://d2sohta4a0brk" path="res://Assets/Textures/Sky/kloofendal_48d_partly_cloudy_puresky_2k.exr" id="7_hccvn"]
+[ext_resource type="Script" uid="uid://dtlmp03akxrma" path="res://Scenes/sim/test_services.gd" id="8_0sr3w"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ok5qf"]
 
@@ -105,3 +106,6 @@ displayPlane = NodePath("../Display")
 [node name="LidarCamera" type="Camera3D" parent="SubViewport"]
 transform = Transform3D(0.995073, -0.0991461, -7.29464e-08, 0.0699832, 0.702381, 0.708352, -0.0702303, -0.704862, 0.705859, -1.22479e-08, 27.8217, 23.9071)
 compositor = SubResource("Compositor_nw7cm")
+
+[node name="TestServices" type="Node" parent="."]
+script = ExtResource("8_0sr3w")
