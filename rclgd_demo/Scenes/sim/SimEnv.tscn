@@ -47,9 +47,6 @@ shader_parameter/tex = SubResource("Texture2DRD_hccvn")
 material = SubResource("ShaderMaterial_jnaws")
 size = Vector2(20, 20)
 
-[sub_resource type="TorusMesh" id="TorusMesh_hccvn"]
-outer_radius = 2.4
-
 [sub_resource type="CompositorEffect" id="CompositorEffect_hccvn"]
 resource_local_to_scene = false
 resource_name = ""
@@ -63,13 +60,11 @@ metadata/_custom_type_script = "uid://dhevjoffhq23b"
 [sub_resource type="Compositor" id="Compositor_nw7cm"]
 compositor_effects = Array[CompositorEffect]([SubResource("CompositorEffect_hccvn")])
 
+[sub_resource type="TorusMesh" id="TorusMesh_hccvn"]
+outer_radius = 2.4
+
 [node name="SimEnviroment" type="Node"]
 script = ExtResource("1_ux211")
-
-[node name="Freecam3D" type="Camera3D" parent="."]
-transform = Transform3D(0.998583, -0.0266038, 0.0460789, 6.14673e-08, 0.866025, 0.5, -0.0532074, -0.499292, 0.864798, 1.70291e-07, 33.6885, 19.4058)
-current = true
-script = ExtResource("3_dglw2")
 
 [node name="Ground" type="StaticBody3D" parent="."]
 physics_material_override = SubResource("PhysicsMaterial_ok5qf")
@@ -93,11 +88,6 @@ environment = SubResource("Environment_dtsg1")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 21.0563, -10.2716)
 mesh = SubResource("QuadMesh_45jcj")
 
-[node name="Toroid" type="MeshInstance3D" parent="."]
-transform = Transform3D(0.995073, -0.0991461, 8.69631e-09, 0.0988181, 0.991781, -0.0812776, 0.00805834, 0.0808771, 0.996691, 0, 24.6683, 20.9071)
-mesh = SubResource("TorusMesh_hccvn")
-skeleton = NodePath("../SubViewport/LidarCamera")
-
 [node name="SubViewport" type="SubViewport" parent="." node_paths=PackedStringArray("displayPlane")]
 render_target_update_mode = 4
 script = ExtResource("5_nw7cm")
@@ -109,3 +99,24 @@ compositor = SubResource("Compositor_nw7cm")
 
 [node name="TestServices" type="Node" parent="."]
 script = ExtResource("8_0sr3w")
+
+[node name="RosNode3D" type="RosNode3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 14.770102, 0)
+
+[node name="Child1" type="RosNode3D" parent="RosNode3D"]
+frame_id = "Child1"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.3690605, 0, 4.010582)
+
+[node name="Toroid" type="MeshInstance3D" parent="RosNode3D/Child1"]
+transform = Transform3D(0.995073, -0.0991461, 8.69631e-09, 0.0988181, 0.991781, -0.0812776, 0.00805834, 0.0808771, 0.996691, 0, 7.108841, 0)
+mesh = SubResource("TorusMesh_hccvn")
+skeleton = NodePath("../../../SubViewport/LidarCamera")
+
+[node name="Freecam3D" type="Camera3D" parent="RosNode3D"]
+transform = Transform3D(0.9985835, -0.026603788, 0.046078943, 6.1467325e-08, 0.86602527, 0.50000036, -0.053207427, -0.49929214, 0.8647985, 0, 18.918398, 19.405798)
+current = true
+script = ExtResource("3_dglw2")
+
+[node name="Child2" type="RosNode3D" parent="RosNode3D/Freecam3D"]
+frame_id = "Child2"
+transform = Transform3D(0.9985835, 6.174158e-08, -0.053207427, -0.02660378, 0.86602503, -0.49929208, 0.046078943, 0.5000003, 0.8647984, -12.431671, -2.7984562, -24.820236)

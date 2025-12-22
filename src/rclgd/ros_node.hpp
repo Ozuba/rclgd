@@ -9,6 +9,7 @@
 #include "ros_client.hpp"
 #include "ros_service.hpp"
 #include "ros_msg.hpp"
+#include "utils/ros_type_utils.hpp"
 
 using namespace godot;
 
@@ -18,6 +19,9 @@ class RosNode : public RefCounted
 
 private:
     std::shared_ptr<rclcpp::Node> node_;
+
+    //Parameter update callback
+    rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
 protected:
     static void _bind_methods();
@@ -38,4 +42,9 @@ public:
     Ref<RosService> create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback);
     // Time related
     Ref<RosMsg> now();
+
+    //Parameters
+    void declare_parameter(const String &p_name, const Variant &p_default_value);
+    void set_parameter(const String &p_name, const Variant &p_val);
+    Variant get_parameter(const String &p_name);
 };

@@ -2,6 +2,9 @@
 extends EditorPlugin
 
 const DEST_FOLDER = "res://addons/rclgd/gen"
+const TYPE_BLACKLIST = [
+	"vision_msgs/msg/vision_class" # Has a gdescript reserved keyword class_name
+]
 
 func _enter_tree():
 	# Add a menu item to the "Project" menu
@@ -26,7 +29,9 @@ func _generate_scripts():
 		var type_name = line.strip_edges()
 		if type_name.is_empty() or not "/" in type_name:
 			continue
-		
+		if type_name in TYPE_BLACKLIST:
+			print("Skipping blacklisted type: ", type_name)
+			continue
 		# Call your C++ static method
 		# This will recurse and generate dependencies (like Header) automatically
 		RosMsg.gen_editor_support(type_name, DEST_FOLDER)
