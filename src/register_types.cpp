@@ -28,6 +28,11 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(RosMsg) //Instance Ros2 Type Creator
 
 
+	//TF2 Helpers
+	GDREGISTER_CLASS(RosNode3D)
+
+
+
 	//Create the rclgd singleton
 	_rclgd_singleton = memnew(rclgd);
     Engine::get_singleton()->register_singleton("rclgd", rclgd::get_singleton());

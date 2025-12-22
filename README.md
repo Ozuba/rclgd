@@ -9,14 +9,14 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Dynamic Msg Type Support
 - [x] Basic Publishers
 - [x] Basic Subscribers
-- [ ] TF2 Helpers (Make transform integrate Nicely with godot transform system)
+- [x] TF2 Helpers (Make transform integrate Nicely with godot transform system) -> RosNode3D
 - [x] Service Clients
 - [x] Service Servers
 - [ ] Actions
-- [ ] Parameters
+- [x] Parameters
 - [ ] QoS
 - [x] Godot Plugin Distribution
-- [x] Godot Editor Support
+- [x] Godot Editor Support -> Pseudo-Static Type Wrappers
 
 
 ## Demo Usage 

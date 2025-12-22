@@ -5,6 +5,7 @@
 //ROS2 for context init
 #include <rclcpp/rclcpp.hpp>
 //Modules
+// RCLGD
 #include "rclgd/rclgd.hpp"
 #include "rclgd/ros_msg.hpp"
 #include "rclgd/ros_node.hpp"
@@ -12,6 +13,9 @@
 #include "rclgd/ros_subscriber.hpp"
 #include "rclgd/ros_client.hpp"
 #include "rclgd/ros_service.hpp"
+
+//TF2 Helpers
+#include "tf2gd/ros_node_3d.hpp"
 
 using namespace godot;
 

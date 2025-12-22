@@ -72,7 +72,7 @@ add_custom_target(
 find_package(ros_babel_fish REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(Eigen3 REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 # Build godot-cpp
 set(GODOTCPP_DISABLE_EXCEPTIONS OFF)
@@ -83,9 +83,10 @@ target_link_libraries(godot_cpp_no_cmake_warnings INTERFACE godot::cpp)
 target_compile_options(godot_cpp_no_cmake_warnings INTERFACE -w)
 
 # Extension Source
-include_directories(src ${rclcpp_INCLUDE_DIRS} ${ros_babel_fish_INCLUDE_DIRS} ${std_msgs_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIR})
+include_directories(src ${rclcpp_INCLUDE_DIRS} ${ros_babel_fish_INCLUDE_DIRS} ${std_msgs_INCLUDE_DIRS})
 
 set(SOURCES
+    # RCLGD
     src/rclgd/rclgd.cpp
     src/rclgd/ros_msg.cpp
     src/rclgd/ros_node.cpp
@@ -93,11 +94,16 @@ set(SOURCES
     src/rclgd/ros_subscriber.cpp
     src/rclgd/ros_client.cpp
     src/rclgd/ros_service.cpp
+
+    # TF2 Helpers
+    src/tf2gd/ros_node_3d.cpp
+
+    # Type Registration
     src/register_types.cpp
 )
 
 add_library(rclgd SHARED ${SOURCES})
-ament_target_dependencies(rclgd rclcpp ros_babel_fish)
+ament_target_dependencies(rclgd rclcpp ros_babel_fish tf2_ros)
 target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 
 # Copy Library to Extension Folder
