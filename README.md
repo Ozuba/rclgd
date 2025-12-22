@@ -1,7 +1,8 @@
 <div align="center">
+	
 # RCLGD
 
-<img src="rclgd_demo/icon.svg" align="center" width="200" alt="Godot Engine logo">
+<img src="rclgd_demo/icon.svg" align="center" width="400" alt="Godot Engine logo">
 
 An implementation of a ros2 client library for the Godot Engine
 based on [ROS Babel Fish](https://github.com/LOEWE-emergenCITY/ros_babel_fish)
