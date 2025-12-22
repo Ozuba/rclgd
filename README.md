@@ -13,6 +13,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [ ] Service Clients
 - [ ] Service Servers
 - [ ] Actions
+- [ ] Parameters
 - [ ] QoS
 - [x] Godot Plugin Distribution
 - [x] Godot Editor Support

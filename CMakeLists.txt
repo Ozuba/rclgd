@@ -91,6 +91,8 @@ set(SOURCES
     src/rclgd/ros_node.cpp
     src/rclgd/ros_publisher.cpp
     src/rclgd/ros_subscriber.cpp
+    src/rclgd/ros_client.cpp
+    src/rclgd/ros_service.cpp
     src/register_types.cpp
 )
 

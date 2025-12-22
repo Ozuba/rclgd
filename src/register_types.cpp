@@ -23,6 +23,8 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(RosNode)
 	GDREGISTER_CLASS(RosPublisher)
 	GDREGISTER_CLASS(RosSubscriber)
+	GDREGISTER_CLASS(RosClient)
+	GDREGISTER_CLASS(RosService)
 	GDREGISTER_CLASS(RosMsg) //Instance Ros2 Type Creator
 
 
