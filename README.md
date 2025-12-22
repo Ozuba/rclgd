@@ -10,8 +10,8 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Basic Publishers
 - [x] Basic Subscribers
 - [ ] TF2 Helpers (Make transform integrate Nicely with godot transform system)
-- [ ] Service Clients
-- [ ] Service Servers
+- [x] Service Clients
+- [x] Service Servers
 - [ ] Actions
 - [ ] Parameters
 - [ ] QoS
