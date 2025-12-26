@@ -8,7 +8,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include "../rclgd/rclgd.hpp" // Required to access the singleton executor
+#include "../rclgd/rclgd.hpp" 
 
 using namespace godot;
 
@@ -24,7 +24,6 @@ private:
     double time_since_last_publish = 0.0;
     bool enabled = true;
 
-    // Internal helper to ensure ROS is ready
     void _ensure_registration();
 
 protected:
@@ -34,10 +33,10 @@ public:
     RosNode3D() = default;
     ~RosNode3D() = default;
 
-    void _enter_tree() override; // Handles auto-registration
+    void _enter_tree() override; 
     void _process(double delta) override;
 
-    // Getters / Setters for Editor
+    // Getters / Setters
     void set_frame_id(const String &p_id) { frame_id = p_id; }
     String get_frame_id() const { return frame_id; }
     void set_publish_rate(double p_rate) { publish_rate = p_rate; }
