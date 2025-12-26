@@ -13,6 +13,15 @@ func _enter_tree():
 func _exit_tree():
 	remove_tool_menu_item("Generate ROS2 Support Scripts")
 
+func _enable_plugin() -> void:
+	# Add rclc autoload
+	add_autoload_singleton("ROS", "res://addons/rclgd/ros_init.gd")
+	print("rclgd: Autoload registered.")
+	
+func _disable_plugin() -> void:
+	remove_autoload_singleton("ROS")
+	print("RclGD: Autoload removed.")
+	
 func _generate_scripts():
 	# 1. Ask ROS for all available interfaces (Optional but recommended)
 	var output = []
