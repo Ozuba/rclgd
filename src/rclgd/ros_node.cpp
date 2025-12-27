@@ -148,7 +148,7 @@ Ref<RosMsg> RosNode::now()
     time_msg.instantiate();
     // Assuming you have a way to initialize the internal BabelFish message by type
     // This should match your "RosMsg::from_type" logic
-    time_msg->from_type("builtin_interfaces/msg/Time");
+    time_msg->init("builtin_interfaces/msg/Time");
 
     if (node_)
     {
