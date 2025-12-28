@@ -72,8 +72,8 @@ void RosNode3D::_process(double delta)
 
     // 1. Position: Standard X-Forward Mapping
     Vector3 pos = relative_transform.origin;
-    t.transform.translation.x = -pos.z; // Godot Forward (-Z) -> ROS X
-    t.transform.translation.y = -pos.x; // Godot Right (+X) -> ROS -Y (so -X is Left/+Y)
+    t.transform.translation.x = pos.z; // Godot Forward (+Z) -> ROS X
+    t.transform.translation.y = pos.x; // Godot Right (+X) 
     t.transform.translation.z = pos.y;  // Godot Up (+Y) -> ROS Z
 
     // 2. Rotation: Vector-by-Vector Mapping
@@ -83,13 +83,9 @@ void RosNode3D::_process(double delta)
     Vector3 g_forward = relative_transform.basis.get_column(2); // +Z
 
     // Construct a new ROS Basis
-    // In ROS:
-    // Column 0 (X) should be Godot's -Forward (-Z)
-    // Column 1 (Y) should be Godot's -Right (-X)
-    // Column 2 (Z) should be Godot's Up (+Y)
     Basis ros_basis;
-    ros_basis.set_column(0, Vector3(-g_forward.z, -g_forward.x, g_forward.y));
-    ros_basis.set_column(1, Vector3(-g_right.z, -g_right.x, g_right.y));
+    ros_basis.set_column(0, Vector3(g_forward.z, g_forward.x, g_forward.y));
+    ros_basis.set_column(1, Vector3(g_right.z, g_right.x, g_right.y));
     ros_basis.set_column(2, Vector3(g_up.z, g_up.x, g_up.y));
 
     // Convert to Quaternion
