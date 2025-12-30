@@ -1,6 +1,6 @@
 extends Node
 
-func _enter_tree() -> void:
+static func _static_init() -> void:
 	# 1. Guard against running ROS logic in the Editor.
 	if Engine.is_editor_hint():
 		return
@@ -20,3 +20,4 @@ func _exit_tree() -> void:
 	if not Engine.is_editor_hint() and rclgd:
 		rclgd.shutdown()
 		print("[ROS] Context shut down safely.")
+		
