@@ -231,7 +231,8 @@ struct Ros2Godot
                 for (size_t i = 0; i < ros_array.size(); ++i)
                 {
                     Variant el;
-                    RBF2_TEMPLATE_CALL(Ros2Godot::call, MessageTypes::Compound, el, ros_array.values()[i]);
+                    Message::SharedPtr element_ptr(p_msg, &ros_array[i]);
+                    RBF2_TEMPLATE_CALL(Ros2Godot::call, MessageTypes::Compound, el, element_ptr);
                     g_arr[i] = el;
                 }
                 r_ret = g_arr;
@@ -247,12 +248,13 @@ struct Ros2Godot
             auto &val_msg = p_msg->as<ValueMessage<T>>();
             if constexpr (std::is_same_v<T, std::string>)
                 r_ret = String(val_msg.getValue().c_str());
+            else if constexpr (std::is_same_v<T, bool>)
+                r_ret = val_msg.getValue();
             else if constexpr (std::is_integral_v<T>)
                 r_ret = (int64_t)val_msg.getValue();
             else if constexpr (std::is_floating_point_v<T>)
                 r_ret = (double)val_msg.getValue();
-            else if constexpr (std::is_same_v<T, bool>)
-                r_ret = val_msg.getValue();
+
             else
                 r_ret = Variant();
         }
