@@ -20,4 +20,3 @@ func _exit_tree() -> void:
 	if not Engine.is_editor_hint() and rclgd:
 		rclgd.shutdown()
 		print("[ROS] Context shut down safely.")
-		

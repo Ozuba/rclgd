@@ -94,12 +94,14 @@ set(SOURCES
     src/rclgd/ros_subscriber.cpp
     src/rclgd/ros_client.cpp
     src/rclgd/ros_service.cpp
+    src/rclgd/ros_qos.cpp
 
     # TF2 Helpers
     src/tf2gd/ros_node_3d.cpp
 
     # Type Registration
     src/register_types.cpp
+
 )
 
 add_library(rclgd SHARED ${SOURCES})
