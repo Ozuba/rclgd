@@ -34,8 +34,8 @@ public:
     void init(const String &p_node_name);
 
     // Publisher and subscriber creation
-    Ref<RosPublisher> create_publisher(const String &topic, const String &type);
-    Ref<RosSubscriber> create_subscriber(const String &topic, const String &type, const Callable &callback);
+    Ref<RosPublisher> create_publisher(const String &topic, const String &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
+    Ref<RosSubscriber> create_subscriber(const String &topic, const String &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
 
     // Service client and subscriber
     Ref<RosClient> create_client(const String &p_srv_name, const String &p_srv_type);

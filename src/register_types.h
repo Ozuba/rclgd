@@ -13,6 +13,7 @@
 #include "rclgd/ros_subscriber.hpp"
 #include "rclgd/ros_client.hpp"
 #include "rclgd/ros_service.hpp"
+#include "rclgd/ros_qos.hpp"
 
 //TF2 Helpers
 #include "tf2gd/ros_node_3d.hpp"

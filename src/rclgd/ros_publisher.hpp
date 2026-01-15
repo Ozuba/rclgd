@@ -4,10 +4,12 @@
 #include <ros_babel_fish/babel_fish.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include "ros_msg.hpp" // Your wrapper for BabelFish Message
+#include "ros_qos.hpp"
 
 using namespace godot;
 
-class RosPublisher : public RefCounted {
+class RosPublisher : public RefCounted
+{
     GDCLASS(RosPublisher, RefCounted);
 
 private:
@@ -21,9 +23,7 @@ public:
     ~RosPublisher() {}
 
     // Called by RosNode::create_publisher
-    void setup(const std::shared_ptr<rclcpp::Node> &node, const String &topic, const String &type);
-    
+    void setup(const std::shared_ptr<rclcpp::Node> &node, const String &topic, const String &type, const rclcpp::QoS &qos = rclcpp::QoS(10));
     // The main function accessible from GDScript
     void publish(const Ref<RosMsg> &msg);
 };
-

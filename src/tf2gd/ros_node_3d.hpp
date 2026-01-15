@@ -34,7 +34,7 @@ public:
     ~RosNode3D() = default;
 
     void _enter_tree() override; 
-    void _process(double delta) override;
+    void _on_physics_tick();
 
     // Getters / Setters
     void set_frame_id(const String &p_id) { frame_id = p_id; }

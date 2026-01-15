@@ -1,64 +1,110 @@
 #include "rclgd.hpp"
 #include <godot_cpp/variant/utility_functions.hpp>
+#include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/main_loop.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
+#include <godot_cpp/classes/window.hpp>
+#include <godot_cpp/variant/callable.hpp>
+#include <godot_cpp/variant/callable_method_pointer.hpp>
 
 rclgd *rclgd::singleton = nullptr;
 
 rclgd *rclgd::get_singleton() { return singleton; }
 
-rclgd::rclgd() {
+rclgd::rclgd()
+{
     singleton = this;
 }
 
-rclgd::~rclgd() {
+rclgd::~rclgd()
+{
     shutdown();
     singleton = nullptr;
 }
 
-void rclgd::init(PackedStringArray args) {
-    if (is_running_) return;
+void rclgd::init(PackedStringArray args)
+{
+    if (is_running_)
+        return;
 
     // Convert Godot args to C-style args for rclcpp
     int argc = args.size();
-    std::vector<char*> argv_vec;
-    for (int i = 0; i < argc; ++i) {
-        argv_vec.push_back(const_cast<char*>(args[i].utf8().get_data()));
+    std::vector<char *> argv_vec;
+    for (int i = 0; i < argc; ++i)
+    {
+        argv_vec.push_back(const_cast<char *>(args[i].utf8().get_data()));
     }
-
+    // Initialize Ros2 context
     rclcpp::init(argc, argv_vec.data());
-    
+
     context_ = rclcpp::contexts::get_global_default_context();
     executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
-    
-    is_running_ = true;
-    spin_thread_ = std::thread([this]() {
+
+    spin_thread_ = std::thread([this]()
+                               {
         UtilityFunctions::print("ROS 2 Executor thread started.");
         executor_->spin();
-        UtilityFunctions::print("ROS 2 Executor thread stopped.");
-    });
+        UtilityFunctions::print("ROS 2 Executor thread stopped."); });
+
+    // Simulation time management
+    rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd");                                            // Node setup
+    auto sim_time_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().durability_volatile();            // QOS for topic
+    sim_time_pub_ = rclgd_node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", sim_time_qos); // Setup publisher
+    SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    if (tree)
+    {
+        // 2. Connect using a direct method pointer (Invisible to GDScript)
+        tree->connect("physics_frame", callable_mp(this, &rclgd::_on_physics_tick));
+    }
+
+    // Set initialization okay
+    is_running_ = true;
 }
 
-void rclgd::shutdown() {
-    if (!is_running_) return;
-    
+void rclgd::shutdown()
+{
+    if (!is_running_)
+        return;
+
     is_running_ = false;
     rclcpp::shutdown(); // This causes executor_->spin() to return
-    
-    if (spin_thread_.joinable()) {
+
+    if (spin_thread_.joinable())
+    {
         spin_thread_.join();
     }
 }
 
-void rclgd::add_node(std::shared_ptr<rclcpp::Node> node) {
+void rclgd::add_node(std::shared_ptr<rclcpp::Node> node)
+{
     std::lock_guard<std::mutex> lock(executor_mutex_);
-    if (executor_) executor_->add_node(node);
+    if (executor_)
+        executor_->add_node(node);
 }
 
-void rclgd::remove_node(std::shared_ptr<rclcpp::Node> node) {
+void rclgd::remove_node(std::shared_ptr<rclcpp::Node> node)
+{
     std::lock_guard<std::mutex> lock(executor_mutex_);
-    if (executor_) executor_->remove_node(node);
+    if (executor_)
+        executor_->remove_node(node);
 }
 
-void rclgd::_bind_methods() {
+void rclgd::_on_physics_tick()
+{
+    // Increment internal time
+    int ticks_per_sec = Engine::get_singleton()->get_physics_ticks_per_second();
+    double delta = (1.0 / static_cast<double>(ticks_per_sec)) * Engine::get_singleton()->get_time_scale();
+    sim_time_ += delta;
+    // Publish sim time
+    auto msg = rosgraph_msgs::msg::Clock();
+    msg.clock.sec = static_cast<int32_t>(sim_time_);
+    msg.clock.nanosec = static_cast<uint32_t>((sim_time_ - msg.clock.sec) * 1e9);
+    sim_time_pub_->publish(msg);
+}
+
+void rclgd::_bind_methods()
+{
+    // Interface
     ClassDB::bind_method(D_METHOD("init", "args"), &rclgd::init);
     ClassDB::bind_method(D_METHOD("shutdown"), &rclgd::shutdown);
     ClassDB::bind_method(D_METHOD("ok"), &rclgd::ok);

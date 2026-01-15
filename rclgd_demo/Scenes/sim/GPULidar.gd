@@ -17,7 +17,11 @@ func _ready() -> void:
 		rclgd.init([])
 	ros_node = RosNode.new()
 	ros_node.init("GPULidar")
-	lidar_pub = ros_node.create_publisher("/gpu_lidar", "sensor_msgs/msg/PointCloud2")
+	var lidar_qos = RosQoS.new()
+	lidar_qos.reliability = RosQoS.BEST_EFFORT  # Don't lag if a frame drops
+	lidar_qos.durability = RosQoS.VOLATILE     # Only want live data
+	lidar_qos.depth = 5                        # Keep a small buffer
+	lidar_pub = ros_node.create_publisher("/gpu_lidar", "sensor_msgs/msg/PointCloud2",lidar_qos)
 	
 	rd = RenderingServer.get_rendering_device()
 	if not rd: return
