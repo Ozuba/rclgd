@@ -34,8 +34,8 @@ class RclgdPackageIdentification(PackageIdentificationExtensionPoint):
                     build_type = build_type_node.text.strip()
                     
                     # Only assign if it matches our registered prefix
-                    if build_type == 'ros.rclgd':
-                        desc.type = 'ros.rclgd'
+                    if build_type == 'rclgd':
+                        desc.type = 'rclgd'
                         return
                         
         except Exception as e:
