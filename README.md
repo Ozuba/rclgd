@@ -29,9 +29,19 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Native RCLGD packages in colcon
 
 
+
+## Installation
+Clone this package into your workspace and install dependencies, build it and source it.
+
+```bash
+rosdep install --from-paths src --ignore-src -y -r
+colcon build --packages-select rclgd
+source install/install.sh
+```
+
 ## Integration
 This package is intented to work as a support package, once you build it you can create rclgd packages based on this
-[Template](https://github.com/Ozuba/rclgd-template) in your favourite ros workspace. 
+[Template](https://github.com/Ozuba/rclgd-template) in your favourite ros workspace.
 
 ```
 rclgd_ws
@@ -40,7 +50,7 @@ rclgd_ws
     ├── rclgd-template
     └── rclgd_demo
 ```
-A typical rclgd package.xml looks like
+A typical rclgd `package.xml` looks like
 ```xml
 <package format="3">
   <name>rclgd-template</name>
@@ -54,6 +64,9 @@ A typical rclgd package.xml looks like
   </export>
 </package>
 ```
+In order to edit those packages you will need to launch the godot editor by `ros2 run rclgd godot` this will ensure that `librclgd.so`
+is accesible by all projects containing the corresponding `rclgd.gdextension`
+
 Once you run `colcon build` and source your installation you will be able to run your godot-ros applcation
 as any other ros executable.
 > [!TIP]
