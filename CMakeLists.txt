@@ -4,8 +4,8 @@ project(rclgd)
 # Compiler options
 add_compile_options("-O3")
 find_package(ament_cmake REQUIRED)
-
-#####################################################[ EDITOR & TOOLS ]###########################################################
+find_package(ament_cmake_python REQUIRED)
+#####################################################[ DEPENDENCIES ]###########################################################
 
 # 1. Determine the Godot architecture suffix
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
@@ -43,31 +43,8 @@ add_custom_command(
 # Drive the command with a target
 add_custom_target(godot_binary_install DEPENDS "${GODOT_BIN}")
 
-# 4. Filter Assets for Dependency Tracking
-file(GLOB_RECURSE GODOT_ASSET_FILES
-    RELATIVE "${CMAKE_SOURCE_DIR}/rclgd_demo"
-    CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/rclgd_demo/*"
-)
-list(FILTER GODOT_ASSET_FILES EXCLUDE REGEX "^\\.godot/.*")
 
-set(GODOT_ASSET_DEPENDENCIES)
-foreach(FILE IN ITEMS ${GODOT_ASSET_FILES})
-    list(APPEND GODOT_ASSET_DEPENDENCIES "${CMAKE_SOURCE_DIR}/rclgd_demo/${FILE}")
-endforeach()
-
-# 5. Resource Import Target
-# Using --quit-after 20 to prevent "Scan thread aborted" errors
-add_custom_target(
-    godot_import_resources
-    ALL
-    COMMAND "${GODOT_BIN}" --editor --headless --quit-after 20 --path "${CMAKE_SOURCE_DIR}/rclgd_demo"
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-    DEPENDS "${GODOT_BIN}" ${GODOT_ASSET_DEPENDENCIES}
-    COMMENT "Importing Godot assets and baking shaders"
-)
-
-#####################################################[ SIM BUILD (rclgd) ]########################################################
+#####################################################[ (rclgd ) ]########################################################
 
 find_package(ros_babel_fish REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -108,26 +85,18 @@ add_library(rclgd SHARED ${SOURCES})
 ament_target_dependencies(rclgd rclcpp ros_babel_fish tf2_ros)
 target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 
-# Copy Library to Extension Folder
-add_custom_command(
-    TARGET rclgd POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_SOURCE_DIR}/rclgd_demo/addons/rclgd/bin
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:rclgd> ${CMAKE_SOURCE_DIR}/rclgd_demo/addons/rclgd/bin/librclgd.so
-    COMMENT "Deploying GDExtension library"
-)
 
-# ----------------------------- Hard Dependencies (Parallel Safety) -----------------------------
-
-# Binary must exist before we can import
-add_dependencies(godot_import_resources godot_binary_install)
-
-# Library must be built/copied before import so Godot sees the new classes
-add_dependencies(godot_import_resources rclgd)
 
 #####################################################[ INSTALLATION ]###############################################################
 
+# Installation of godot and the extension in the same place
 install(PROGRAMS "${GODOT_BIN}" DESTINATION lib/${PROJECT_NAME})
-install(DIRECTORY rclgd_demo DESTINATION share/${PROJECT_NAME}/)
-install(PROGRAMS scripts/launch_demo.sh DESTINATION lib/${PROJECT_NAME}/ RENAME rclgd_demo)
+install(TARGETS rclgd DESTINATION lib/${PROJECT_NAME})
 
+# Install the colcon integration
+ament_python_install_package(colcon_rclgd)
+install(FILES setup.py DESTINATION share/${PROJECT_NAME})
+
+# Expose the shared library for godot packages to pick
+ament_export_libraries(rclgd)
 ament_package()
