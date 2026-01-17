@@ -2,7 +2,7 @@
 	
 # RCLGD
 
-<img src="rclgd_demo/icon.png" align="center" width="400" alt="RCLGD  logo">
+<img src="docs/assets/icon.svg" align="center" width="400" alt="RCLGD  logo">
 
 An implementation of a ros2 client library for the Godot Engine
 based on [ROS Babel Fish](https://github.com/LOEWE-emergenCITY/ros_babel_fish)
@@ -26,19 +26,39 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Godot Plugin Distribution
 - [x] Godot Editor Support -> Pseudo-Static Type Wrappers
 - [x] Simulation Time
+- [x] Native RCLGD packages in colcon
 
-
-## Demo Usage 
-The Project is structured as a ros2 package and includes all neccesary things for automated building of the extension and launching either the demo `ros2 run rclgd rglcd_demo` or the 
-godot editor `ros2 run rclgd godot`, in order to start testing
-the implementation.
 
 ## Integration
-rclgd is a self contained gdextension integrating rclgd in your own godot project is as simple as dropping `librclgd.so` and the corresponding `rclgd.gdextension` into you godot file tree.
+This package is intented to work as a support package, once you build it you can create rclgd packages based on this
+[Template](https://github.com/Ozuba/rclgd-template) in your favourite ros workspace. 
 
-> [!IMPORTANT]
-> You need to have a workspace sourced in your execution environment in
-> order for rclgd to be able to work. Not doing so will probably result in a crash by now.
+```
+rclgd_ws
+└── src
+    ├── rclgd
+    ├── rclgd-template
+    └── rclgd_demo
+```
+A typical rclgd package.xml looks like
+```xml
+<package format="3">
+  <name>rclgd-template</name>
+  <version>0.1.0</version>
+  <maintainer email="example@example.com">Ozuba</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>rclgd</buildtool_depend>
+  <export>
+	<build_type>rclgd</build_type>
+  </export>
+</package>
+```
+Once you run `colcon build` and source your installation you will be able to run your godot-ros applcation
+as any other ros executable.
+> [!TIP]
+> Example: `ros2 run rclgd_demo rclgd_demo`
+
 
 ## Usage
 Attach a script to you favourite node and start publishing and subscribing things!
