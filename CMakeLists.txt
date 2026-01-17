@@ -1,49 +1,47 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.24)
 project(rclgd)
 
 # Compiler options
 add_compile_options("-O3")
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
+include(FetchContent)
 #####################################################[ DEPENDENCIES ]###########################################################
 
-# 1. Determine the Godot architecture suffix
+# 1. Determine architecture-specific strings for the URL
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     set(ARCH_SUFFIX "x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
+    set(GODOT_PLATFORM "linux.64")
+    set(GODOT_SLUG "linux.x86_64")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
     set(ARCH_SUFFIX "arm64")
+    set(GODOT_PLATFORM "linux.arm64")
+    set(GODOT_SLUG "linux.arm64")
 else()
     message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}.")
 endif()
 
-# 2. Godot Versioning & Binary Path
 set(GODOT_VERSION "4.5.1")
-set(GODOT_STATUS "stable")
-set(GODOT_BIN "${CMAKE_BINARY_DIR}/godot")
-set(GODOT_ZIP "${CMAKE_BINARY_DIR}/godot.zip")
-set(GODOT_URL "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-${GODOT_STATUS}/Godot_v${GODOT_VERSION}-${GODOT_STATUS}_linux.${ARCH_SUFFIX}.zip")
 
-# 3. NATIVE DOWNLOAD RULE (Replaces install_godot.bash)
-# This rule only executes if ${GODOT_BIN} is missing. 
-# In a parallel build, CMake ensures only ONE thread executes this.
-add_custom_command(
-    OUTPUT "${GODOT_BIN}"
-    COMMAND ${CMAKE_COMMAND} -E echo "Downloading Godot ${GODOT_VERSION}..."
-    COMMAND curl -fSL "${GODOT_URL}" -o "${GODOT_ZIP}"
-    COMMAND ${CMAKE_COMMAND} -E tar xf "${GODOT_ZIP}"
-    # Find the versioned binary and rename it to 'godot' atomically
-    COMMAND find . -maxdepth 1 -name "Godot_v*" -type f -not -name "*.zip" -exec mv {} "${GODOT_BIN}" \;
-    COMMAND ${CMAKE_COMMAND} -E rm -f "${GODOT_ZIP}"
-    COMMAND chmod +x "${GODOT_BIN}"
-    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-    COMMENT "Fetching Godot Engine Binary for Headless Import"
-    VERBATIM
+# 2. Build the URL using the architecture-aware variables
+set(GODOT_URL "https://downloads.godotengine.org/?version=${GODOT_VERSION}&flavor=stable&slug=${GODOT_SLUG}.zip&platform=${GODOT_PLATFORM}")
+FetchContent_Declare(
+    godot 
+    URL "${GODOT_URL}" 
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    # Use these to prevent the "Infinite Hang"
+    TIMEOUT 300               # 5-minute total limit
+    INACTIVITY_TIMEOUT 30     # Fail if no data for 30 seconds
+    TLS_VERIFY TRUE
 )
+FetchContent_MakeAvailable(godot)
 
-# Drive the command with a target
-add_custom_target(godot_binary_install DEPENDS "${GODOT_BIN}")
+# 3. Resolve the path once
+file(GLOB GODOT_BIN_LIST "${godot_SOURCE_DIR}/Godot_v*")
+list(FILTER GODOT_BIN_LIST EXCLUDE REGEX ".*\\.zip$")
+list(GET GODOT_BIN_LIST 0 GODOT_ACTUAL_PATH)
 
-
+set(GODOT_EXECUTABLE "${GODOT_ACTUAL_PATH}")
 #####################################################[ (rclgd ) ]########################################################
 
 find_package(ros_babel_fish REQUIRED)
@@ -90,13 +88,16 @@ target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 #####################################################[ INSTALLATION ]###############################################################
 
 # Installation of godot and the extension in the same place
-install(PROGRAMS "${GODOT_BIN}" DESTINATION lib/${PROJECT_NAME})
+install(FILES "${GODOT_ACTUAL_PATH}"
+        DESTINATION lib/${PROJECT_NAME}
+        RENAME godot
+        PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE 
+                    GROUP_READ GROUP_EXECUTE 
+                    WORLD_READ WORLD_EXECUTE)
 install(TARGETS rclgd DESTINATION lib/${PROJECT_NAME})
 
 # Install the colcon integration
 ament_python_install_package(colcon_rclgd)
-install(FILES setup.py DESTINATION share/${PROJECT_NAME})
-
 # Expose the shared library for godot packages to pick
 ament_export_libraries(rclgd)
 ament_package()
