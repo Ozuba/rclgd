@@ -115,8 +115,8 @@ exec "$GODOT_EXE" --path "$PROJECT_PATH" "$@"
             str(godot_bin),
             '--editor',
             '--headless',
+            '--import',
             '--path', str(project_path),
-            '--quit-after', '20' # Increase this if your project has many 3D assets
         ]
 
         try:
