@@ -37,6 +37,9 @@ class RclgdBuildTask(TaskExtensionPoint):
         # 3. Create Godot Launcher Shim
         self._create_shim(install_lib, pkg.name)
 
+        # 4. Export godots assets
+        await self._export_resources(package_install_base, install_share, pkg.name)
+
         # 4. Generate Shell Sourcing Files
         # First, create the specific ROS hook for this package
         additional_hooks.extend(
@@ -80,3 +83,45 @@ exec "$GODOT_EXE" --path "$PROJECT_PATH" "$@"
             os.remove(link) if os.path.islink(link) else shutil.rmtree(link)
         os.makedirs(link.parent, exist_ok=True)
         os.symlink(target, link)
+
+    async def _export_resources(self, prefix, project_path, pkg_name):
+        """Headless import of Godot assets into the install directory."""
+
+        # Locate the Godot binary. 
+        # We check the current install prefix (if rclgd is in the same workspace)
+        # and fall back to searching the ROS 2 environment.
+        godot_bin = prefix.parent / 'rclgd' / 'lib' / 'rclgd' / 'godot'
+
+        # Fallback: check if 'rclgd' is already installed in the underlay
+        if not godot_bin.exists():
+            import subprocess
+            try:
+                # Use 'ros2 pkg prefix' to find where rclgd is installed
+                res = subprocess.check_output(['ros2', 'pkg', 'prefix', 'rclgd'], text=True).strip()
+                godot_bin = Path(res) / 'lib' / 'rclgd' / 'godot'
+            except Exception:
+                pass
+
+        if not godot_bin.exists():
+            print(f"[{pkg_name}] Warning: Godot binary not found. Skipping resource export.")
+            return
+
+        print(f"[{pkg_name}] Exporting/Importing Godot resources headlessly...")
+
+        # Build the command. 
+        # Using --editor + --quit-after is the standard way to trigger 
+        # the initial import and shader compilation in Godot 4.
+        cmd = [
+            str(godot_bin),
+            '--editor',
+            '--headless',
+            '--path', str(project_path),
+            '--quit-after', '20' # Increase this if your project has many 3D assets
+        ]
+
+        try:
+            # We use colcon's 'run' to ensure the output is captured 
+            # in the colcon logs and respects the build context.
+            await run(self.context, cmd, cwd=str(project_path))
+        except Exception as e:
+            print(f"[{pkg_name}] Resource export encountered an error: {e}")
