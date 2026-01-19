@@ -23,7 +23,11 @@ void RosNode3D::_ensure_registration()
         if (!rclgd_singleton || !rclcpp::ok())
             return;
 
-        static_node = std::make_shared<rclcpp::Node>("godot_tf_node");
+
+
+        rclcpp::NodeOptions options;
+        options.append_parameter_override("use_sim_time", true);
+        static_node = std::make_shared<rclcpp::Node>("godot_tf_node",options);
         static_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(static_node);
 
         rclgd_singleton->add_node(static_node);
