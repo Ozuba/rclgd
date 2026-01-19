@@ -66,7 +66,7 @@ void RosNode::init(const String &p_node_name)
 RosNode::~RosNode()
 {
     // When the GDScript variable is freed, we should remove the node from the ROS executor
-    if (node_ && rclgd::get_singleton())
+    if (node_)
     {
         rclgd::get_singleton()->remove_node(node_);
     }

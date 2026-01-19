@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.11)
 project(rclgd)
 
 # Compiler options
@@ -28,8 +28,6 @@ set(GODOT_URL "https://downloads.godotengine.org/?version=${GODOT_VERSION}&flavo
 FetchContent_Declare(
     godot 
     URL "${GODOT_URL}" 
-    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
-    # Use these to prevent the "Infinite Hang"
     TIMEOUT 300               # 5-minute total limit
     INACTIVITY_TIMEOUT 30     # Fail if no data for 30 seconds
     TLS_VERIFY TRUE

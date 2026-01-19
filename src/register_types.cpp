@@ -47,11 +47,6 @@ void rclgd_deinit(ModuleInitializationLevel p_level)
 	}
 	// Remove the global name
     Engine::get_singleton()->unregister_singleton("rclgd");
-
-    // Delete the instance (this triggers the destructor ~rclgd() where we join the thread)
-    if (_rclgd_singleton) {
-        memdelete(_rclgd_singleton);
-    }
 }
 
 extern "C"

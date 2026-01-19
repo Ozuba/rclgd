@@ -18,7 +18,6 @@ rclgd::rclgd()
 
 rclgd::~rclgd()
 {
-    shutdown();
     singleton = nullptr;
 }
 
@@ -66,13 +65,18 @@ void rclgd::shutdown()
     if (!is_running_)
         return;
 
-    is_running_ = false;
-    rclcpp::shutdown(); // This causes executor_->spin() to return
+    if (executor_) {
+        executor_->cancel();
+    }
 
     if (spin_thread_.joinable())
     {
         spin_thread_.join();
     }
+
+     is_running_ = false;
+    rclcpp::shutdown(); 
+
 }
 
 void rclgd::add_node(std::shared_ptr<rclcpp::Node> node)
