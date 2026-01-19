@@ -52,6 +52,8 @@ rclgd_ws
 ```
 A typical rclgd `package.xml` looks like
 ```xml
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rclgd-template</name>
   <version>0.1.0</version>
