@@ -15,13 +15,19 @@
 using namespace godot;
 using namespace ros_babel_fish;
 
-class rclgd : public Object {
+class rclgd : public Object
+{
     GDCLASS(rclgd, Object);
 
 private:
     static rclgd *singleton;
-    
-    //Context
+
+    // Context
+    //Init arguments
+    std::vector<std::string> args_;
+    std::vector<char *> argv_;
+
+    //Context and Executor
     std::shared_ptr<rclcpp::Context> context_;
     std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> executor_;
     std::thread spin_thread_;
@@ -34,8 +40,7 @@ private:
     rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr sim_time_pub_;
     void _on_physics_tick();
 
-
-    //Fish type support
+    // Fish type support
     BabelFish fish_;
 
 protected:
@@ -50,16 +55,15 @@ public:
     // Context & Executor Management
     void init(PackedStringArray args);
     void shutdown();
-    
+
     // Node Registry (Called by RosNode C++ classes)
     void add_node(std::shared_ptr<rclcpp::Node> node);
     void remove_node(std::shared_ptr<rclcpp::Node> node);
 
     bool ok() const { return is_running_; }
 
-
-    //Type support accesor
-    BabelFish& get_fish() { return fish_; }
+    // Type support accesor
+    BabelFish &get_fish() { return fish_; }
 };
 
 #endif

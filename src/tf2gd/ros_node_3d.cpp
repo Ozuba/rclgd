@@ -23,12 +23,17 @@ void RosNode3D::_ensure_registration()
         if (!rclgd_singleton || !rclcpp::ok())
             return;
 
+        //rclcpp::NodeOptions options;
+        //options.append_parameter_override("use_sim_time", true); // Let global context handle this
 
-
-        rclcpp::NodeOptions options;
-        options.append_parameter_override("use_sim_time", true);
-        static_node = std::make_shared<rclcpp::Node>("godot_tf_node",options);
+        static_node = std::make_shared<rclcpp::Node>("rclgd_tf");
+               
+        //Global parameter frame
+        static_node->declare_parameter("global_frame", "map");
+    
+        //Transform Publisher
         static_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(static_node);
+ 
 
         rclgd_singleton->add_node(static_node);
         UtilityFunctions::print("RosNode3D: Internal static ROS node created.");
@@ -52,14 +57,13 @@ void RosNode3D::_on_physics_tick()
         
     double delta = get_physics_process_delta_time();
 
-    // --- Original Throttling Logic ---
     time_since_last_publish += delta;
     if (time_since_last_publish < (1.0 / publish_rate))
         return;
     time_since_last_publish = 0.0;
 
     // --- Transform Logic ---
-    String parent_frame_name = "map";
+    String parent_frame_name = String(static_node->get_parameter("global_frame").as_string().c_str());
     Transform3D relative_transform = get_global_transform();
 
     Node *p = get_parent();

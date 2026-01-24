@@ -35,11 +35,11 @@ void RosNode::init(const String &p_node_name)
         return; // Prevent double initialization
 
     // Options
-    rclcpp::NodeOptions options;
-    options.append_parameter_override("use_sim_time", true);
+    //rclcpp::NodeOptions options;
+    //options.append_parameter_override("use_sim_time", true);  //Let global ros args handle it
 
     std::string std_name = p_node_name.utf8().get_data();
-    node_ = std::make_shared<rclcpp::Node>(std_name, options);
+    node_ = std::make_shared<rclcpp::Node>(std_name);
 
     if (rclgd::get_singleton())
     {

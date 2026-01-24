@@ -25,7 +25,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] QoS -> Through QoS RosQoS resource
 - [x] Godot Plugin Distribution
 - [x] Godot Editor Support -> Pseudo-Static Type Wrappers
-- [x] Simulation Time
+- [x] Simulation Time -> Use `--ros-args -p use_sim_time:=true` 
 - [x] Native RCLGD packages in colcon
 
 

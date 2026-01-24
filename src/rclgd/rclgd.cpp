@@ -27,14 +27,16 @@ void rclgd::init(PackedStringArray args)
         return;
 
     // Convert Godot args to C-style args for rclcpp
-    int argc = args.size();
-    std::vector<char *> argv_vec;
-    for (int i = 0; i < argc; ++i)
-    {
-        argv_vec.push_back(const_cast<char *>(args[i].utf8().get_data()));
-    }
+    //Store them permanently
+    for (int i = 0; i < args.size(); ++i) 
+        args_.push_back(args[i].utf8().get_data());
+    // Pointer array
+    for (const auto &s : args_) 
+        argv_.push_back(const_cast<char*>(s.c_str()));
+
+
     // Initialize Ros2 context
-    rclcpp::init(argc, argv_vec.data());
+    rclcpp::init(static_cast<int>(argv_.size()), argv_.data());
 
     context_ = rclcpp::contexts::get_global_default_context();
     executor_ = std::make_shared<rclcpp::executors::MultiThreadedExecutor>();
