@@ -3,6 +3,7 @@
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <ros_babel_fish/babel_fish.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include "rclgd.hpp"
 #include "ros_msg.hpp" // Your wrapper for BabelFish Message
 #include "ros_qos.hpp"
 

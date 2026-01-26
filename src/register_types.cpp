@@ -41,12 +41,14 @@ void rclgd_init(ModuleInitializationLevel p_level)
 
 void rclgd_deinit(ModuleInitializationLevel p_level)
 {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
 	{
-		return;
-	}
 	// Remove the global name
     Engine::get_singleton()->unregister_singleton("rclgd");
+	}
+
+
+
 }
 
 extern "C"

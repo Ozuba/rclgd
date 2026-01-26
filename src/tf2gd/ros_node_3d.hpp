@@ -16,9 +16,7 @@ class RosNode3D : public Node3D {
     GDCLASS(RosNode3D, Node3D);
 
 private:
-    static std::shared_ptr<rclcpp::Node> static_node;
-    static std::unique_ptr<tf2_ros::TransformBroadcaster> static_broadcaster;
-    
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
     String frame_id = "link";
     double publish_rate = 20.0; 
     double time_since_last_publish = 0.0;

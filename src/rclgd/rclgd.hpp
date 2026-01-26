@@ -23,19 +23,21 @@ private:
     static rclgd *singleton;
 
     // Context
-    //Init arguments
+    // Init arguments
     std::vector<std::string> args_;
     std::vector<char *> argv_;
 
-    //Context and Executor
+    // Context and Executor
     std::shared_ptr<rclcpp::Context> context_;
     std::shared_ptr<rclcpp::executors::MultiThreadedExecutor> executor_;
     std::thread spin_thread_;
     std::atomic<bool> is_running_{false};
     std::mutex executor_mutex_;
 
-    // Simulation Time Node
+    // Simulation Node
     std::shared_ptr<rclcpp::Node> rclgd_node_;
+
+    // Simulation Time
     double sim_time_;
     rclcpp::Publisher<rosgraph_msgs::msg::Clock>::SharedPtr sim_time_pub_;
     void _on_physics_tick();
@@ -64,6 +66,10 @@ public:
 
     // Type support accesor
     BabelFish &get_fish() { return fish_; }
+
+    // RCLGD node accesor
+    std::shared_ptr<rclcpp::Node> get_rclgd_node() const{ return rclgd_node_;}
+
 };
 
 #endif

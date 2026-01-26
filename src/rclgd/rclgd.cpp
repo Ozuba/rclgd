@@ -27,13 +27,12 @@ void rclgd::init(PackedStringArray args)
         return;
 
     // Convert Godot args to C-style args for rclcpp
-    //Store them permanently
-    for (int i = 0; i < args.size(); ++i) 
+    // Store them permanently
+    for (int i = 0; i < args.size(); ++i)
         args_.push_back(args[i].utf8().get_data());
     // Pointer array
-    for (const auto &s : args_) 
-        argv_.push_back(const_cast<char*>(s.c_str()));
-
+    for (const auto &s : args_)
+        argv_.push_back(const_cast<char *>(s.c_str()));
 
     // Initialize Ros2 context
     rclcpp::init(static_cast<int>(argv_.size()), argv_.data());
@@ -48,11 +47,21 @@ void rclgd::init(PackedStringArray args)
         UtilityFunctions::print("ROS 2 Executor thread stopped."); });
 
     // Simulation time management
-    rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd");                                            // Node setup
+    rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd");                                           // Node setup
+                
+    // Global parameter frame
+    rclgd_node_->declare_parameter("global_frame", "map");
+
+    // Add  Node to executor
+    add_node(rclgd_node_); //Add node to executor
+
+    //Instantiate SimTime Publisher
     auto sim_time_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().durability_volatile();            // QOS for topic
     sim_time_pub_ = rclgd_node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", sim_time_qos); // Setup publisher
+
+    //Connect to sim time if sim_time parameter is on
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
-    if (tree)
+    if (tree && rclgd_node_->get_parameter("use_sim_time").as_bool())
     {
         // 2. Connect using a direct method pointer (Invisible to GDScript)
         tree->connect("physics_frame", callable_mp(this, &rclgd::_on_physics_tick));
@@ -67,7 +76,8 @@ void rclgd::shutdown()
     if (!is_running_)
         return;
 
-    if (executor_) {
+    if (executor_)
+    {
         executor_->cancel();
     }
 
@@ -76,9 +86,13 @@ void rclgd::shutdown()
         spin_thread_.join();
     }
 
-     is_running_ = false;
-    rclcpp::shutdown(); 
+    executor_.reset();
 
+    if (rclcpp::ok())
+    {
+        rclcpp::shutdown();
+        is_running_ = false;
+    }
 }
 
 void rclgd::add_node(std::shared_ptr<rclcpp::Node> node)

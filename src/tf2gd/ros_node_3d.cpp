@@ -4,8 +4,7 @@
 #include <godot_cpp/variant/callable_method_pointer.hpp>
 #include <godot_cpp/classes/scene_tree.hpp>
 
-std::shared_ptr<rclcpp::Node> RosNode3D::static_node = nullptr;
-std::unique_ptr<tf2_ros::TransformBroadcaster> RosNode3D::static_broadcaster = nullptr;
+
 
 void RosNode3D::_enter_tree()
 {
@@ -17,8 +16,6 @@ void RosNode3D::_ensure_registration()
     if (Engine::get_singleton()->is_editor_hint())
         return;
 
-    if (!static_node)
-    {
         auto rclgd_singleton = rclgd::get_singleton();
         if (!rclgd_singleton || !rclcpp::ok())
             return;
@@ -26,19 +23,12 @@ void RosNode3D::_ensure_registration()
         //rclcpp::NodeOptions options;
         //options.append_parameter_override("use_sim_time", true); // Let global context handle this
 
-        static_node = std::make_shared<rclcpp::Node>("rclgd_tf");
-               
-        //Global parameter frame
-        static_node->declare_parameter("global_frame", "map");
+        auto rclgd_node = rclgd_singleton->get_rclgd_node();
+   
     
         //Transform Publisher
-        static_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(static_node);
+        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(rclgd_node);
  
-
-        rclgd_singleton->add_node(static_node);
-        UtilityFunctions::print("RosNode3D: Internal static ROS node created.");
-    }
-
     //Register physics tick update
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     if (tree)
@@ -52,7 +42,7 @@ void RosNode3D::_on_physics_tick()
 {
     if (Engine::get_singleton()->is_editor_hint())
         return;
-    if (!enabled || !static_broadcaster)
+    if (!enabled || !tf_broadcaster)
         return;
         
     double delta = get_physics_process_delta_time();
@@ -63,7 +53,7 @@ void RosNode3D::_on_physics_tick()
     time_since_last_publish = 0.0;
 
     // --- Transform Logic ---
-    String parent_frame_name = String(static_node->get_parameter("global_frame").as_string().c_str());
+    String parent_frame_name = String(rclgd::get_singleton()->get_rclgd_node()->get_parameter("global_frame").as_string().c_str());
     Transform3D relative_transform = get_global_transform();
 
     Node *p = get_parent();
@@ -80,7 +70,7 @@ void RosNode3D::_on_physics_tick()
     }
 
     geometry_msgs::msg::TransformStamped t;
-    t.header.stamp = static_node->now();
+    t.header.stamp = rclgd::get_singleton()->get_rclgd_node()->now();
     t.header.frame_id = parent_frame_name.utf8().get_data();
     t.child_frame_id = frame_id.utf8().get_data();
 
@@ -109,7 +99,7 @@ void RosNode3D::_on_physics_tick()
     t.transform.rotation.z = q.z;
     t.transform.rotation.w = q.w;
 
-    static_broadcaster->sendTransform(t);
+    tf_broadcaster->sendTransform(t);
 }
 
 void RosNode3D::_bind_methods()

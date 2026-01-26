@@ -18,6 +18,7 @@ void RosPublisher::setup(const std::shared_ptr<rclcpp::Node> &node, const String
 }
 
 void RosPublisher::publish(const Ref<RosMsg> &msg) {
+
     if (!pub_) {
         UtilityFunctions::printerr("ROS Error: Publisher not initialized.");
         return;
@@ -28,6 +29,7 @@ void RosPublisher::publish(const Ref<RosMsg> &msg) {
         return;
     }
 
+    
     // BabelFishPublisher::publish takes a CompoundMessage
     // msg->get_babel_msg() should return the internal Babel Fish message pointer
     pub_->publish(*msg->get_babel());
