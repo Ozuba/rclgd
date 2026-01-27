@@ -26,15 +26,20 @@ void rclgd::init(PackedStringArray args)
     if (is_running_)
         return;
 
+    // Ensure arrays blank
+    args_.clear();
+    argv_.clear();
+
     // Convert Godot args to C-style args for rclcpp
     // Store them permanently
     for (int i = 0; i < args.size(); ++i)
-        args_.push_back(args[i].utf8().get_data());
-    // Pointer array
+        // Esto crea una COPIA persistente del texto
+        args_.push_back(std::string(args[i].utf8().get_data()));
     for (const auto &s : args_)
         argv_.push_back(const_cast<char *>(s.c_str()));
 
-    // Initialize Ros2 context
+
+    // ROS 2 init (usamos argv.size() - 1 para no contar el null en el argc)
     rclcpp::init(static_cast<int>(argv_.size()), argv_.data());
 
     context_ = rclcpp::contexts::get_global_default_context();
@@ -47,19 +52,19 @@ void rclgd::init(PackedStringArray args)
         UtilityFunctions::print("ROS 2 Executor thread stopped."); });
 
     // Simulation time management
-    rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd");                                           // Node setup
-                
+    rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd"); // Node setup
+
     // Global parameter frame
     rclgd_node_->declare_parameter("global_frame", "map");
 
     // Add  Node to executor
-    add_node(rclgd_node_); //Add node to executor
+    add_node(rclgd_node_); // Add node to executor
 
-    //Instantiate SimTime Publisher
+    // Instantiate SimTime Publisher
     auto sim_time_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().durability_volatile();            // QOS for topic
     sim_time_pub_ = rclgd_node_->create_publisher<rosgraph_msgs::msg::Clock>("/clock", sim_time_qos); // Setup publisher
 
-    //Connect to sim time if sim_time parameter is on
+    // Connect to sim time if sim_time parameter is on
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     if (tree && rclgd_node_->get_parameter("use_sim_time").as_bool())
     {

@@ -246,6 +246,10 @@ bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
     {
         ros_babel_fish::Message &ros_member = (*msg_)[key];
 
+        //Error out if assigning a non RosMsg to a RosMsg type
+        if (ros_member.type() == MessageTypes::Compound && Ref<RosMsg>(p_value).is_null())
+            return false;
+
         // Sync Variant -> ROS Buffer
         RBF2_TEMPLATE_CALL(Godot2Ros::call, ros_member.type(), p_value, ros_member);
 
