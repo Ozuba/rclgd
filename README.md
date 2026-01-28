@@ -15,15 +15,16 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 
 - [x] rclgd Singleton
 - [x] Dynamic Msg Type Support
-- [x] Basic Publishers
-- [x] Basic Subscribers
-- [x] TF2 Helpers (Make transform integrate Nicely with godot transform system) -> RosNode3D
+- [x] Publishers
+- [x] Subscribers
+- [x] TF2 Listeners And Broadcasters as 3D Nodes in godot
 - [x] Service Clients
 - [x] Service Servers
 - [ ] Actions
 - [x] Parameters
+- [x] ROS Graph Inspection
 - [x] QoS -> Through QoS RosQoS resource
-- [x] Godot Plugin Distribution
+- [x] Godot template project
 - [x] Godot Editor Support -> Pseudo-Static Type Wrappers
 - [x] Simulation Time -> Use `--ros-args -p use_sim_time:=true` 
 - [x] Native RCLGD packages in colcon
@@ -38,6 +39,11 @@ rosdep install --from-paths src --ignore-src -y -r
 colcon build --packages-select rclgd
 source install/install.sh
 ```
+
+> [!NOTE]
+> rclgd has been tested with Godot 4.5 & 4.6.  
+> You can change the target by retargetting the submodule to corresponding tag and using `-DGODOT_VERSION=4.5`
+
 
 ## Integration
 This package is intented to work as a support package, once you build it you can create rclgd packages based on this
@@ -95,7 +101,7 @@ func _ready() -> void:
 	the godot main thread.
 	"""
 	if not rclgd.ok():
-		rclgd.init([])
+		rclgd.init()
 
 	# 2. Create the Standalone Node (RefCounted)
 	ros_node = RosNode.new()

@@ -1,24 +1,24 @@
-#include "ros_node_3d.hpp"
+#include "ros_tf_broadcaster_3d.hpp"
 #include <godot_cpp/variant/utility_functions.hpp>
 
-void RosNode3D::_enter_tree()
+void RosTfBroadcaster3D::_enter_tree()
 {
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     if (tree)
     {
-        tree->connect("physics_frame", callable_mp(this, &RosNode3D::_on_physics_tick));
+        tree->connect("physics_frame", callable_mp(this, &RosTfBroadcaster3D::_on_physics_tick));
     }
 }
-void RosNode3D::_exit_tree()
+void RosTfBroadcaster3D::_exit_tree()
 {
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     if (tree)
     {
-        tree->disconnect("physics_frame", callable_mp(this, &RosNode3D::_on_physics_tick));
+        tree->disconnect("physics_frame", callable_mp(this, &RosTfBroadcaster3D::_on_physics_tick));
     }
 }
 
-void RosNode3D::_on_physics_tick()
+void RosTfBroadcaster3D::_on_physics_tick()
 {
     if (!enabled || !rclgd::get_singleton()->ok())
         return;
@@ -37,7 +37,7 @@ void RosNode3D::_on_physics_tick()
     Node *p = get_parent();
     while (p)
     {
-        RosNode3D *parent_node = Object::cast_to<RosNode3D>(p);
+        RosTfBroadcaster3D *parent_node = Object::cast_to<RosTfBroadcaster3D>(p);
         if (parent_node)
         {
             parent_frame_name = parent_node->get_frame_id();
@@ -80,12 +80,12 @@ void RosNode3D::_on_physics_tick()
     rclgd::get_singleton()->get_tf_broadcaster()->sendTransform(t);
 }
 
-void RosNode3D::_bind_methods()
+void RosTfBroadcaster3D::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("set_frame_id", "id"), &RosNode3D::set_frame_id);
-    ClassDB::bind_method(D_METHOD("get_frame_id"), &RosNode3D::get_frame_id);
-    ClassDB::bind_method(D_METHOD("set_publish_rate", "hz"), &RosNode3D::set_publish_rate);
-    ClassDB::bind_method(D_METHOD("get_publish_rate"), &RosNode3D::get_publish_rate);
+    ClassDB::bind_method(D_METHOD("set_frame_id", "id"), &RosTfBroadcaster3D::set_frame_id);
+    ClassDB::bind_method(D_METHOD("get_frame_id"), &RosTfBroadcaster3D::get_frame_id);
+    ClassDB::bind_method(D_METHOD("set_publish_rate", "hz"), &RosTfBroadcaster3D::set_publish_rate);
+    ClassDB::bind_method(D_METHOD("get_publish_rate"), &RosTfBroadcaster3D::get_publish_rate);
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "frame_id"), "set_frame_id", "get_frame_id");
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");

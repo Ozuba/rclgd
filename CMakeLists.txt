@@ -21,7 +21,7 @@ else()
     message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}.")
 endif()
 
-set(GODOT_VERSION "4.5.1")
+set(GODOT_VERSION "4.6")
 
 # 2. Build the URL using the architecture-aware variables
 set(GODOT_URL "https://downloads.godotengine.org/?version=${GODOT_VERSION}&flavor=stable&slug=${GODOT_SLUG}.zip&platform=${GODOT_PLATFORM}")
@@ -70,7 +70,7 @@ set(SOURCES
     src/rclgd/ros_qos.cpp
 
     # TF2 Helpers
-    src/tf2gd/ros_node_3d.cpp
+    src/tf2gd/ros_tf_broadcaster_3d.cpp
     src/tf2gd/ros_tf_listener_3d.cpp
 
     # Type Registration

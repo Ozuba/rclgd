@@ -14,8 +14,8 @@
 
 using namespace godot;
 
-class RosNode3D : public Node3D {
-    GDCLASS(RosNode3D, Node3D);
+class RosTfBroadcaster3D : public Node3D {
+    GDCLASS(RosTfBroadcaster3D, Node3D);
 
 private:
     String frame_id = "link";
@@ -29,8 +29,8 @@ protected:
     static void _bind_methods();
 
 public:
-    RosNode3D() = default;
-    ~RosNode3D() = default;
+    RosTfBroadcaster3D() = default;
+    ~RosTfBroadcaster3D() = default;
 
     void _enter_tree() override; 
     void _exit_tree() override; 

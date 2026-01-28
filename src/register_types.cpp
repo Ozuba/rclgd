@@ -30,7 +30,7 @@ void rclgd_init(ModuleInitializationLevel p_level)
 
 
 	//TF2 Helpers
-	GDREGISTER_CLASS(RosNode3D)
+	GDREGISTER_CLASS(RosTfBroadcaster3D)
 	GDREGISTER_CLASS(RosTfListener3D)
 
 
