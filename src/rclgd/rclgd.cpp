@@ -38,7 +38,6 @@ void rclgd::init(PackedStringArray args)
     for (const auto &s : args_)
         argv_.push_back(const_cast<char *>(s.c_str()));
 
-
     // ROS 2 init (usamos argv.size() - 1 para no contar el null en el argc)
     rclcpp::init(static_cast<int>(argv_.size()), argv_.data());
 
@@ -130,7 +129,7 @@ void rclgd::_on_physics_tick()
 void rclgd::_bind_methods()
 {
     // Interface
-    ClassDB::bind_method(D_METHOD("init", "args"), &rclgd::init);
+    ClassDB::bind_method(D_METHOD("init", "args"), &rclgd::init, DEFVAL(PackedStringArray()));
     ClassDB::bind_method(D_METHOD("shutdown"), &rclgd::shutdown);
     ClassDB::bind_method(D_METHOD("ok"), &rclgd::ok);
 }

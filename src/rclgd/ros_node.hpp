@@ -47,4 +47,9 @@ public:
     void declare_parameter(const String &p_name, const Variant &p_default_value);
     void set_parameter(const String &p_name, const Variant &p_val);
     Variant get_parameter(const String &p_name);
+
+    //Ros graph Inspection
+    Dictionary get_topic_names_and_types();
+    int count_publishers(const String &p_topic);
+    int count_subscribers(const String &p_topic);
 };

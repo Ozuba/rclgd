@@ -25,6 +25,10 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &RosNode::set_parameter);
     ClassDB::bind_method(D_METHOD("get_parameter", "name"), &RosNode::get_parameter);
 
+    //ROS Graph Introspection
+    ClassDB::bind_method(D_METHOD("get_topic_names_and_types"), &RosNode::get_topic_names_and_types);
+    ClassDB::bind_method(D_METHOD("count_publishers", "topic"), &RosNode::count_publishers);
+    ClassDB::bind_method(D_METHOD("count_subscribers", "topic"), &RosNode::count_subscribers);
     // Signals
     ADD_SIGNAL(MethodInfo("parameter_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value")));
 }
@@ -178,4 +182,35 @@ Ref<RosMsg> RosNode::now()
     }
 
     return time_msg;
+}
+
+Dictionary RosNode::get_topic_names_and_types() {
+    Dictionary res;
+    ERR_FAIL_COND_V_MSG(!node_, res, "RosNode not initialized.");
+
+    // Get the map from rclcpp
+    auto topics = node_->get_topic_names_and_types();
+
+    for (const auto &it : topics) {
+        String topic_name = String(it.first.c_str());
+        Array types;
+        for (const auto &type_str : it.second) {
+            types.push_back(String(type_str.c_str()));
+        }
+        res[topic_name] = types;
+    }
+
+    return res;
+}
+
+int RosNode::count_publishers(const String &p_topic) {
+    ERR_FAIL_COND_V(!node_, 0);
+    std::string topic = p_topic.utf8().get_data();
+    return static_cast<int>(node_->count_publishers(topic));
+}
+
+int RosNode::count_subscribers(const String &p_topic) {
+    ERR_FAIL_COND_V(!node_, 0);
+    std::string topic = p_topic.utf8().get_data();
+    return static_cast<int>(node_->count_subscribers(topic));
 }
