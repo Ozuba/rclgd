@@ -71,6 +71,7 @@ set(SOURCES
 
     # TF2 Helpers
     src/tf2gd/ros_node_3d.cpp
+    src/tf2gd/ros_tf_listener_3d.cpp
 
     # Type Registration
     src/register_types.cpp

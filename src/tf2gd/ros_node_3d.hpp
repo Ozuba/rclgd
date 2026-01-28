@@ -4,11 +4,13 @@
 #include <godot_cpp/classes/node3d.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/variant/callable_method_pointer.hpp>
+#include <godot_cpp/classes/scene_tree.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include "../rclgd/rclgd.hpp" 
+#include "rclgd/rclgd.hpp" 
 
 using namespace godot;
 
@@ -16,7 +18,6 @@ class RosNode3D : public Node3D {
     GDCLASS(RosNode3D, Node3D);
 
 private:
-    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
     String frame_id = "link";
     double publish_rate = 20.0; 
     double time_since_last_publish = 0.0;
@@ -32,6 +33,8 @@ public:
     ~RosNode3D() = default;
 
     void _enter_tree() override; 
+    void _exit_tree() override; 
+
     void _on_physics_tick();
 
     // Getters / Setters

@@ -1,50 +1,28 @@
 #include "ros_node_3d.hpp"
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/callable.hpp>
-#include <godot_cpp/variant/callable_method_pointer.hpp>
-#include <godot_cpp/classes/scene_tree.hpp>
-
-
 
 void RosNode3D::_enter_tree()
 {
-    _ensure_registration();
-}
-
-void RosNode3D::_ensure_registration()
-{
-    if (Engine::get_singleton()->is_editor_hint())
-        return;
-
-        auto rclgd_singleton = rclgd::get_singleton();
-        if (!rclgd_singleton || !rclcpp::ok())
-            return;
-
-        //rclcpp::NodeOptions options;
-        //options.append_parameter_override("use_sim_time", true); // Let global context handle this
-
-        auto rclgd_node = rclgd_singleton->get_rclgd_node();
-   
-    
-        //Transform Publisher
-        tf_broadcaster = std::make_unique<tf2_ros::TransformBroadcaster>(rclgd_node);
- 
-    //Register physics tick update
     SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
     if (tree)
     {
-        // 2. Connect using a direct method pointer (Invisible to GDScript)
         tree->connect("physics_frame", callable_mp(this, &RosNode3D::_on_physics_tick));
+    }
+}
+void RosNode3D::_exit_tree()
+{
+    SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    if (tree)
+    {
+        tree->disconnect("physics_frame", callable_mp(this, &RosNode3D::_on_physics_tick));
     }
 }
 
 void RosNode3D::_on_physics_tick()
 {
-    if (Engine::get_singleton()->is_editor_hint())
+    if (!enabled || !rclgd::get_singleton()->ok())
         return;
-    if (!enabled || !tf_broadcaster)
-        return;
-        
+
     double delta = get_physics_process_delta_time();
 
     time_since_last_publish += delta;
@@ -99,7 +77,7 @@ void RosNode3D::_on_physics_tick()
     t.transform.rotation.z = q.z;
     t.transform.rotation.w = q.w;
 
-    tf_broadcaster->sendTransform(t);
+    rclgd::get_singleton()->get_tf_broadcaster()->sendTransform(t);
 }
 
 void RosNode3D::_bind_methods()
