@@ -10,16 +10,21 @@
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
-#include "rclgd/rclgd.hpp" 
+#include "rclgd/rclgd.hpp"
 
 using namespace godot;
 
-class RosTfBroadcaster3D : public Node3D {
+class RosTfBroadcaster3D : public Node3D
+{
     GDCLASS(RosTfBroadcaster3D, Node3D);
 
 private:
+    // Own Frame ID
     String frame_id = "link";
-    double publish_rate = 20.0; 
+    // Parent frame management
+    NodePath parent_node_path;
+    String parent_frame_id = "map";
+    double publish_rate = 20.0;
     double time_since_last_publish = 0.0;
     bool enabled = true;
 
@@ -32,14 +37,28 @@ public:
     RosTfBroadcaster3D() = default;
     ~RosTfBroadcaster3D() = default;
 
-    void _enter_tree() override; 
-    void _exit_tree() override; 
+    void _enter_tree() override;
+    void _exit_tree() override;
 
     void _on_physics_tick();
 
     // Getters / Setters
     void set_frame_id(const String &p_id) { frame_id = p_id; }
     String get_frame_id() const { return frame_id; }
+    void set_parent_frame_id(const String &p_id) { parent_frame_id = p_id; }
+    String get_parent_frame_id() const { return parent_frame_id; }
+    void set_parent_node_path(const NodePath &p_path)
+    {
+        parent_node_path = p_path;
+        // Check if RosTfBroadcaster
+        RosTfBroadcaster3D *p_broadcaster = Object::cast_to<RosTfBroadcaster3D>(get_node_or_null(parent_node_path));
+        if (p_broadcaster)
+        {
+            set_parent_frame_id(p_broadcaster->get_frame_id());
+            notify_property_list_changed();
+        }
+    }
+    NodePath get_parent_node_path() const { return parent_node_path; }
     void set_publish_rate(double p_rate) { publish_rate = p_rate; }
     double get_publish_rate() const { return publish_rate; }
 };

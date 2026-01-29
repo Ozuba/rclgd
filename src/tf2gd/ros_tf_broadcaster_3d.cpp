@@ -30,39 +30,37 @@ void RosTfBroadcaster3D::_on_physics_tick()
         return;
     time_since_last_publish = 0.0;
 
-    // --- Transform Logic ---
-    String parent_frame_name = String(rclgd::get_singleton()->get_rclgd_node()->get_parameter("global_frame").as_string().c_str());
-    Transform3D relative_transform = get_global_transform();
 
-    Node *p = get_parent();
-    while (p)
+    Transform3D target_transform;
+    Node3D* parent_node = Object::cast_to<RosTfBroadcaster3D>(get_node_or_null(parent_node_path));
+    if (parent_node)
     {
-        RosTfBroadcaster3D *parent_node = Object::cast_to<RosTfBroadcaster3D>(p);
-        if (parent_node)
-        {
-            parent_frame_name = parent_node->get_frame_id();
-            relative_transform = parent_node->get_global_transform().affine_inverse() * get_global_transform();
-            break;
-        }
-        p = p->get_parent();
+        // Option A: Node is selected - Calculate Relative
+        target_transform = parent_node->get_global_transform().affine_inverse() * get_global_transform();
+    }
+    else
+    {
+        // No node selected - Use Global Transform with provided parent_frame_id
+        target_transform = get_global_transform();
     }
 
+    // Generate the transfrom
     geometry_msgs::msg::TransformStamped t;
     t.header.stamp = rclgd::get_singleton()->get_rclgd_node()->now();
-    t.header.frame_id = parent_frame_name.utf8().get_data();
+    t.header.frame_id = parent_frame_id.utf8().get_data();
     t.child_frame_id = frame_id.utf8().get_data();
 
     // 1. Position: Standard X-Forward Mapping
-    Vector3 pos = relative_transform.origin;
+    Vector3 pos = target_transform.origin;
     t.transform.translation.x = pos.z; // Godot Forward (+Z) -> ROS X
     t.transform.translation.y = pos.x; // Godot Right (+X)
     t.transform.translation.z = pos.y; // Godot Up (+Y) -> ROS Z
 
     // 2. Rotation: Vector-by-Vector Mapping
     // We extract Godot's local axes and map them to ROS 2's axes
-    Vector3 g_right = relative_transform.basis.get_column(0);   // +X
-    Vector3 g_up = relative_transform.basis.get_column(1);      // +Y
-    Vector3 g_forward = relative_transform.basis.get_column(2); // +Z
+    Vector3 g_right = target_transform.basis.get_column(0);   // +X
+    Vector3 g_up = target_transform.basis.get_column(1);      // +Y
+    Vector3 g_forward = target_transform.basis.get_column(2); // +Z
 
     // Construct a new ROS Basis
     Basis ros_basis;
@@ -84,9 +82,16 @@ void RosTfBroadcaster3D::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("set_frame_id", "id"), &RosTfBroadcaster3D::set_frame_id);
     ClassDB::bind_method(D_METHOD("get_frame_id"), &RosTfBroadcaster3D::get_frame_id);
+    ClassDB::bind_method(D_METHOD("set_parent_frame_id", "p_id"), &RosTfBroadcaster3D::set_parent_frame_id);
+    ClassDB::bind_method(D_METHOD("get_parent_frame_id"), &RosTfBroadcaster3D::get_parent_frame_id);
+    ClassDB::bind_method(D_METHOD("set_parent_node_path", "p_path"), &RosTfBroadcaster3D::set_parent_node_path);
+    ClassDB::bind_method(D_METHOD("get_parent_node_path"), &RosTfBroadcaster3D::get_parent_node_path);
+
     ClassDB::bind_method(D_METHOD("set_publish_rate", "hz"), &RosTfBroadcaster3D::set_publish_rate);
     ClassDB::bind_method(D_METHOD("get_publish_rate"), &RosTfBroadcaster3D::get_publish_rate);
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "frame_id"), "set_frame_id", "get_frame_id");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "parent_frame_id"), "set_parent_frame_id", "get_parent_frame_id");
+    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_node_path", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_parent_node_path", "get_parent_node_path"); //Restrict to Node3d
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
 }
