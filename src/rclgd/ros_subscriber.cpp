@@ -14,8 +14,15 @@ void RosSubscriber::setup(const std::shared_ptr<rclcpp::Node> &node,
     auto &fish = rclgd::get_singleton()->get_fish();
 
     // Bind our C++ _ros_callback to the BabelFish subscription
-    sub_ = fish.create_subscription(*node, std_topic, std_type, qos,
-                                    std::bind(&RosSubscriber::_ros_callback, this, std::placeholders::_1));
+    try
+    {
+        sub_ = fish.create_subscription(*node, std_topic, std_type, qos,
+                                        std::bind(&RosSubscriber::_ros_callback, this, std::placeholders::_1));
+    }
+    catch (const std::exception &e)
+    {
+        ERR_FAIL_MSG(vformat("RCLGD Subscription failed: %s", e.what()));
+    }
 }
 
 void RosSubscriber::_ros_callback(const ros_babel_fish::CompoundMessage::SharedPtr msg)

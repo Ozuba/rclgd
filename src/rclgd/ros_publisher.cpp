@@ -14,7 +14,12 @@ void RosPublisher::setup(const std::shared_ptr<rclcpp::Node> &node, const String
     auto &fish = rclgd::get_singleton()->get_fish();
 
     // Create the publisher using the global instance
+    try{
     pub_ = fish.create_publisher(*node, std_topic, type.utf8().get_data(), qos);
+    }catch (const std::exception &e)
+    {
+        ERR_FAIL_MSG(vformat("RCLGD Publisher failed: %s", e.what()));
+    }
 }
 
 void RosPublisher::publish(const Ref<RosMsg> &msg) {
