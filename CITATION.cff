@@ -1,0 +1,35 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: rclgd
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Miguel
+    family-names: Oroz Zubasti
+    email: miguel.oroz@zubasti.net
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.18440938.
+    description: Zenodo
+repository-code: 'https://github.com/Ozuba/rclgd'
+abstract: A ROS2 rclcpp wrapper for the Godot Engine
+keywords:
+  - ROS2
+  - Simulation
+  - Robotics
+license: MIT
+references:
+  - type: conference-paper
+    authors:
+      - family-names: "Fabian"
+        given-names: "Stefan"
+      - family-names: "von Stryk"
+        given-names: "Oskar"
+    title: "Open-Source Tools for Efficient ROS and ROS2-based 2D Human-Robot Interface Development"
+    collection-title: "2021 European Conference on Mobile Robots (ECMR)"
+    year: 2021
+    doi: "10.1109/ECMR50962.2021.9568801"
