@@ -2,6 +2,8 @@
 	
 # RCLGD
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18440939.svg)](https://doi.org/10.5281/zenodo.18440938)
+
 <img src="docs/assets/icon.svg" align="center" width="400" alt="RCLGD  logo">
 
 An implementation of a ros2 client library for the Godot Engine
