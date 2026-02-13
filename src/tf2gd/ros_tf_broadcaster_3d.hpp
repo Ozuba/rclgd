@@ -26,7 +26,7 @@ private:
     String parent_frame_id = "map";
     double publish_rate = 20.0;
     double time_since_last_publish = 0.0;
-    bool enabled = true;
+    bool static_tf = false;
 
     void _ensure_registration();
 
@@ -41,6 +41,10 @@ public:
     void _exit_tree() override;
 
     void _on_physics_tick();
+    
+    //Forces transform publishing
+    void publish_transform();
+
 
     // Getters / Setters
     void set_frame_id(const String &p_id) { frame_id = p_id; }
@@ -61,6 +65,9 @@ public:
     NodePath get_parent_node_path() const { return parent_node_path; }
     void set_publish_rate(double p_rate) { publish_rate = p_rate; }
     double get_publish_rate() const { return publish_rate; }
+
+    void set_static_tf(const bool p_static_tf){static_tf = p_static_tf;}
+    bool get_static_tf() const { return static_tf; };
 };
 
 #endif

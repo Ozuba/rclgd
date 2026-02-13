@@ -20,9 +20,8 @@ void RosTfBroadcaster3D::_exit_tree()
 
 void RosTfBroadcaster3D::_on_physics_tick()
 {
-    if (!enabled || !rclgd::get_singleton()->ok())
+    if (publish_rate <= 0.0)
         return;
-
     double delta = get_physics_process_delta_time();
 
     time_since_last_publish += delta;
@@ -30,9 +29,16 @@ void RosTfBroadcaster3D::_on_physics_tick()
         return;
     time_since_last_publish = 0.0;
 
+    publish_transform();
+}
+
+void RosTfBroadcaster3D::publish_transform()
+{
+    if (!rclgd::get_singleton()->ok())
+        return;
 
     Transform3D target_transform;
-    Node3D* parent_node = Object::cast_to<RosTfBroadcaster3D>(get_node_or_null(parent_node_path));
+    Node3D *parent_node = Object::cast_to<RosTfBroadcaster3D>(get_node_or_null(parent_node_path));
     if (parent_node)
     {
         // Option A: Node is selected - Calculate Relative
@@ -75,7 +81,14 @@ void RosTfBroadcaster3D::_on_physics_tick()
     t.transform.rotation.z = q.z;
     t.transform.rotation.w = q.w;
 
-    rclgd::get_singleton()->get_tf_broadcaster()->sendTransform(t);
+    if (static_tf)
+    {
+        rclgd::get_singleton()->get_tf_static_broadcaster()->sendTransform(t);
+    }
+    else
+    {
+        rclgd::get_singleton()->get_tf_broadcaster()->sendTransform(t);
+    }
 }
 
 void RosTfBroadcaster3D::_bind_methods()
@@ -89,9 +102,13 @@ void RosTfBroadcaster3D::_bind_methods()
 
     ClassDB::bind_method(D_METHOD("set_publish_rate", "hz"), &RosTfBroadcaster3D::set_publish_rate);
     ClassDB::bind_method(D_METHOD("get_publish_rate"), &RosTfBroadcaster3D::get_publish_rate);
+    ClassDB::bind_method(D_METHOD("publish_transform"), &RosTfBroadcaster3D::publish_transform);
+    ClassDB::bind_method(D_METHOD("get_static_tf"), &RosTfBroadcaster3D::get_static_tf);
+    ClassDB::bind_method(D_METHOD("set_static_tf", "p_static_tf"), &RosTfBroadcaster3D::set_static_tf);
 
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "frame_id"), "set_frame_id", "get_frame_id");
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "parent_frame_id"), "set_parent_frame_id", "get_parent_frame_id");
-    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_node_path", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_parent_node_path", "get_parent_node_path"); //Restrict to Node3d
+    ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_node_path", PROPERTY_HINT_NODE_TYPE, "Node3D"), "set_parent_node_path", "get_parent_node_path"); // Restrict to Node3d
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "publish_rate"), "set_publish_rate", "get_publish_rate");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "static_tf"), "set_static_tf", "get_static_tf");
 }

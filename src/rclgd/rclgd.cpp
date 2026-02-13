@@ -75,7 +75,8 @@ void rclgd::init(PackedStringArray args)
     tf_buffer = std::make_shared<tf2_ros::Buffer>(rclgd_node_->get_clock()); 
     tf_listener = std::make_shared<tf2_ros::TransformListener>(*tf_buffer, rclgd_node_, false);
     tf_broadcaster = std::make_shared<tf2_ros::TransformBroadcaster>(rclgd_node_);
-
+    tf_static_broadcaster = std::make_shared<tf2_ros::StaticTransformBroadcaster>(rclgd_node_);
+    
     // Set initialization okay
     is_running_ = true;
 }

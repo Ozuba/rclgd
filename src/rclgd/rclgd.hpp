@@ -12,6 +12,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/transform_broadcaster.h>
+#include <tf2_ros/static_transform_broadcaster.h>
 
 #include <thread>
 #include <mutex>
@@ -50,7 +51,7 @@ private:
     std::shared_ptr<tf2_ros::Buffer> tf_buffer;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener;
     std::shared_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster;
-
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> tf_static_broadcaster;
     // Fish type support
     BabelFish fish_;
 
@@ -78,6 +79,8 @@ public:
     std::shared_ptr<rclcpp::Node> get_rclgd_node() const{ return rclgd_node_;}
     //Transform publisher accessor
     std::shared_ptr<tf2_ros::TransformBroadcaster> get_tf_broadcaster() { return tf_broadcaster;}
+    //Static Transform publisher accesor
+    std::shared_ptr<tf2_ros::StaticTransformBroadcaster> get_tf_static_broadcaster() { return tf_static_broadcaster;}
     //TF Buffer accessor
     std::shared_ptr<tf2_ros::Buffer> get_tf_buffer() { return tf_buffer; }
 
