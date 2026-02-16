@@ -35,7 +35,14 @@ void RosSubscriber::_ros_callback(const ros_babel_fish::CompoundMessage::SharedP
         // Initialize type support for instance
         wrapper->init_babel(msg);
 
-        // 2. Safely hand it off to the Godot Main Thread
-        callback_.call_deferred(wrapper);
+        // Call inmediately or defer depending on the thread we are in 
+        if (Thread::is_main_thread())
+        {
+            callback_.call(wrapper);
+        }
+        else
+        {
+            callback_.call_deferred(wrapper);
+        }
     }
 }

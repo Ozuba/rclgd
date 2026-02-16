@@ -34,7 +34,15 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
                 // Function signature: func my_srv(req: RosMsg, res: RosMsg):
                 if (callback_.is_valid())
                 {
-                    callback_.call(godot_req, godot_res);
+                    // Call inmediately or defer depending on the thread we are in
+                    if (Thread::is_main_thread())
+                    {
+                        callback_.call(godot_req, godot_res);
+                    }
+                    else
+                    {
+                        callback_.call_deferred(godot_req, godot_res);
+                    }
                 }
             });
     }
