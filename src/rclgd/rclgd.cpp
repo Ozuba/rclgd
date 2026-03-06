@@ -11,6 +11,13 @@ rclgd *rclgd::singleton = nullptr;
 
 rclgd *rclgd::get_singleton() { return singleton; }
 
+void rclgd::handle_sigint(int sig) {
+    MainLoop *main_loop = Engine::get_singleton()->get_main_loop();
+    if (auto *tree = Object::cast_to<SceneTree>(main_loop)) {
+        tree->quit();
+    }
+}
+
 rclgd::rclgd()
 {
     singleton = this;
@@ -37,6 +44,9 @@ void rclgd::init(PackedStringArray args)
         args_.push_back(std::string(args[i].utf8().get_data()));
     for (const auto &s : args_)
         argv_.push_back(const_cast<char *>(s.c_str()));
+
+    //Register SIGINT HANDLER
+    std::signal(SIGINT, rclgd::handle_sigint);
 
     rclcpp::InitOptions options;
     options.shutdown_on_signal = false; // Desactiamos los handlers de SIGINT

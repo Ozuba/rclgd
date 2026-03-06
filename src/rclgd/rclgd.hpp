@@ -20,6 +20,7 @@
 
 #include <thread>
 #include <mutex>
+#include <csignal>
 
 using namespace godot;
 using namespace ros_babel_fish;
@@ -39,6 +40,9 @@ private:
     // Init arguments
     std::vector<std::string> args_;
     std::vector<char *> argv_;
+    
+    //Sigint handling for rapid closure in ros runtimes
+    static void handle_sigint(int sig);
 
     // Context and Executor
     std::shared_ptr<rclcpp::Context> context_;
