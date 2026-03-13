@@ -38,7 +38,9 @@ Installation Steps
 4. **Add to Godot Project**:
     Create a godot project, you can use `rclgd Template <https://godotengine.org/asset-library/asset/4621>` or add your own
    `.gdextension` file as follows.
+
    .. code-block:: cfg
+      
       [configuration]
 
       entry_symbol = "rclgd_init"
