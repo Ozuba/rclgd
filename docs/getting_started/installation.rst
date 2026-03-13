@@ -36,9 +36,25 @@ Installation Steps
       source install/setup.bash
 
 4. **Add to Godot Project**:
-   Copy the generated GDExtension binaries and the `.gdextension` file to your Godot project's `bin/` directory.
+    Create a godot project, you can use `rclgd Template <https://godotengine.org/asset-library/asset/4621>` or add your own
+   `.gdextension` file as follows.
+   .. code-block:: cfg
+      [configuration]
 
-   Alternatively, you can symbolic link the build output to your project.
+      entry_symbol = "rclgd_init"
+      compatibility_minimum = "4.3"
+      reloadable = false
+
+      [libraries]
+      linux.editor.x86_64 = "librclgd.so"
+      linux.debug.x86_64 = "librclgd.so"
+      linux.release.x86_64 = "librclgd.so"
+
+      linux.editor.arm64 = "librclgd.so"
+      linux.debug.arm64 = "librclgd.so"
+      linux.release.arm64 = "librclgd.so"
+
+Binary gdextension will be loaded automatically from rclgd install folder.
 
 Next Steps
 ----------
