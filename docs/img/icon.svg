@@ -4,8 +4,8 @@
    width="1024"
    version="1.1"
    id="svg8"
-   sodipodi:docname="icon_color.svg"
-   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="icon.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -74,8 +74,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.59524028"
-     inkscape:cx="530.03806"
-     inkscape:cy="547.67799"
+     inkscape:cx="530.87805"
+     inkscape:cy="497.27817"
      inkscape:window-width="1920"
      inkscape:window-height="1131"
      inkscape:window-x="0"
@@ -84,7 +84,7 @@
      inkscape:current-layer="svg8" />
   <g
      id="g9"
-     transform="translate(-10.079963,-6.7199753)">
+     transform="matrix(1.2293928,0,0,1.2293928,-151.27709,-117.01794)">
     <path
        style="fill:#aad400"
        d="M 93.006871,716.17346 H 245.65652 v 73.13459 A 19.524346,19.524346 135 0 1 226.13217,808.8324 H 111.77624 A 19.239615,19.239615 45.183638 0 1 92.537025,789.46946 Z"

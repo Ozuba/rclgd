@@ -4,3 +4,4 @@ install
 **/core.*
 **/*.import
 **/*.uid
+docs/_build

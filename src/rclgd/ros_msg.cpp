@@ -116,7 +116,7 @@ void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
         StringName member_name = String(key_str.c_str());
         ros_babel_fish::Message &member = (*msg_)[key_str];
         Variant value;
-
+        // If member is compound
         if (member.type() == ros_babel_fish::MessageTypes::Compound)
         {
             // RECURSIVE BRANCH: Initialize nested message
@@ -130,8 +130,8 @@ void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
 
             sub->init_babel(sub_ptr);
             value = sub;
-        }
-        else
+        }//Here we could check for typed arrays
+        else //If leaf node, primitive or packed array
         {
             // LEAF NODE: Primitive or PackedArray
             // Create a temporary shared_ptr alias to satisfy the Ros2Godot template
