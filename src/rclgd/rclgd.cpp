@@ -62,7 +62,7 @@ void rclgd::init(PackedStringArray args)
     rclgd_node_ = std::make_shared<rclcpp::Node>("rclgd", node_options); // Node setup
 
     // Retrieve the values (Member variables)
-    use_separete_thread_ = rclgd_node_->get_parameter_or<bool>("use_separate_thread", false);
+    use_separete_thread_ = rclgd_node_->get_parameter_or<bool>("use_separate_thread", true);
     use_sim_time_ = rclgd_node_->get_parameter_or<bool>("use_sim_time", false);
 
     // Management of the executor context

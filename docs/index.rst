@@ -41,6 +41,7 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
    tutorials/services
    tutorials/make_rclgd_pkg
    tutorials/custom_messages
+   tutorials/turtlesim_rclgd
 
 .. toctree::
    :hidden:

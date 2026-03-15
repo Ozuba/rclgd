@@ -36,8 +36,8 @@ Installation Steps
       source install/setup.bash
 
 4. **Add to Godot Project**:
-    Create a godot project, you can use `rclgd Template <https://godotengine.org/asset-library/asset/4621>`_ or add your own
-   `.gdextension` file as follows.
+
+    Create a godot project, you can use `rclgd Template <https://godotengine.org/asset-library/asset/4621>`_ or add your own `.gdextension` file as follows.
 
    .. code-block:: cfg
 
