@@ -48,6 +48,6 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
     }
     catch (const std::exception &e)
     {
-        ERR_FAIL_MSG(vformat("RCLGD Service failed: %s", e.what()));
+        RCLGD_FAIL_MSG(vformat("RCLGD Service failed: %s", e.what()));
     }
 }

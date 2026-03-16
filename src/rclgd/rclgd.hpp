@@ -22,6 +22,9 @@
 #include <mutex>
 #include <csignal>
 
+//So all other classes have access to macros
+#include "utils/rclgd_macros.hpp"
+
 using namespace godot;
 using namespace ros_babel_fish;
 

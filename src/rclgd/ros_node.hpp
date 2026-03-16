@@ -31,7 +31,7 @@ public:
     ~RosNode();
 
     // Manual initialization since we aren't in the SceneTree
-    void init(const String &p_node_name);
+    void init(const String &p_node_name, const String &p_namespace);
 
     // Publisher and subscriber creation
     Ref<RosPublisher> create_publisher(const String &topic, const String &type, const Ref<RosQoS> &qos = Ref<RosQoS>());

@@ -21,7 +21,7 @@ void RosSubscriber::setup(const std::shared_ptr<rclcpp::Node> &node,
     }
     catch (const std::exception &e)
     {
-        ERR_FAIL_MSG(vformat("RCLGD Subscription failed: %s", e.what()));
+        RCLGD_FAIL_MSG(vformat("RCLGD Subscription failed: %s", e.what()));
     }
 }
 

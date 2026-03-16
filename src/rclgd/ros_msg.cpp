@@ -55,6 +55,9 @@ Ref<RosMsg> RosMsg::from_type(const String &ros_type_name)
 
 void RosMsg::gen_editor_support(const String &p_type, const String &p_dest_folder)
 {
+    RCLGD_FAIL_COND_MSG(p_type.is_empty(), "RCLGD: Cannot generate support for empty type name.");
+    RCLGD_FAIL_COND_MSG(p_dest_folder.is_empty(), "RCLGD: Dest folder path is empty.");
+    
     HashSet<String> processed; // Local to this call stack
     _gen_recursive(p_type, p_dest_folder, processed);
     // 'processed' is automatically destroyed here when the generation finishes.
@@ -106,8 +109,7 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
 
 void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
 {
-    if (!msg)
-        return;
+    ERR_FAIL_NULL_MSG(msg, "RCLGD: Cannot init_babel with a null shared_ptr.");
     msg_ = msg;
     members_.clear();
 
@@ -130,8 +132,8 @@ void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
 
             sub->init_babel(sub_ptr);
             value = sub;
-        }//Here we could check for typed arrays
-        else //If leaf node, primitive or packed array
+        } // Here we could check for typed arrays
+        else // If leaf node, primitive or packed array
         {
             // LEAF NODE: Primitive or PackedArray
             // Create a temporary shared_ptr alias to satisfy the Ros2Godot template
@@ -149,8 +151,7 @@ void RosMsg::init(const String &ros_type_name)
     // If msg_ is already set, we've already initialized this instance.
     if (msg_)
     {
-        // Soft error so it doesn't crash the editor
-        UtilityFunctions::push_warning("RosMsg already initialized: " + get_type_name());
+        WARN_PRINT_ED(vformat("RCLGD: RosMsg already initialized as '%s'. Ignoring second init.", get_type_name()));
         return;
     }
 
@@ -163,7 +164,7 @@ void RosMsg::init(const String &ros_type_name)
     }
     catch (const std::exception &e)
     {
-        UtilityFunctions::push_error("Failed to get Fish Type Support: ", String(e.what()));
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to create ROS message '%s': %s", ros_type_name, e.what()));
         return;
     }
 }
@@ -246,7 +247,7 @@ bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
     {
         ros_babel_fish::Message &ros_member = (*msg_)[key];
 
-        //Error out if assigning a non RosMsg to a RosMsg type
+        // Error out if assigning a non RosMsg to a RosMsg type
         if (ros_member.type() == MessageTypes::Compound && Ref<RosMsg>(p_value).is_null())
             return false;
 
@@ -259,6 +260,7 @@ bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
     }
     catch (const std::exception &e)
     {
+        ERR_PRINT_ED(vformat("RCLGD: Error syncing field '%s' to ROS buffer: %s", String(p_name), e.what()));
         return false;
     }
 }

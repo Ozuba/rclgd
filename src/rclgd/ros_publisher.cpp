@@ -18,19 +18,19 @@ void RosPublisher::setup(const std::shared_ptr<rclcpp::Node> &node, const String
     pub_ = fish.create_publisher(*node, std_topic, type.utf8().get_data(), qos);
     }catch (const std::exception &e)
     {
-        ERR_FAIL_MSG(vformat("RCLGD Publisher failed: %s", e.what()));
+        RCLGD_FAIL_MSG(vformat("RCLGD Publisher failed: %s", e.what()));
     }
 }
 
 void RosPublisher::publish(const Ref<RosMsg> &msg) {
 
     if (!pub_) {
-        UtilityFunctions::printerr("ROS Error: Publisher not initialized.");
+        RCLGD_FAIL_MSG("ROS Error: Publisher not initialized.");
         return;
     }
 
     if (msg.is_null()) {
-        UtilityFunctions::printerr("ROS Error: Attempted to publish null message.");
+        RCLGD_FAIL_MSG("ROS Error: Attempted to publish null message.");
         return;
     }
 
