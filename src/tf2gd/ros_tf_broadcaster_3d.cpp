@@ -38,15 +38,18 @@ void RosTfBroadcaster3D::publish_transform()
         return;
 
     Transform3D target_transform;
-    Node3D *parent_node = Object::cast_to<RosTfBroadcaster3D>(get_node_or_null(parent_node_path));
-    if (parent_node)
-    {
-        // Option A: Node is selected - Calculate Relative
-        target_transform = parent_node->get_global_transform().affine_inverse() * get_global_transform();
-    }
-    else
-    {
-        // No node selected - Use Global Transform with provided parent_frame_id
+    // 1. Resolve parent node (Cast to Node3D first to avoid null pointer crashes)
+    Node3D *p_node = Object::cast_to<Node3D>(get_node_or_null(parent_node_path));
+    
+    if (p_node) {
+        // Functionality: If parent is a Broadcaster, sync the frame ID
+        if (RosTfBroadcaster3D *p_tf = Object::cast_to<RosTfBroadcaster3D>(p_node)) {
+            set_parent_frame_id(p_tf->get_frame_id());
+        }
+        // Option A: Calculate Relative Transform
+        target_transform = p_node->get_global_transform().affine_inverse() * get_global_transform();
+    } else {
+        // Option B: No node selected - Use Global Transform
         target_transform = get_global_transform();
     }
 

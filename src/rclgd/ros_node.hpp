@@ -8,7 +8,10 @@
 #include "ros_subscriber.hpp"
 #include "ros_client.hpp"
 #include "ros_service.hpp"
+#include "ros_tf_broadcaster.hpp"
+#include "ros_tf_listener.hpp"
 #include "ros_msg.hpp"
+
 #include "utils/ros_type_utils.hpp"
 
 using namespace godot;
@@ -33,6 +36,10 @@ public:
     // Manual initialization since we aren't in the SceneTree
     void init(const String &p_node_name, const String &p_namespace);
 
+    //Namespace and name getters
+    String get_name() const;
+    String get_namespace() const;
+
     // Publisher and subscriber creation
     Ref<RosPublisher> create_publisher(const String &topic, const String &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
     Ref<RosSubscriber> create_subscriber(const String &topic, const String &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
@@ -40,6 +47,11 @@ public:
     // Service client and subscriber
     Ref<RosClient> create_client(const String &p_srv_name, const String &p_srv_type);
     Ref<RosService> create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback);
+
+    //TF2 support built in
+    Ref<RosTfListener> create_tf_listener();
+    Ref<RosTfBroadcaster> create_tf_broadcaster();
+
     // Time related
     Ref<RosMsg> now();
 

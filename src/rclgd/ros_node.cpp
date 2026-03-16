@@ -7,6 +7,10 @@ void RosNode::_bind_methods()
     // Initialization
     ClassDB::bind_method(D_METHOD("init", "node_name", "namespace"), &RosNode::init, DEFVAL(""));
 
+    // Getters for internal values
+    ClassDB::bind_method(D_METHOD("get_name"), &RosNode::get_name);
+    ClassDB::bind_method(D_METHOD("get_namespace"), &RosNode::get_namespace);
+
     // Factory Methods
     ClassDB::bind_method(D_METHOD("create_publisher", "topic", "type", "qos"),
                          &RosNode::create_publisher,
@@ -16,6 +20,8 @@ void RosNode::_bind_methods()
                          DEFVAL(Variant()));
     ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), &RosNode::create_client);
     ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), &RosNode::create_service);
+    ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
+    ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
 
     // Functions
     ClassDB::bind_method(D_METHOD("now"), &RosNode::now);
@@ -25,7 +31,7 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &RosNode::set_parameter);
     ClassDB::bind_method(D_METHOD("get_parameter", "name"), &RosNode::get_parameter);
 
-    //ROS Graph Introspection
+    // ROS Graph Introspection
     ClassDB::bind_method(D_METHOD("get_topic_names_and_types"), &RosNode::get_topic_names_and_types);
     ClassDB::bind_method(D_METHOD("count_publishers", "topic"), &RosNode::count_publishers);
     ClassDB::bind_method(D_METHOD("count_subscribers", "topic"), &RosNode::count_subscribers);
@@ -35,7 +41,8 @@ void RosNode::_bind_methods()
 
 void RosNode::init(const String &p_node_name, const String &p_namespace)
 {
-    if (node_) {
+    if (node_)
+    {
         WARN_PRINT_ED("RCLGD: RosNode is already initialized. Ignoring second init call.");
         return;
     }
@@ -44,14 +51,16 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
     std::string std_name = p_node_name.utf8().get_data();
     std::string std_ns = p_namespace.utf8().get_data();
 
-    // ROS 2 node names cannot be empty. 
+    // ROS 2 node names cannot be empty.
     // Namespaces can be empty (defaults to global '/')
-    if (std_name.empty()) {
+    if (std_name.empty())
+    {
         RCLGD_FAIL_MSG("RCLGD: Cannot initialize RosNode with an empty name.");
         return;
     }
 
-    try {
+    try
+    {
         /* Initialize the rclcpp::Node.
            Note: rclcpp will throw an exception if:
            1. node_name contains slashes.
@@ -59,16 +68,21 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
            3. node_name contains illegal characters.
         */
         node_ = std::make_shared<rclcpp::Node>(std_name, std_ns);
-    } catch (const std::exception &e) {
-        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to create rclcpp::Node '%s' in namespace '%s'. Reason: %s", 
-                     p_node_name, p_namespace, e.what()));
+    }
+    catch (const std::exception &e)
+    {
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to create rclcpp::Node '%s' in namespace '%s'. Reason: %s",
+                               p_node_name, p_namespace, e.what()));
         return;
     }
 
     // Register node with the global executor managed by the rclgd singleton
-    if (rclgd::get_singleton()) {
+    if (rclgd::get_singleton())
+    {
         rclgd::get_singleton()->add_node(node_);
-    } else {
+    }
+    else
+    {
         RCLGD_FAIL_MSG("RCLGD: Global singleton not found. Node will not be processed by the executor.");
     }
 
@@ -82,7 +96,7 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
             {
                 // Assuming RosTypeMapping exists as per your snippet
                 Variant val = RosTypeMapping::ros_param_to_variant(param);
-                
+
                 // Emit signal on Godot thread to remain thread-safe with the UI/Editor
                 this->call_deferred("emit_signal", "parameter_changed", String(param.get_name().c_str()), val);
             }
@@ -90,6 +104,21 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
         });
 
     UtilityFunctions::print_verbose(vformat("RCLGD: Node '%s' initialized in namespace '%s'", p_node_name, p_namespace));
+}
+
+String RosNode::get_name() const
+{
+    if (!node_)
+        return String();
+    return String(node_->get_name());
+}
+
+String RosNode::get_namespace() const
+{
+    if (!node_)
+        return String();
+
+    return String(node_->get_namespace());
 }
 
 RosNode::~RosNode()
@@ -175,13 +204,32 @@ Ref<RosService> RosNode::create_service(const String &p_srv_name, const String &
     RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating services.");
     RCLGD_FAIL_COND_V_MSG(p_callback.is_null(), nullptr, "RCLGD: Cannot create service with a null callback.");
-    
+
     Ref<RosService> srv;
     srv.instantiate();
     srv->setup(node_, p_srv_name, p_srv_type, p_callback);
     return srv;
 }
 
+Ref<RosTfBroadcaster> RosNode::create_tf_broadcaster()
+{
+    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating TF Broadcasters.");
+    Ref<RosTfBroadcaster> bc;
+    bc.instantiate();
+    bc->setup(node_);
+    return bc;
+}
+
+Ref<RosTfListener> RosNode::create_tf_listener()
+{
+    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating TF Listeners.");
+    Ref<RosTfListener> ls;
+    ls.instantiate();
+    ls->setup(node_);
+    return ls;
+}
 
 Ref<RosMsg> RosNode::now()
 {
@@ -205,17 +253,20 @@ Ref<RosMsg> RosNode::now()
     return time_msg;
 }
 
-Dictionary RosNode::get_topic_names_and_types() {
+Dictionary RosNode::get_topic_names_and_types()
+{
     Dictionary res;
     RCLGD_FAIL_COND_V_MSG(!node_, res, "RosNode not initialized.");
 
     // Get the map from rclcpp
     auto topics = node_->get_topic_names_and_types();
 
-    for (const auto &it : topics) {
+    for (const auto &it : topics)
+    {
         String topic_name = String(it.first.c_str());
         Array types;
-        for (const auto &type_str : it.second) {
+        for (const auto &type_str : it.second)
+        {
             types.push_back(String(type_str.c_str()));
         }
         res[topic_name] = types;
@@ -224,13 +275,15 @@ Dictionary RosNode::get_topic_names_and_types() {
     return res;
 }
 
-int RosNode::count_publishers(const String &p_topic) {
+int RosNode::count_publishers(const String &p_topic)
+{
     ERR_FAIL_COND_V(!node_, 0);
     std::string topic = p_topic.utf8().get_data();
     return static_cast<int>(node_->count_publishers(topic));
 }
 
-int RosNode::count_subscribers(const String &p_topic) {
+int RosNode::count_subscribers(const String &p_topic)
+{
     ERR_FAIL_COND_V(!node_, 0);
     std::string topic = p_topic.utf8().get_data();
     return static_cast<int>(node_->count_subscribers(topic));
