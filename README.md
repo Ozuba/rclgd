@@ -22,6 +22,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] TF2 Listeners And Broadcasters as 3D Nodes in godot
 - [x] Service Clients
 - [x] Service Servers
+- [x] Timers
 - [ ] Actions
 - [x] Parameters
 - [x] Node Namespacing

@@ -10,6 +10,7 @@
 #include "ros_service.hpp"
 #include "ros_tf_broadcaster.hpp"
 #include "ros_tf_listener.hpp"
+#include "ros_timer.hpp"
 #include "ros_msg.hpp"
 
 #include "utils/ros_type_utils.hpp"
@@ -47,6 +48,9 @@ public:
     // Service client and subscriber
     Ref<RosClient> create_client(const String &p_srv_name, const String &p_srv_type);
     Ref<RosService> create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback);
+
+    // Timers
+    Ref<RosTimer> create_timer(double p_seconds, const Callable &p_callback);
 
     //TF2 support built in
     Ref<RosTfListener> create_tf_listener();

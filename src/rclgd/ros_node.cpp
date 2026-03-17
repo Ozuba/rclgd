@@ -22,6 +22,7 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), &RosNode::create_service);
     ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
     ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
+    ClassDB::bind_method(D_METHOD("create_timer", "seconds", "callback"), &RosNode::create_timer);
 
     // Functions
     ClassDB::bind_method(D_METHOD("now"), &RosNode::now);
@@ -231,13 +232,19 @@ Ref<RosTfListener> RosNode::create_tf_listener()
     return ls;
 }
 
+Ref<RosTimer> RosNode::create_timer(double p_seconds, const Callable &p_callback) {
+    Ref<RosTimer> timer;
+    timer.instantiate();
+    timer->setup(node_, p_seconds, p_callback);
+    return timer;
+}
+
+
 Ref<RosMsg> RosNode::now()
 {
     // 1. Create the specific ROS Time message
     Ref<RosMsg> time_msg;
     time_msg.instantiate();
-    // Assuming you have a way to initialize the internal BabelFish message by type
-    // This should match your "RosMsg::from_type" logic
     time_msg->init("builtin_interfaces/msg/Time");
 
     if (node_)

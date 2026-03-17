@@ -70,6 +70,8 @@ set(SOURCES
     src/rclgd/ros_tf_broadcaster.cpp
     src/rclgd/ros_tf_listener.cpp
     src/rclgd/ros_qos.cpp
+    src/rclgd/ros_timer.cpp
+
 
     # TF2 Helpers
     src/tf2gd/ros_tf_broadcaster_3d.cpp

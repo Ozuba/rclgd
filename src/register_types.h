@@ -13,6 +13,7 @@
 #include "rclgd/ros_subscriber.hpp"
 #include "rclgd/ros_client.hpp"
 #include "rclgd/ros_service.hpp"
+#include "rclgd/ros_timer.hpp"
 #include "rclgd/ros_qos.hpp"
 #include "rclgd/ros_tf_broadcaster.hpp"
 #include "rclgd/ros_tf_listener.hpp"
