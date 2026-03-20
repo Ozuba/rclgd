@@ -36,9 +36,7 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
    :caption: Tutorials
    :name: sec-tutorials
 
-   tutorials/first_node
-   tutorials/pub_sub
-   tutorials/services
+   tutorials/basic_usage
    tutorials/make_rclgd_pkg
    tutorials/custom_messages
    tutorials/turtlesim_rclgd
@@ -46,8 +44,9 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
 .. toctree::
    :hidden:
    :maxdepth: 2
-   :caption: Concepts
+   :caption: Core Concepts
    :name: sec-concepts
 
    concepts/architecture
-   concepts/godot_integration
+   concepts/transforms
+   concepts/parameters_deep_dive
