@@ -25,7 +25,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Timers
 - [ ] Actions
 - [x] Parameters
-- [x] Node Namespacing
+- [x] Node and TF Namespacing
 - [x] ROS Graph Inspection
 - [x] QoS -> Through QoS RosQoS resource
 - [x] Godot template project

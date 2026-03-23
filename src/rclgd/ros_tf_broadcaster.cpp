@@ -16,14 +16,20 @@ void RosTfBroadcaster::send_transform(const Transform3D &p_transform, const Stri
     // Helper to resolve the tilde based on node namespace
     auto resolve_frame = [this](const String &p_id) -> std::string {
         std::string id_str = p_id.utf8().get_data();
-        if (id_str.find("~/") == 0) {
+        if (id_str.empty()) return "";
+
+        // 1. Check for the tilde toggle
+        if (id_str[0] == '~') {
             std::string ns = node_->get_namespace();
-            // Remove leading slash from namespace if it exists
-            if (!ns.empty() && ns[0] == '/') ns.erase(0, 1);
             
-            // Replace ~ with the clean namespace
-            return ns + id_str.substr(1); // Result: "car1/frame_id"
+            // Strip the '~' and return the namespaced frame
+            std::string pure_id = id_str.substr(1);
+            
+            if (ns.empty()) return pure_id;
+            return ns + "/" + pure_id;
         }
+
+        // 2. No tilde? Return as a global frame (e.g., "map" or "odom")
         return id_str;
     };
 
