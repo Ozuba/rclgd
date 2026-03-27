@@ -8,17 +8,16 @@
 namespace RclgdUtils {
     // Shared logic for resolving ~frame_id
     static std::string resolve_frame(std::shared_ptr<rclcpp::Node> n, const godot::String &p_id) {
-        std::string id_str = p_id.utf8().get_data();
-        if (id_str.empty()) return "";
+        std::string s = p_id.utf8().get_data();
+        if (s.empty()) return "";
 
-        if (id_str[0] == '~' && n) {
-            std::string ns = n->get_namespace();
-            std::string pure_id = id_str.substr(1);
+        // Si empieza por ~, expandimos el namespace (p.ej. "/car" + "/" + "lidar")
+        if (s[0] == '~' && n) 
+            s = std::string(n->get_namespace()) + "/" + s.substr(1);
 
-            if (ns.empty() || ns == "/") return pure_id;
-            return (ns.back() == '/') ? (ns + pure_id) : (ns + "/" + pure_id);
-        }
-        return id_str;
+        // Eliminamos CUALQUIER barra inicial (TF2 no las tolera)
+        size_t start = s.find_first_not_of('/');
+        return (start == std::string::npos) ? "" : s.substr(start);
     }
 }
 
