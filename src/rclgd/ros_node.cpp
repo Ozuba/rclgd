@@ -36,6 +36,10 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("get_topic_names_and_types"), &RosNode::get_topic_names_and_types);
     ClassDB::bind_method(D_METHOD("count_publishers", "topic"), &RosNode::count_publishers);
     ClassDB::bind_method(D_METHOD("count_subscribers", "topic"), &RosNode::count_subscribers);
+
+    //Helpers
+    ClassDB::bind_method(D_METHOD("resolve_frame", "frame_id"), &RosNode::resolve_frame);
+
     // Signals
     ADD_SIGNAL(MethodInfo("parameter_changed", PropertyInfo(Variant::STRING, "name"), PropertyInfo(Variant::NIL, "value")));
 }
@@ -237,6 +241,11 @@ Ref<RosTimer> RosNode::create_timer(double p_seconds, const Callable &p_callback
     timer.instantiate();
     timer->setup(node_, p_seconds, p_callback);
     return timer;
+}
+
+//Helper to resolve namespaced topics (Helps creating multisensor simulations with ease)
+String RosNode::resolve_frame(const String &p_id) {
+    return String(RclgdUtils::resolve_frame(node_, p_id).c_str());
 }
 
 

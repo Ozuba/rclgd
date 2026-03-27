@@ -1,4 +1,5 @@
 #include "ros_tf_listener.hpp"
+#include "utils/ros_tf_utils.hpp"
 
 void RosTfListener::_bind_methods() {
     ClassDB::bind_method(D_METHOD("lookup_transform", "target_frame", "source_frame"), &RosTfListener::lookup_transform);
@@ -13,40 +14,54 @@ void RosTfListener::setup(std::shared_ptr<rclcpp::Node> p_node) {
 
 Transform3D RosTfListener::lookup_transform(const String &p_target_frame, const String &p_source_frame) {
     Transform3D g_xform;
-    if (!tf_buffer_) return g_xform;
-
-       auto resolve_frame = [this](const String &p_id) -> std::string {
-        std::string id_str = p_id.utf8().get_data();
-        if (id_str.empty()) return "";
-
-        // 1. Check for the tilde toggle
-        if (id_str[0] == '~') {
-            std::string ns = node_->get_namespace();
-            
-            // Strip the '~' and return the namespaced frame
-            std::string pure_id = id_str.substr(1);
-            
-            if (ns.empty()) return pure_id;
-            return ns + "/" + pure_id;
-        }
-
-        // 2. No tilde? Return as a global frame (e.g., "map" or "odom")
-        return id_str;
-    };
+    if (!tf_buffer_ || !node_ || !rclcpp::ok()) return g_xform;
 
     try {
-        auto t = tf_buffer_->lookupTransform(
-            resolve_frame(p_target_frame),
-            resolve_frame(p_source_frame),
-            tf2::TimePointZero
-        );
+        // 1. Resolve frames using your utility
+        std::string target = RclgdUtils::resolve_frame(node_, p_target_frame);
+        std::string source = RclgdUtils::resolve_frame(node_, p_source_frame);
 
-        // ... [Rest of your Inverse Position/Rotation Mapping] ...
-        g_xform.origin.z = t.transform.translation.x;
+        // 2. Lookup the transform (TimePointZero = latest available)
+        auto t = tf_buffer_->lookupTransform(target, source, tf2::TimePointZero);
+
+        // 3. Inverse Position Mapping (ROS -> Godot)
+        // Broadcaster: ros.x=pos.z, ros.y=pos.x, ros.z=pos.y
+        // Listener:    pos.x=ros.y, pos.y=ros.z, pos.z=ros.x
         g_xform.origin.x = t.transform.translation.y;
         g_xform.origin.y = t.transform.translation.z;
-        // (Inverse Rotation logic goes here)
-    } catch (const tf2::TransformException &ex) {}
+        g_xform.origin.z = t.transform.translation.x;
+
+        // 4. Inverse Rotation Mapping (ROS -> Godot)
+        // First, get the basis from the ROS quaternion
+        Quaternion q(
+            t.transform.rotation.x,
+            t.transform.rotation.y,
+            t.transform.rotation.z,
+            t.transform.rotation.w
+        );
+        Basis ros_basis(q);
+
+        // Extract the ROS columns
+        Vector3 r_c0 = ros_basis.get_column(0); // Shuffled Forward
+        Vector3 r_c1 = ros_basis.get_column(1); // Shuffled Right
+        Vector3 r_c2 = ros_basis.get_column(2); // Shuffled Up
+
+        // Helper to un-shuffle a vector from (z, x, y) back to (x, y, z)
+        auto unshuffle = [](const Vector3 &v) {
+            return Vector3(v.y, v.z, v.x);
+        };
+
+        // Reconstruct Godot Basis
+        // Broadcaster mapping: 
+        // ros_c0 = shuffled g_forward | ros_c1 = shuffled g_right | ros_c2 = shuffled g_up
+        g_xform.basis.set_column(0, unshuffle(r_c1)); // Godot Right
+        g_xform.basis.set_column(1, unshuffle(r_c2)); // Godot Up
+        g_xform.basis.set_column(2, unshuffle(r_c0)); // Godot Forward
+
+    } catch (const tf2::TransformException &ex) {
+        // If the transform isn't found, return Identity or log error
+        // Utility::print_error(ex.what());
+    }
 
     return g_xform;
 }

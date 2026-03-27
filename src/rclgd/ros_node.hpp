@@ -14,6 +14,7 @@
 #include "ros_msg.hpp"
 
 #include "utils/ros_type_utils.hpp"
+#include "utils/ros_tf_utils.hpp"
 
 using namespace godot;
 
@@ -55,6 +56,7 @@ public:
     //TF2 support built in
     Ref<RosTfListener> create_tf_listener();
     Ref<RosTfBroadcaster> create_tf_broadcaster();
+    String resolve_frame(const String &p_id);
 
     // Time related
     Ref<RosMsg> now();
