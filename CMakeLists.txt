@@ -48,17 +48,26 @@ find_package(std_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 # Build godot-cpp
-set(GODOTCPP_DISABLE_EXCEPTIONS OFF)
 add_subdirectory(godot-cpp)
+# Add godot-cpp cmake module for documentation embedding
+list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
+include(GodotCPPModule)
 
+set(GODOTCPP_DISABLE_EXCEPTIONS OFF)
 add_library(godot_cpp_no_cmake_warnings INTERFACE)
 target_link_libraries(godot_cpp_no_cmake_warnings INTERFACE godot::cpp)
 target_compile_options(godot_cpp_no_cmake_warnings INTERFACE -w)
 
+
 # Extension Source
 include_directories(src ${rclcpp_INCLUDE_DIRS} ${ros_babel_fish_INCLUDE_DIRS} ${std_msgs_INCLUDE_DIRS})
 
-set(SOURCES
+# Fetch a list of the xml files to use for documentation and add to our target
+file(GLOB_RECURSE DOC_XML LIST_DIRECTORIES NO CONFIGURE_DEPENDS "docs/doc_classes/*.xml")
+
+add_library(rclgd SHARED)
+
+target_sources(rclgd PRIVATE
     # RCLGD
     src/rclgd/rclgd.cpp
     src/rclgd/ros_msg.cpp
@@ -81,8 +90,9 @@ set(SOURCES
     src/register_types.cpp
 
 )
+# Add docs sources
+target_doc_sources(rclgd "${DOC_XML}")
 
-add_library(rclgd SHARED ${SOURCES})
 ament_target_dependencies(rclgd rclcpp ros_babel_fish tf2_ros)
 target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 

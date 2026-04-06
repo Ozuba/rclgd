@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosPublisher" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Publisher for sending messages to a topic.
+	</brief_description>
+	<description>
+		[RosPublisher] allows Godot to send [RosMsg] data to other ROS 2 nodes. It is created through [method RosNode.create_publisher] and is tied to a specific topic and message type.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="publish">
+			<return type="void" />
+			<param index="0" name="msg" type="RosMsg" />
+			<description>
+				Publishes the data contained in [param msg] to the associated topic. The [RosMsg] type must match the type specified when the publisher was created.
+			</description>
+		</method>
+	</methods>
+</class>

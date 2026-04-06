@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosSubscriber" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Subscriber for receiving messages from a topic.
+	</brief_description>
+	<description>
+		[RosSubscriber] allows Godot to listen for [RosMsg] data from other ROS 2 nodes. It is created through [method RosNode.create_subscriber].
+		When a new message is received on the topic, the callback provided during creation is triggered, passing a [RosMsg] instance as its only argument.
+		The subscription remains active as long as this object is not freed.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

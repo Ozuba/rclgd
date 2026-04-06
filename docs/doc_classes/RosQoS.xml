@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosQoS" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		Configuration for ROS 2 Quality of Service (QoS) profiles.
+	</brief_description>
+	<description>
+		[RosQoS] allows configuring the Quality of Service (QoS) settings for ROS 2 publishers and subscribers. QoS profiles control how messages are handled across the network, allowing developers to tune the balance between reliability and performance.
+		Commonly used for ensuring that critical data is delivered reliably or for optimizing high-frequency sensory data where some packet loss is acceptable.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="deadline_seconds" type="float" setter="set_deadline" getter="get_deadline" default="0.0">
+			The maximum amount of time (in seconds) expected between messages being published to or received from a topic. If a message is not sent or received within this duration, a QoS event is triggered. A value of [code]0.0[/code] disables the deadline.
+		</member>
+		<member name="depth" type="int" setter="set_depth" getter="get_depth" default="10">
+			The size of the message queue. For [constant KEEP_LAST] history, this determines how many messages are buffered before old entries are discarded.
+		</member>
+		<member name="durability" type="int" setter="set_durability" getter="get_durability" enum="RosQoS.Durability" default="0">
+			Determines whether messages are persisted by the publisher for late-joining subscribers. See [enum Durability] for options.
+		</member>
+		<member name="history" type="int" setter="set_history" getter="get_history" enum="RosQoS.History" default="0">
+			Determines how messages are buffered in the queue. See [enum History] for options.
+		</member>
+		<member name="lifespan_seconds" type="float" setter="set_lifespan" getter="get_lifespan" default="0.0">
+			The maximum amount of time a message is considered "valid" after being published. Messages older than this duration will be removed from the publisher's queue and ignored by subscribers. A value of [code]0.0[/code] means messages live forever.
+		</member>
+		<member name="reliability" type="int" setter="set_reliability" getter="get_reliability" enum="RosQoS.Reliability" default="0">
+			Determines whether message delivery is guaranteed. See [enum Reliability] for options.
+		</member>
+	</members>
+	<constants>
+		<constant name="RELIABLE" value="0" enum="Reliability">
+			The publisher will attempt to retransmit messages until they are acknowledged by the subscriber. Recommended for critical data.
+		</constant>
+		<constant name="BEST_EFFORT" value="1" enum="Reliability">
+			The publisher will send messages once without confirmation. Recommended for high-frequency data where occasional loss is acceptable.
+		</constant>
+		<constant name="VOLATILE" value="0" enum="Durability">
+			Messages are not persisted. Late-joining subscribers will only receive messages published after they connect.
+		</constant>
+		<constant name="TRANSIENT_LOCAL" value="1" enum="Durability">
+			The publisher retains a set of messages (defined by [member depth]) for discovery by late-joining subscribers.
+		</constant>
+		<constant name="KEEP_LAST" value="0" enum="History">
+			Only the last [member depth] messages are kept in the queue.
+		</constant>
+		<constant name="KEEP_ALL" value="1" enum="History">
+			All messages are kept until they are processed, subject to available resources.
+		</constant>
+		<constant name="AUTOMATIC" value="0" enum="Liveliness">
+			The system will automatically manage liveliness based on the connection status.
+		</constant>
+		<constant name="MANUAL_BY_TOPIC" value="1" enum="Liveliness">
+			Liveliness must be manually asserted by the user for each topic.
+		</constant>
+		<constant name="SYSTEM_DEFAULT" value="2" enum="Liveliness">
+			Uses the default liveliness policy of the underlying RMW implementation.
+		</constant>
+	</constants>
+</class>

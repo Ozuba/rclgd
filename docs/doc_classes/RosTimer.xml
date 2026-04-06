@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosTimer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A timer that triggers a callback at a fixed rate, synchronized with the ROS 2 executor.
+	</brief_description>
+	<description>
+		[RosTimer] provides a way to execute Godot code on a regular schedule, managed by the ROS 2 executor. It is created through [method RosNode.create_timer].
+		Unlike Godot's built-in timers, [RosTimer] is tied to the ROS 2 clock and processing loop, making it more suitable for tasks requiring synchronization with ROS 2 events or simulation time.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel">
+			<return type="void" />
+			<description>
+				Stops the timer from triggering its callback.
+			</description>
+		</method>
+		<method name="get_remaining_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the amount of time (in seconds) remaining until the next timer trigger.
+			</description>
+		</method>
+		<method name="is_canceled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the timer has been canceled.
+			</description>
+		</method>
+		<method name="is_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the timer is ready to trigger its callback.
+			</description>
+		</method>
+		<method name="reset">
+			<return type="void" />
+			<description>
+				Resets the timer's internal clock. If the timer was previously canceled, it will start running again.
+			</description>
+		</method>
+	</methods>
+</class>

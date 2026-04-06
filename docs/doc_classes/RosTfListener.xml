@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosTfListener" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A listener for coordinate transforms in the ROS 2 TF2 system.
+	</brief_description>
+	<description>
+		[RosTfListener] allows Godot to query the current spatial relationships between different coordinate frames in the ROS 2 TF2 tree. It is created through [method RosNode.create_tf_listener].
+		By listening for transforms, you can determine the position and rotation of robot parts, sensors, or other objects relative to each other or a global frame.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="lookup_transform">
+			<return type="Transform3D" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="source_frame" type="String" />
+			<description>
+				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] representing the position and orientation of the source frame relative to the target frame.
+				If the transform is not found or is not currently available, it returns an identity transform and prints an error.
+			</description>
+		</method>
+	</methods>
+</class>

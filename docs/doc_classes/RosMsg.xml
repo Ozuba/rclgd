@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosMsg" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A dynamic wrapper for ROS 2 messages.
+	</brief_description>
+	<description>
+		[RosMsg] provides a flexible way to handle ROS 2 messages within Godot. It uses [b]BabelFish[/b] to dynamically translate ROS 2 message buffers into Godot-friendly [Variant] data and vice versa.
+		Fields can be accessed dynamically using [method get_member] and [method set_member], or via Godot's property system if the message has been initialized.
+		To improve the development experience, [RosMsg] includes a utility to generate GDScript "wrapper" classes that provide IDE autocomplete for specific message types.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="from_type" qualifiers="static">
+			<return type="RosMsg" />
+			<param index="0" name="ros_type_name" type="String" />
+			<description>
+				Factory method that creates and returns a new [RosMsg] instance for the given [param ros_type_name] (e.g., [code]"std_msgs/msg/String"[/code]).
+			</description>
+		</method>
+		<method name="gen_editor_support" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="p_type" type="String" />
+			<param index="1" name="p_dest_folder" type="String" />
+			<description>
+				Generates GDScript wrapper classes for the specified [param p_type] and all its nested dependencies in the [param p_dest_folder]. These generated scripts inherit from [RosMsg] and provide typed properties for every message field, enabling IDE autocomplete and better type safety in Godot.
+			</description>
+		</method>
+		<method name="get_member" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="p_name" type="StringName" />
+			<description>
+				Returns the value of the message field specified by [param p_name]. If the field is a nested message, it returns another [RosMsg] instance.
+			</description>
+		</method>
+		<method name="get_type_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the Godot-formatted name of the message type (e.g., [code]"RosStdMsgsString"[/code]).
+			</description>
+		</method>
+		<method name="init">
+			<return type="void" />
+			<param index="0" name="ros_type_name" type="String" />
+			<description>
+				Initializes the [RosMsg] instance to represent a message of the specified [param ros_type_name].
+			</description>
+		</method>
+		<method name="set_member">
+			<return type="void" />
+			<param index="0" name="p_name" type="StringName" />
+			<param index="1" name="p_value" type="Variant" />
+			<description>
+				Sets the value of the message field specified by [param p_name] to [param p_value]. The value is automatically converted to the appropriate ROS 2 type.
+			</description>
+		</method>
+	</methods>
+</class>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosTfBroadcaster" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A broadcaster for coordinate transforms in the ROS 2 TF2 system.
+	</brief_description>
+	<description>
+		[RosTfBroadcaster] allows Godot to send coordinate transforms (positions and rotations) to the ROS 2 transformation tree (TF2). It is created through [method RosNode.create_tf_broadcaster].
+		By sending transforms, you can communicate the spatial relationship between different parts of a robot or environment to other ROS 2 nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="send_transform">
+			<return type="void" />
+			<param index="0" name="transform" type="Transform3D" />
+			<param index="1" name="frame_id" type="String" />
+			<param index="2" name="parent_frame_id" type="String" />
+			<param index="3" name="is_static" type="bool" default="false" />
+			<description>
+				Sends a coordinate transformation from [param parent_frame_id] to [param frame_id]. If [param is_static] is [code]true[/code], the transform is sent as a static transform which is typically only sent once.
+			</description>
+		</method>
+	</methods>
+</class>

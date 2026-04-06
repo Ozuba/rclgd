@@ -50,3 +50,11 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
    concepts/architecture
    concepts/transforms
    concepts/parameters_deep_dive
+
+.. toctree::
+   :hidden:
+   :maxdepth: 1
+   :caption: Class reference
+   :name: sec-class-ref
+
+   classes/index

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosService" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Service Server for handling requests from service clients.
+	</brief_description>
+	<description>
+		[RosService] allows Godot to act as a server for ROS 2 services. It is created through [method RosNode.create_service].
+		When a client sends a request to the service, the callback provided during creation is triggered.
+		The callback signature should be: [code]func my_service_callback(request: RosMsg, response: RosMsg):[/code].
+		The [code]request[/code] argument contains the incoming data, and the [code]response[/code] argument is an empty message that should be populated by the callback before it returns.
+		The service remains active as long as this object is not freed.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

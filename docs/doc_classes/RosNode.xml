@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosNode" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Node that manages publishers, subscribers, and other communication interfaces.
+	</brief_description>
+	<description>
+		The [RosNode] is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers.
+		A node must be initialized using [method init] before it can be used to create other communication components.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="count_publishers">
+			<return type="int" />
+			<param index="0" name="topic" type="String" />
+			<description>
+				Returns the number of publishers currently active on a specific [param topic] in the ROS 2 graph.
+			</description>
+		</method>
+		<method name="count_subscribers">
+			<return type="int" />
+			<param index="0" name="topic" type="String" />
+			<description>
+				Returns the number of subscribers currently active on a specific [param topic] in the ROS 2 graph.
+			</description>
+		</method>
+		<method name="create_client">
+			<return type="RosClient" />
+			<param index="0" name="srv_name" type="String" />
+			<param index="1" name="srv_type" type="String" />
+			<description>
+				Creates and returns a [RosClient] for the specified service name and type.
+			</description>
+		</method>
+		<method name="create_publisher">
+			<return type="RosPublisher" />
+			<param index="0" name="topic" type="String" />
+			<param index="1" name="type" type="String" />
+			<param index="2" name="qos" type="RosQoS" default="null" />
+			<description>
+				Creates and returns a [RosPublisher] to send messages to a specific [param topic]. Use [param qos] to configure the Quality of Service for the publisher.
+			</description>
+		</method>
+		<method name="create_service">
+			<return type="RosService" />
+			<param index="0" name="srv_name" type="String" />
+			<param index="1" name="srv_type" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Creates and returns a [RosService] server for the specified service name and type. The [param callback] is triggered whenever a request is received.
+			</description>
+		</method>
+		<method name="create_subscriber">
+			<return type="RosSubscriber" />
+			<param index="0" name="topic" type="String" />
+			<param index="1" name="type" type="String" />
+			<param index="2" name="callback" type="Callable" />
+			<param index="3" name="qos" type="RosQoS" default="null" />
+			<description>
+				Creates and returns a [RosSubscriber] to receive messages from a specific [param topic]. The [param callback] is triggered for every new message received.
+			</description>
+		</method>
+		<method name="create_tf_broadcaster">
+			<return type="RosTfBroadcaster" />
+			<description>
+				Creates and returns a [RosTfBroadcaster] for publishing coordinate transforms into the TF2 system.
+			</description>
+		</method>
+		<method name="create_tf_listener">
+			<return type="RosTfListener" />
+			<description>
+				Creates and returns a [RosTfListener] for looking up coordinate transforms in the TF2 system.
+			</description>
+		</method>
+		<method name="create_timer">
+			<return type="RosTimer" />
+			<param index="0" name="seconds" type="float" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Creates and returns a [RosTimer] that triggers the [param callback] at the specified [param seconds] interval, synced with the ROS 2 executor's clock.
+			</description>
+		</method>
+		<method name="declare_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="default_value" type="Variant" />
+			<description>
+				Declares a parameter on the node with a [param default_value]. Parameters must be declared before they can be retrieved or modified by external tools.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the name of the node as registered in the ROS 2 graph.
+			</description>
+		</method>
+		<method name="get_namespace" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the namespace of the node.
+			</description>
+		</method>
+		<method name="get_parameter">
+			<return type="Variant" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the current value of the parameter with the specified [param name].
+			</description>
+		</method>
+		<method name="get_topic_names_and_types">
+			<return type="Dictionary" />
+			<description>
+				Returns a [Dictionary] containing all currently active topic names as keys and their associated message types as values.
+			</description>
+		</method>
+		<method name="init">
+			<return type="void" />
+			<param index="0" name="node_name" type="String" />
+			<param index="1" name="namespace" type="String" default="&quot;&quot;" />
+			<description>
+				Initializes the node with a [param node_name] and an optional [param namespace]. This must be called before using any other functions of the node.
+			</description>
+		</method>
+		<method name="now">
+			<return type="RosMsg" />
+			<description>
+				Returns the current ROS 2 system time as a [RosMsg] of type [code]builtin_interfaces/msg/Time[/code].
+			</description>
+		</method>
+		<method name="resolve_frame">
+			<return type="String" />
+			<param index="0" name="frame_id" type="String" />
+			<description>
+				Prepends the node's namespace to a [param frame_id] if it is not already absolute, helping resolve local frame names in multi-agent simulations.
+			</description>
+		</method>
+		<method name="set_parameter">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Sets the value of a previously declared parameter on the node.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="parameter_changed">
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Variant" />
+			<description>
+				Emitted whenever a node parameter is updated by an external tool or by [method set_parameter] locally.
+			</description>
+		</signal>
+	</signals>
+</class>

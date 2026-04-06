@@ -1,0 +1,9 @@
+short_name = "rclgd"
+name = "Ros Client Library for Godot"
+major = 1
+minor = 0
+patch = 0
+status = "dev"
+module_config = ""
+website = "https://github.com/Ozuba/rclgd"
+docs = "latest"
