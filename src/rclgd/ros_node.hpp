@@ -2,6 +2,8 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/script.hpp>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include "ros_publisher.hpp"
@@ -42,13 +44,16 @@ public:
     String get_name() const;
     String get_namespace() const;
 
+    // Helper to get ros types from shadow scripts
+    String _get_type_from_variant(const Variant &p_type);
+
     // Publisher and subscriber creation
-    Ref<RosPublisher> create_publisher(const String &topic, const String &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
-    Ref<RosSubscriber> create_subscriber(const String &topic, const String &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
+    Ref<RosPublisher> create_publisher(const String &topic, const Variant &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
+    Ref<RosSubscriber> create_subscriber(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
 
     // Service client and subscriber
-    Ref<RosClient> create_client(const String &p_srv_name, const String &p_srv_type);
-    Ref<RosService> create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback);
+    Ref<RosClient> create_client(const String &p_srv_name, const Variant &p_srv_type);
+    Ref<RosService> create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback);
 
     // Timers
     Ref<RosTimer> create_timer(double p_seconds, const Callable &p_callback);

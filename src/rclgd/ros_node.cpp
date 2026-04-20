@@ -14,12 +14,17 @@ void RosNode::_bind_methods()
     // Factory Methods
     ClassDB::bind_method(D_METHOD("create_publisher", "topic", "type", "qos"),
                          &RosNode::create_publisher,
-                         DEFVAL(Variant()));
+                         DEFVAL(Variant())); // qos default
+
     ClassDB::bind_method(D_METHOD("create_subscriber", "topic", "type", "callback", "qos"),
                          &RosNode::create_subscriber,
-                         DEFVAL(Variant()));
-    ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), &RosNode::create_client);
-    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), &RosNode::create_service);
+                         DEFVAL(Variant())); // qos default
+
+    ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), 
+                         &RosNode::create_client);
+
+    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), 
+                         &RosNode::create_service);
     ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
     ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
     ClassDB::bind_method(D_METHOD("create_timer", "seconds", "callback"), &RosNode::create_timer);
@@ -168,51 +173,69 @@ Variant RosNode::get_parameter(const String &p_name)
     return RosTypeMapping::ros_param_to_variant(param);
 }
 
-Ref<RosPublisher> RosNode::create_publisher(const String &topic, const String &type, const Ref<RosQoS> &qos)
-{
-    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
-    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating publishers.");
 
+String RosNode::_get_type_from_variant(const Variant &p_type) {
+    // Handle raw Strings (e.g., "std_msgs/msg/String")
+    if (p_type.get_type() == Variant::STRING) {
+        return p_type;
+    }
+
+    // Handle Objects (Scripts or Instances)
+    if (p_type.get_type() == Variant::OBJECT) {
+        Ref<Script> scr = p_type;
+        if (scr.is_valid()) {
+            Dictionary constants = scr->get_script_constant_map();
+            if (constants.has("ROS_TYPE_NAME")) {
+                return constants["ROS_TYPE_NAME"];
+            }
+        }
+    }
+    return ""; // Failed to resolve
+}
+
+Ref<RosPublisher> RosNode::create_publisher(const String &topic, const Variant &type, const Ref<RosQoS> &qos)
+{
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Publisher.");
     Ref<RosPublisher> pub;
     pub.instantiate();
     rclcpp::QoS final_qos = qos.is_valid() ? qos->get_qos() : rclcpp::QoS(10);
-    pub->setup(node_, topic, type, final_qos);
+    pub->setup(node_, topic, ros_type, final_qos);
     return pub;
 }
 
-Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const String &type, const Callable &callback, const Ref<RosQoS> &qos)
+Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos)
 {
-    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
-    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating subscribers.");
-
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Subscriber.");
     Ref<RosSubscriber> sub;
     sub.instantiate();
     rclcpp::QoS final_qos = qos.is_valid() ? qos->get_qos() : rclcpp::QoS(10);
-    sub->setup(node_, topic, type, callback, final_qos);
+    sub->setup(node_, topic, ros_type, callback, final_qos);
     return sub;
 }
 
-Ref<RosClient> RosNode::create_client(const String &p_srv_name, const String &p_srv_type)
+Ref<RosClient> RosNode::create_client(const String &p_srv_name, const Variant &p_srv_type)
 {
-    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
-    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating clients.");
-
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(p_srv_type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Client.");
     Ref<RosClient> client;
     client.instantiate();
-    // The factory logic happens here
-    client->setup(node_, p_srv_name, p_srv_type);
+    client->setup(node_, p_srv_name, ros_type);
     return client;
 }
 
-Ref<RosService> RosNode::create_service(const String &p_srv_name, const String &p_srv_type, const Callable &p_callback)
+Ref<RosService> RosNode::create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback)
 {
-    RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
-    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating services.");
-    RCLGD_FAIL_COND_V_MSG(p_callback.is_null(), nullptr, "RCLGD: Cannot create service with a null callback.");
-
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(p_srv_type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Service.");
     Ref<RosService> srv;
     srv.instantiate();
-    srv->setup(node_, p_srv_name, p_srv_type, p_callback);
+    srv->setup(node_, p_srv_name, ros_type, p_callback);
     return srv;
 }
 

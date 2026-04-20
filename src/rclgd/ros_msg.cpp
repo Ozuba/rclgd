@@ -75,8 +75,16 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
         return;
 
     String class_name = msg->get_type_name();
-    String code = "extends RosMsg\nclass_name " + class_name + "\n\n";
-    code += "func _init():\n\tinit(\"" + ros_type + "\")\n\n";
+    String ros_interface_name = msg->get_ros_interface_name(); // e.g. "std_msgs/msg/String"
+
+    // 1. Define the class and the metadata constant
+    String code = "extends RosMsg\n";
+    code += "class_name " + class_name + "\n\n";
+    code += "const ROS_TYPE_NAME = \"" + ros_interface_name + "\"\n\n";
+
+    // 2. Use the constant in the constructor
+    code += "func _init():\n";
+    code += "\tinit(ROS_TYPE_NAME)\n\n";
 
     for (const KeyValue<StringName, Variant> &E : msg->members_)
     {
@@ -88,7 +96,7 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
         {
             Ref<RosMsg> nested = Object::cast_to<RosMsg>(E.value);
             type_hint = nested->get_type_name();
-            needs_cast = true; // Object types need the 'as' keyword
+            needs_cast = true; 
             _gen_recursive(nested->get_ros_interface_name(), p_dest_folder, p_processed);
         }
         else
