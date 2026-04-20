@@ -27,7 +27,7 @@
 		<method name="create_client">
 			<return type="RosClient" />
 			<param index="0" name="srv_name" type="String" />
-			<param index="1" name="srv_type" type="String" />
+			<param index="1" name="srv_type" type="Variant" />
 			<description>
 				Creates and returns a [RosClient] for the specified service name and type.
 			</description>
@@ -35,7 +35,7 @@
 		<method name="create_publisher">
 			<return type="RosPublisher" />
 			<param index="0" name="topic" type="String" />
-			<param index="1" name="type" type="String" />
+			<param index="1" name="type" type="Variant" />
 			<param index="2" name="qos" type="RosQoS" default="null" />
 			<description>
 				Creates and returns a [RosPublisher] to send messages to a specific [param topic]. Use [param qos] to configure the Quality of Service for the publisher.
@@ -44,7 +44,7 @@
 		<method name="create_service">
 			<return type="RosService" />
 			<param index="0" name="srv_name" type="String" />
-			<param index="1" name="srv_type" type="String" />
+			<param index="1" name="srv_type" type="Variant" />
 			<param index="2" name="callback" type="Callable" />
 			<description>
 				Creates and returns a [RosService] server for the specified service name and type. The [param callback] is triggered whenever a request is received.
@@ -53,7 +53,7 @@
 		<method name="create_subscriber">
 			<return type="RosSubscriber" />
 			<param index="0" name="topic" type="String" />
-			<param index="1" name="type" type="String" />
+			<param index="1" name="type" type="Variant" />
 			<param index="2" name="callback" type="Callable" />
 			<param index="3" name="qos" type="RosQoS" default="null" />
 			<description>

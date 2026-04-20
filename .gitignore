@@ -5,3 +5,4 @@ install
 **/*.import
 **/*.uid
 docs/_build
+docs/__pycache__
