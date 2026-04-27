@@ -5,7 +5,8 @@
 	</brief_description>
 	<description>
 		[RosClient] allows Godot to act as a client for ROS 2 services. It is created through [method RosNode.create_client] and is used to send requests and receive responses asynchronously.
-		Communication follows a request-response pattern: the client sends a [RosMsg] and eventually receives a [RosMsg] response via the [signal request_completed] signal.
+		Communication follows a request-response pattern: the client sends a [RosMsg] request and receives a [RosMsg] response. Use the [method async_send_request] method to send a request which will return 
+		a [RosRequest] object, which acts as a handle for the request. Use this handle to wait for the response or get it when ready.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,21 +15,17 @@
 			<return type="RosRequest" />
 			<param index="0" name="request" type="RosMsg" />
 			<description>
-				Sends a service [param request] to the server. This method returns immediately. When the response is received, the [signal request_completed] signal is emitted with the result.
 			</description>
 		</method>
 		<method name="create_request">
 			<return type="RosMsg" />
 			<description>
-				Creates and returns a new [RosMsg] instance pre-configured with the correct request type for this service.
 			</description>
 		</method>
 		<method name="wait_for_service">
 			<return type="bool" />
 			<param index="0" name="timeout_sec" type="float" />
 			<description>
-				Blocks the current thread until the service becomes available or the [param timeout_sec] is reached. Returns [code]true[/code] if the service is ready.
-				[b]Warning:[/b] Calling this with a long timeout on the main thread will cause the Godot editor or game to freeze.
 			</description>
 		</method>
 	</methods>

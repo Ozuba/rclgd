@@ -21,7 +21,9 @@ Description
 
 **RosClient** allows Godot to act as a client for ROS 2 services. It is created through :ref:`RosNode.create_client()<class_RosNode_method_create_client>` and is used to send requests and receive responses asynchronously.
 
-Communication follows a request-response pattern: the client sends a :ref:`RosMsg<class_RosMsg>` and eventually receives a :ref:`RosMsg<class_RosMsg>` response via the :ref:`request_completed<class_RosClient_signal_request_completed>` signal.
+Communication follows a request-response pattern: the client sends a :ref:`RosMsg<class_RosMsg>` request and receives a :ref:`RosMsg<class_RosMsg>` response. Use the :ref:`async_send_request()<class_RosClient_method_async_send_request>` method to send a request which will return 
+
+a :ref:`RosRequest<class_RosRequest>` object, which acts as a handle for the request. Use this handle to wait for the response or get it when ready.
 
 .. rst-class:: classref-reftable-group
 
@@ -32,29 +34,12 @@ Methods
    :widths: auto
 
    +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                    | :ref:`async_send_request<class_RosClient_method_async_send_request>`\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ )                                                 |
+   | :ref:`RosRequest<class_RosRequest>`                                       | :ref:`async_send_request<class_RosClient_method_async_send_request>`\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ )                                                 |
    +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`RosMsg<class_RosMsg>`                                               | :ref:`create_request<class_RosClient_method_create_request>`\ (\ )                                                                                                |
    +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`wait_for_service<class_RosClient_method_wait_for_service>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) |
    +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-
-.. rst-class:: classref-section-separator
-
-----
-
-.. rst-class:: classref-descriptions-group
-
-Signals
--------
-
-.. _class_RosClient_signal_request_completed:
-
-.. rst-class:: classref-signal
-
-**request_completed**\ (\ response\: :ref:`RosMsg<class_RosMsg>`\ ) :ref:`🔗<class_RosClient_signal_request_completed>`
-
-Emitted when a previously sent asynchronous request has received a ``response`` from the service server.
 
 .. rst-class:: classref-section-separator
 
@@ -69,9 +54,11 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-|void| **async_send_request**\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ ) :ref:`🔗<class_RosClient_method_async_send_request>`
+:ref:`RosRequest<class_RosRequest>` **async_send_request**\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ ) :ref:`🔗<class_RosClient_method_async_send_request>`
 
-Sends a service ``request`` to the server. This method returns immediately. When the response is received, the :ref:`request_completed<class_RosClient_signal_request_completed>` signal is emitted with the result.
+.. container:: contribute
+
+	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
 
 .. rst-class:: classref-item-separator
 
@@ -83,7 +70,9 @@ Sends a service ``request`` to the server. This method returns immediately. When
 
 :ref:`RosMsg<class_RosMsg>` **create_request**\ (\ ) :ref:`🔗<class_RosClient_method_create_request>`
 
-Creates and returns a new :ref:`RosMsg<class_RosMsg>` instance pre-configured with the correct request type for this service.
+.. container:: contribute
+
+	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
 
 .. rst-class:: classref-item-separator
 
@@ -95,9 +84,9 @@ Creates and returns a new :ref:`RosMsg<class_RosMsg>` instance pre-configured wi
 
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **wait_for_service**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosClient_method_wait_for_service>`
 
-Blocks the current thread until the service becomes available or the ``timeout_sec`` is reached. Returns ``true`` if the service is ready.
+.. container:: contribute
 
-\ **Warning:** Calling this with a long timeout on the main thread will cause the Godot editor or game to freeze.
+	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

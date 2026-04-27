@@ -31,9 +31,9 @@ Methods
 .. table::
    :widths: auto
 
-   +--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void| | :ref:`send_transform<class_RosTfBroadcaster_method_send_transform>`\ (\ transform\: `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__, frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, parent_frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, is_static\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ = false\ ) |
-   +--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void| | :ref:`send_transform<class_RosTfBroadcaster_method_send_transform>`\ (\ transform\: `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__, frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, parent_frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, is_static\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ = false, timestamp\: :ref:`RosMsg<class_RosMsg>` = null\ ) |
+   +--------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -48,7 +48,7 @@ Method Descriptions
 
 .. rst-class:: classref-method
 
-|void| **send_transform**\ (\ transform\: `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__, frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, parent_frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, is_static\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ = false\ ) :ref:`🔗<class_RosTfBroadcaster_method_send_transform>`
+|void| **send_transform**\ (\ transform\: `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__, frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, parent_frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, is_static\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ = false, timestamp\: :ref:`RosMsg<class_RosMsg>` = null\ ) :ref:`🔗<class_RosTfBroadcaster_method_send_transform>`
 
 Sends a coordinate transformation from ``parent_frame_id`` to ``frame_id``. If ``is_static`` is ``true``, the transform is sent as a static transform which is typically only sent once.
 

@@ -40,7 +40,7 @@ extract:
 rst: extract
 	@echo "Converting XML to RST..."
 	mkdir -p classes
-	python3 make_rst.py --output classes/ $(DOCS_PATH)/$(DOC_CLASSES)/
+	python3 make_rst.py --output classes/ doc_classes/
 
 # This is used by https://github.com/godotengine/godot-docs-l10n
 # See https://github.com/godotengine/godot-docs-l10n/blob/f157c0cacc8a6e542e06e96b983b27de91637f8b/update.sh#L92

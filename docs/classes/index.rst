@@ -10,3 +10,26 @@
 All classes
 ===========
 
+Variant types
+=============
+
+.. toctree::
+    :maxdepth: 1
+    :name: toc-class-ref-variants
+
+    class_variant
+    class_rclgd
+    class_rosclient
+    class_rosmsg
+    class_rosnode
+    class_rospublisher
+    class_rosqos
+    class_rosrequest
+    class_rosservice
+    class_rossubscriber
+    class_rostfbroadcaster
+    class_rostfbroadcaster3d
+    class_rostflistener
+    class_rostflistener3d
+    class_rostimer
+

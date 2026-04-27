@@ -36,13 +36,13 @@ Properties
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
    | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`depth<class_RosQoS_property_depth>`                       | ``10``  |
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | :ref:`Durability<enum_RosQoS_Durability>`                                   | :ref:`durability<class_RosQoS_property_durability>`             | ``0``   |
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`durability<class_RosQoS_property_durability>`             | ``0``   |
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | :ref:`History<enum_RosQoS_History>`                                         | :ref:`history<class_RosQoS_property_history>`                   | ``0``   |
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`history<class_RosQoS_property_history>`                   | ``0``   |
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
    | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`lifespan_seconds<class_RosQoS_property_lifespan_seconds>` | ``0.0`` |
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | :ref:`Reliability<enum_RosQoS_Reliability>`                                 | :ref:`reliability<class_RosQoS_property_reliability>`           | ``0``   |
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`reliability<class_RosQoS_property_reliability>`           | ``0``   |
    +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
 
 .. rst-class:: classref-section-separator
@@ -209,12 +209,12 @@ The size of the message queue. For :ref:`KEEP_LAST<class_RosQoS_constant_KEEP_LA
 
 .. rst-class:: classref-property
 
-:ref:`Durability<enum_RosQoS_Durability>` **durability** = ``0`` :ref:`🔗<class_RosQoS_property_durability>`
+`int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **durability** = ``0`` :ref:`🔗<class_RosQoS_property_durability>`
 
 .. rst-class:: classref-property-setget
 
-- |void| **set_durability**\ (\ value\: :ref:`Durability<enum_RosQoS_Durability>`\ )
-- :ref:`Durability<enum_RosQoS_Durability>` **get_durability**\ (\ )
+- |void| **set_durability**\ (\ value\: `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__\ )
+- `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **get_durability**\ (\ )
 
 Determines whether messages are persisted by the publisher for late-joining subscribers. See :ref:`Durability<enum_RosQoS_Durability>` for options.
 
@@ -226,12 +226,12 @@ Determines whether messages are persisted by the publisher for late-joining subs
 
 .. rst-class:: classref-property
 
-:ref:`History<enum_RosQoS_History>` **history** = ``0`` :ref:`🔗<class_RosQoS_property_history>`
+`int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **history** = ``0`` :ref:`🔗<class_RosQoS_property_history>`
 
 .. rst-class:: classref-property-setget
 
-- |void| **set_history**\ (\ value\: :ref:`History<enum_RosQoS_History>`\ )
-- :ref:`History<enum_RosQoS_History>` **get_history**\ (\ )
+- |void| **set_history**\ (\ value\: `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__\ )
+- `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **get_history**\ (\ )
 
 Determines how messages are buffered in the queue. See :ref:`History<enum_RosQoS_History>` for options.
 
@@ -260,12 +260,12 @@ The maximum amount of time a message is considered "valid" after being published
 
 .. rst-class:: classref-property
 
-:ref:`Reliability<enum_RosQoS_Reliability>` **reliability** = ``0`` :ref:`🔗<class_RosQoS_property_reliability>`
+`int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **reliability** = ``0`` :ref:`🔗<class_RosQoS_property_reliability>`
 
 .. rst-class:: classref-property-setget
 
-- |void| **set_reliability**\ (\ value\: :ref:`Reliability<enum_RosQoS_Reliability>`\ )
-- :ref:`Reliability<enum_RosQoS_Reliability>` **get_reliability**\ (\ )
+- |void| **set_reliability**\ (\ value\: `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__\ )
+- `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **get_reliability**\ (\ )
 
 Determines whether message delivery is guaranteed. See :ref:`Reliability<enum_RosQoS_Reliability>` for options.
 
