@@ -17,14 +17,16 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 
 - [x] rclgd Singleton
 - [x] Dynamic Msg Type Support
+- [ ] Nodes
 - [x] Publishers
 - [x] Subscribers
-- [x] TF2 Listeners And Broadcasters as 3D Nodes in godot
-- [x] Service Clients
+- [x] Service Clients (API will change, Need to implement futures)
 - [x] Service Servers
 - [x] Timers
 - [ ] Actions
 - [x] Parameters
+- [x] TF2 Publishers and Listeners
+- [x] TF2 Listeners And Broadcasters as 3D Nodes in godot (Will be deprecated in future update)
 - [x] Node and TF Namespacing
 - [x] ROS Graph Inspection
 - [x] QoS -> Through QoS RosQoS resource
