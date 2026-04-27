@@ -11,7 +11,7 @@ var _failed := false
 # Helper: Custom assertion
 func assert_equal(actual, expected, msg: String = ""):
 	if actual != expected:
-		printerr("  [FAIL] %s: Expected %s, got %s" % [msg, str(expected), str(actual)])
+		print_rich("  [b][color=red][FAIL][/color][/b] %s: Expected %s, got %s" % [msg, str(expected), str(actual)])
 		_failed = true
 
 # Virtual methods to be overridden

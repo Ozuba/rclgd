@@ -136,6 +136,13 @@ void rclgd::shutdown()
     }
 
     executor_.reset();
+    sim_time_pub_.reset();
+    tf_listener.reset();
+    tf_broadcaster.reset();
+    tf_static_broadcaster.reset();
+    tf_buffer.reset();
+    rclgd_node_.reset();
+    context_.reset();
 
     if (rclcpp::ok())
     {

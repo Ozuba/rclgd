@@ -40,6 +40,8 @@ Methods
    +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__ | :ref:`get_member<class_RosMsg_method_get_member>`\ (\ p_name\: `StringName <https://docs.godotengine.org/en/stable/classes/class_stringname.html>`__\ ) |const|                                                                                                         |
    +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__   | :ref:`get_ros_interface_name<class_RosMsg_method_get_ros_interface_name>`\ (\ ) |const|                                                                                                                                                                                 |
+   +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__   | :ref:`get_type_name<class_RosMsg_method_get_type_name>`\ (\ ) |const|                                                                                                                                                                                                   |
    +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | |void|                                                                          | :ref:`init<class_RosMsg_method_init>`\ (\ ros_type_name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ )                                                                                                                              |
@@ -92,13 +94,25 @@ Returns the value of the message field specified by ``p_name``. If the field is 
 
 ----
 
+.. _class_RosMsg_method_get_ros_interface_name:
+
+.. rst-class:: classref-method
+
+`String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **get_ros_interface_name**\ (\ ) |const| :ref:`🔗<class_RosMsg_method_get_ros_interface_name>`
+
+Returns the original ROS 2 interface name (e.g., ``"std_msgs/msg/String"``).
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_RosMsg_method_get_type_name:
 
 .. rst-class:: classref-method
 
 `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **get_type_name**\ (\ ) |const| :ref:`🔗<class_RosMsg_method_get_type_name>`
 
-Returns the Godot-formatted name of the message type (e.g., ``"RosStdMsgsString"``).
+Returns the Godot-formatted name of the message type (e.g., ``"RosStdMsgsString"``). This name matches the class name of generated editor support scripts.
 
 .. rst-class:: classref-item-separator
 
@@ -110,7 +124,7 @@ Returns the Godot-formatted name of the message type (e.g., ``"RosStdMsgsString"
 
 |void| **init**\ (\ ros_type_name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) :ref:`🔗<class_RosMsg_method_init>`
 
-Initializes the **RosMsg** instance to represent a message of the specified ``ros_type_name``.
+Initializes the **RosMsg** instance to represent a message of the specified ``ros_type_name``. This clears any previous data and allocates a new ROS 2 message buffer.
 
 .. rst-class:: classref-item-separator
 
@@ -122,7 +136,7 @@ Initializes the **RosMsg** instance to represent a message of the specified ``ro
 
 |void| **set_member**\ (\ p_name\: `StringName <https://docs.godotengine.org/en/stable/classes/class_stringname.html>`__, p_value\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ ) :ref:`🔗<class_RosMsg_method_set_member>`
 
-Sets the value of the message field specified by ``p_name`` to ``p_value``. The value is automatically converted to the appropriate ROS 2 type.
+Sets the value of the message field specified by ``p_name`` to ``p_value``. The value is automatically converted to the appropriate ROS 2 type. If the field is a nested message, ``p_value`` must be a **RosMsg**.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

@@ -56,9 +56,7 @@ Method Descriptions
 
 :ref:`RosRequest<class_RosRequest>` **async_send_request**\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ ) :ref:`🔗<class_RosClient_method_async_send_request>`
 
-.. container:: contribute
-
-	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Sends a service ``request`` asynchronously. Returns a :ref:`RosRequest<class_RosRequest>` object that can be used to track the progress of the request and retrieve the response.
 
 .. rst-class:: classref-item-separator
 
@@ -70,9 +68,7 @@ Method Descriptions
 
 :ref:`RosMsg<class_RosMsg>` **create_request**\ (\ ) :ref:`🔗<class_RosClient_method_create_request>`
 
-.. container:: contribute
-
-	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Creates and returns an empty :ref:`RosMsg<class_RosMsg>` of the correct type for this client's service requests.
 
 .. rst-class:: classref-item-separator
 
@@ -84,9 +80,7 @@ Method Descriptions
 
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **wait_for_service**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosClient_method_wait_for_service>`
 
-.. container:: contribute
-
-	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Blocks until the service server is available or the ``timeout_sec`` is reached. Returns ``true`` if the service is available.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

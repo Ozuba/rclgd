@@ -15,17 +15,20 @@
 			<return type="RosRequest" />
 			<param index="0" name="request" type="RosMsg" />
 			<description>
+				Sends a service [param request] asynchronously. Returns a [RosRequest] object that can be used to track the progress of the request and retrieve the response.
 			</description>
 		</method>
 		<method name="create_request">
 			<return type="RosMsg" />
 			<description>
+				Creates and returns an empty [RosMsg] of the correct type for this client's service requests.
 			</description>
 		</method>
 		<method name="wait_for_service">
 			<return type="bool" />
 			<param index="0" name="timeout_sec" type="float" />
 			<description>
+				Blocks until the service server is available or the [param timeout_sec] is reached. Returns [code]true[/code] if the service is available.
 			</description>
 		</method>
 	</methods>

@@ -12,9 +12,14 @@ RosRequest
 
 **Inherits:** `RefCounted <https://docs.godotengine.org/en/stable/classes/class_refcounted.html>`__
 
-.. container:: contribute
+A handle for an asynchronous ROS 2 service request.
 
-	There is currently no description for this class. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+.. rst-class:: classref-introduction-group
+
+Description
+-----------
+
+**RosRequest** is returned by :ref:`RosClient.async_send_request()<class_RosClient_method_async_send_request>`. it acts as a promise or future, allowing you to check if a response has been received or await its completion.
 
 .. rst-class:: classref-reftable-group
 
@@ -45,9 +50,7 @@ Signals
 
 **completed**\ (\ response\: :ref:`RosMsg<class_RosMsg>`\ ) :ref:`🔗<class_RosRequest_signal_completed>`
 
-.. container:: contribute
-
-	There is currently no description for this signal. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Emitted when the service response is received. The ``response`` message is passed as an argument.
 
 .. rst-class:: classref-section-separator
 
@@ -64,9 +67,7 @@ Method Descriptions
 
 :ref:`RosMsg<class_RosMsg>` **get_response**\ (\ ) :ref:`🔗<class_RosRequest_method_get_response>`
 
-.. container:: contribute
-
-	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Returns the response message received from the service. Returns ``null`` if the request is not yet completed.
 
 .. rst-class:: classref-item-separator
 
@@ -78,9 +79,7 @@ Method Descriptions
 
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **is_completed**\ (\ ) :ref:`🔗<class_RosRequest_method_is_completed>`
 
-.. container:: contribute
-
-	There is currently no description for this method. Please help us by `contributing one <https://contributing.godotengine.org/en/latest/documentation/class_reference.html>`__!
+Returns ``true`` if the service response has been received.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

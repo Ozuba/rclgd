@@ -10,13 +10,21 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="can_transform" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="source_frame" type="String" />
+			<description>
+				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is currently available in the TF2 tree.
+			</description>
+		</method>
 		<method name="lookup_transform">
 			<return type="Transform3D" />
 			<param index="0" name="target_frame" type="String" />
 			<param index="1" name="source_frame" type="String" />
 			<description>
 				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] representing the position and orientation of the source frame relative to the target frame.
-				If the transform is not found or is not currently available, it returns an identity transform and prints an error.
+				If the transform is not found or is not currently available, it returns an identity transform. It is recommended to use [method can_transform] first to check for availability.
 			</description>
 		</method>
 	</methods>

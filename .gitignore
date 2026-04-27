@@ -2,8 +2,6 @@ build
 log 
 install
 **/core.*
-**/*.import
-**/*.uid
 docs/_build
 */__pycache__
 *.godot

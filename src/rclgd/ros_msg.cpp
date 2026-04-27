@@ -42,6 +42,8 @@ void RosMsg::_bind_methods()
     // Overrides for native Editor support
     ClassDB::bind_method(D_METHOD("get_member", "p_name"), &RosMsg::get_member);
     ClassDB::bind_method(D_METHOD("set_member", "p_name", "p_value"), &RosMsg::set_member);
+
+    ClassDB::bind_method(D_METHOD("get_ros_interface_name"), &RosMsg::get_ros_interface_name);
 }
 
 // Factory Creator Method

@@ -33,17 +33,23 @@
 				Returns the value of the message field specified by [param p_name]. If the field is a nested message, it returns another [RosMsg] instance.
 			</description>
 		</method>
+		<method name="get_ros_interface_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the original ROS 2 interface name (e.g., [code]"std_msgs/msg/String"[/code]).
+			</description>
+		</method>
 		<method name="get_type_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the Godot-formatted name of the message type (e.g., [code]"RosStdMsgsString"[/code]).
+				Returns the Godot-formatted name of the message type (e.g., [code]"RosStdMsgsString"[/code]). This name matches the class name of generated editor support scripts.
 			</description>
 		</method>
 		<method name="init">
 			<return type="void" />
 			<param index="0" name="ros_type_name" type="String" />
 			<description>
-				Initializes the [RosMsg] instance to represent a message of the specified [param ros_type_name].
+				Initializes the [RosMsg] instance to represent a message of the specified [param ros_type_name]. This clears any previous data and allocates a new ROS 2 message buffer.
 			</description>
 		</method>
 		<method name="set_member">
@@ -51,7 +57,7 @@
 			<param index="0" name="p_name" type="StringName" />
 			<param index="1" name="p_value" type="Variant" />
 			<description>
-				Sets the value of the message field specified by [param p_name] to [param p_value]. The value is automatically converted to the appropriate ROS 2 type.
+				Sets the value of the message field specified by [param p_name] to [param p_value]. The value is automatically converted to the appropriate ROS 2 type. If the field is a nested message, [param p_value] must be a [RosMsg].
 			</description>
 		</method>
 	</methods>

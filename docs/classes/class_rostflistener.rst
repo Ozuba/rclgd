@@ -31,9 +31,11 @@ Methods
 .. table::
    :widths: auto
 
-   +-----------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__ | :ref:`lookup_transform<class_RosTfListener_method_lookup_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |
-   +-----------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-----------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__               | :ref:`can_transform<class_RosTfListener_method_can_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| |
+   +-----------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__ | :ref:`lookup_transform<class_RosTfListener_method_lookup_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ )   |
+   +-----------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -44,6 +46,18 @@ Methods
 Method Descriptions
 -------------------
 
+.. _class_RosTfListener_method_can_transform:
+
+.. rst-class:: classref-method
+
+`bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **can_transform**\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosTfListener_method_can_transform>`
+
+Returns ``true`` if a transformation between ``source_frame`` and ``target_frame`` is currently available in the TF2 tree.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_RosTfListener_method_lookup_transform:
 
 .. rst-class:: classref-method
@@ -52,7 +66,7 @@ Method Descriptions
 
 Attempts to find the coordinate transformation from ``source_frame`` to ``target_frame``. Returns a `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__ representing the position and orientation of the source frame relative to the target frame.
 
-If the transform is not found or is not currently available, it returns an identity transform and prints an error.
+If the transform is not found or is not currently available, it returns an identity transform. It is recommended to use :ref:`can_transform()<class_RosTfListener_method_can_transform>` first to check for availability.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

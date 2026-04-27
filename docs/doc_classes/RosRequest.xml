@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RosRequest" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
+		A handle for an asynchronous ROS 2 service request.
 	</brief_description>
 	<description>
+		[RosRequest] is returned by [method RosClient.async_send_request]. it acts as a promise or future, allowing you to check if a response has been received or await its completion.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -10,11 +12,13 @@
 		<method name="get_response">
 			<return type="RosMsg" />
 			<description>
+				Returns the response message received from the service. Returns [code]null[/code] if the request is not yet completed.
 			</description>
 		</method>
 		<method name="is_completed">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the service response has been received.
 			</description>
 		</method>
 	</methods>
@@ -22,6 +26,7 @@
 		<signal name="completed">
 			<param index="0" name="response" type="RosMsg" />
 			<description>
+				Emitted when the service response is received. The [param response] message is passed as an argument.
 			</description>
 		</signal>
 	</signals>

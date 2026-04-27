@@ -32,7 +32,7 @@ public:
     void _set_finished(Ref<RosMsg> p_res) {
         response = p_res;
         completed = true;
-        emit_signal("completed", response);
+        call_deferred("emit_signal", "completed", response);
     }
 };
 

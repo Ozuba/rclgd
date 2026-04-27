@@ -17,10 +17,10 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 
 - [x] rclgd Singleton
 - [x] Dynamic Msg Type Support
-- [ ] Nodes
+- [x] Nodes
 - [x] Publishers
 - [x] Subscribers
-- [x] Service Clients (API will change, Need to implement futures)
+- [x] Service Clients
 - [x] Service Servers
 - [x] Timers
 - [ ] Actions
