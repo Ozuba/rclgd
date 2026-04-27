@@ -11,7 +11,7 @@
 	</tutorials>
 	<methods>
 		<method name="async_send_request">
-			<return type="void" />
+			<return type="RosRequest" />
 			<param index="0" name="request" type="RosMsg" />
 			<description>
 				Sends a service [param request] to the server. This method returns immediately. When the response is received, the [signal request_completed] signal is emitted with the result.
@@ -32,12 +32,4 @@
 			</description>
 		</method>
 	</methods>
-	<signals>
-		<signal name="request_completed">
-			<param index="0" name="response" type="RosMsg" />
-			<description>
-				Emitted when a previously sent asynchronous request has received a [param response] from the service server.
-			</description>
-		</signal>
-	</signals>
 </class>

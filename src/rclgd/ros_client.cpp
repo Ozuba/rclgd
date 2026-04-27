@@ -1,13 +1,10 @@
 #include "ros_client.hpp"
 #include "rclgd.hpp"
 
-void RosClient::_bind_methods()
-{
+void RosClient::_bind_methods() {
     ClassDB::bind_method(D_METHOD("wait_for_service", "timeout_sec"), &RosClient::wait_for_service);
     ClassDB::bind_method(D_METHOD("create_request"), &RosClient::create_request);
     ClassDB::bind_method(D_METHOD("async_send_request", "request"), &RosClient::async_send_request);
-
-    ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::OBJECT, "response", PROPERTY_HINT_RESOURCE_TYPE, "RosMsg")));
 }
 
 void RosClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type)
@@ -61,28 +58,32 @@ Ref<RosMsg> RosClient::create_request()
     }
 }
 
-void RosClient::async_send_request(Ref<RosMsg> p_req)
-{
-    // Safety checks: If the client isn't ready or the request is garbage, stop here.
-    RCLGD_FAIL_COND_MSG(!client_, "async_send_request failed: Client is not initialized.");
-    RCLGD_FAIL_COND_MSG(!p_req.is_valid(), "async_send_request failed: Provided request RosMsg is invalid or null.");
+Ref<RosRequest> RosClient::async_send_request(Ref<RosMsg> p_req) {
+    RCLGD_FAIL_COND_V_MSG(!client_, nullptr, "RosClient: Service client not initialized.");
+    RCLGD_FAIL_COND_V_MSG(!p_req.is_valid(), nullptr, "RosClient: Invalid RosMsg provided.");
 
+    // Create the "Future" object
+    Ref<RosRequest> ros_req;
+    ros_req.instantiate();
+
+    // The lambda captures ros_req by value, incrementing the RefCount, callback is in charge of setting the response and emitting the signal
     client_->async_send_request(p_req->get_babel(),
-                                [this](std::shared_future<ros_babel_fish::CompoundMessage::SharedPtr> future)
-                                {
-                                    ros_babel_fish::CompoundMessage::SharedPtr response = future.get();
+        [ros_req](std::shared_future<ros_babel_fish::CompoundMessage::SharedPtr> future) {
+            
+            // 1. Get result from ROS thread
+            auto response_ptr = future.get();
+            
+            // 2. Prepare the Godot message
+            Ref<RosMsg> res_msg;
+            res_msg.instantiate();
+            if (response_ptr) {
+                res_msg->init_babel(response_ptr);
+            }
 
-                                    // Defensive check inside the callback thread
-                                    if (!response)
-                                    {
-                                        RCLGD_FAIL_MSG("RCLGD: Received null response from ROS2 Service.");
-                                        return;
-                                    }
+            // 3. Defer the signal emission to the main Godot thread
+            // This prevents race conditions with GDScript execution
+            ros_req->_set_finished(res_msg);
+        });
 
-                                    Ref<RosMsg> res;
-                                    res.instantiate();
-                                    res->init_babel(response);
-
-                                    this->call_deferred("emit_signal", "request_completed", res);
-                                });
+    return ros_req;
 }

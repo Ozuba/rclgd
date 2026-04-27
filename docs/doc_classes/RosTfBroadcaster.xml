@@ -16,6 +16,7 @@
 			<param index="1" name="frame_id" type="String" />
 			<param index="2" name="parent_frame_id" type="String" />
 			<param index="3" name="is_static" type="bool" default="false" />
+			<param index="4" name="timestamp" type="RosMsg" default="null" />
 			<description>
 				Sends a coordinate transformation from [param parent_frame_id] to [param frame_id]. If [param is_static] is [code]true[/code], the transform is sent as a static transform which is typically only sent once.
 			</description>

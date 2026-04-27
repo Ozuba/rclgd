@@ -21,12 +21,17 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	//Registration of ros runtime
 	GDREGISTER_CLASS(rclgd)
 	GDREGISTER_CLASS(RosNode)
+	//Publishers & Subscribers
 	GDREGISTER_CLASS(RosPublisher)
 	GDREGISTER_CLASS(RosSubscriber)
+	//Services
 	GDREGISTER_CLASS(RosClient)
+	GDREGISTER_CLASS(RosRequest)
 	GDREGISTER_CLASS(RosService)
+	//TF2
 	GDREGISTER_CLASS(RosTfBroadcaster)
 	GDREGISTER_CLASS(RosTfListener)
+	//Timer
 	GDREGISTER_CLASS(RosTimer)
 
 	GDREGISTER_CLASS(RosMsg) //Instance Ros2 Type Creator

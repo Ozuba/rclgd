@@ -16,16 +16,16 @@
 		<member name="depth" type="int" setter="set_depth" getter="get_depth" default="10">
 			The size of the message queue. For [constant KEEP_LAST] history, this determines how many messages are buffered before old entries are discarded.
 		</member>
-		<member name="durability" type="int" setter="set_durability" getter="get_durability" enum="RosQoS.Durability" default="0">
+		<member name="durability" type="int" setter="set_durability" getter="get_durability" default="0">
 			Determines whether messages are persisted by the publisher for late-joining subscribers. See [enum Durability] for options.
 		</member>
-		<member name="history" type="int" setter="set_history" getter="get_history" enum="RosQoS.History" default="0">
+		<member name="history" type="int" setter="set_history" getter="get_history" default="0">
 			Determines how messages are buffered in the queue. See [enum History] for options.
 		</member>
 		<member name="lifespan_seconds" type="float" setter="set_lifespan" getter="get_lifespan" default="0.0">
 			The maximum amount of time a message is considered "valid" after being published. Messages older than this duration will be removed from the publisher's queue and ignored by subscribers. A value of [code]0.0[/code] means messages live forever.
 		</member>
-		<member name="reliability" type="int" setter="set_reliability" getter="get_reliability" enum="RosQoS.Reliability" default="0">
+		<member name="reliability" type="int" setter="set_reliability" getter="get_reliability" default="0">
 			Determines whether message delivery is guaranteed. See [enum Reliability] for options.
 		</member>
 	</members>

@@ -5,4 +5,5 @@ install
 **/*.import
 **/*.uid
 docs/_build
-docs/__pycache__
+*/__pycache__
+*.godot
