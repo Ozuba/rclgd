@@ -18,7 +18,7 @@ func _execute():
 	var msg = RosMsg.from_type("std_msgs/msg/ByteMultiArray")
 	var data = PackedByteArray()
 	data.resize(1024 * 1024) 
-	msg.set_member("data", data)
+	msg.data = data
 	
 	var start_test_time = Time.get_ticks_msec()
 	

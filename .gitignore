@@ -4,4 +4,4 @@ install
 **/core.*
 docs/_build
 */__pycache__
-*.godot
+*.godot/
