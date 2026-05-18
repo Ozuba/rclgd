@@ -140,6 +140,9 @@ func _on_status_received(msg: RosMsg):
 ## A note on performance
 The type masking system used by rclgd depends at this moment in transfering data between godot and ros contexts, however preliminary tests show that working with high bandwidth types like `PointCloud2` with over 250.000 points its handled nicely.
 
+## A note on ROS2 buildfarm integration
+Releasing rclgd as a package in the buildfarm would imply as far as im concerned in splitting this repo into supackages (godot_vendor,rclgd,rclgd_colcon,godot_cpp_vendor) so they are independent buildable entities. This is something i considered but im not sure if buildfarm will handle the godot build process easily, might try when i have some time. However as it is now source distribution remains a easy 3 line setup process. If somebody has any idea on how to solve this easiliy feel free to open an issue.
+
 ## Disclaimer
 
 > [!NOTE]

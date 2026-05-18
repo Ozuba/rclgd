@@ -16,6 +16,10 @@ run/main_scene="uid://cy6csno8w3xtm"
 config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/vsync/vsync_mode=0
+
 [physics]
 
 common/physics_ticks_per_second=400
