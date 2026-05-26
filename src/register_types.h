@@ -18,9 +18,6 @@
 #include "rclgd/ros_tf_broadcaster.hpp"
 #include "rclgd/ros_tf_listener.hpp"
 
-//TF2 Helpers
-#include "tf2gd/ros_tf_broadcaster_3d.hpp"
-#include "tf2gd/ros_tf_listener_3d.hpp"
 
 using namespace godot;
 

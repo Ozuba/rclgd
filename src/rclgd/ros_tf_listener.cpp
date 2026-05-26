@@ -12,7 +12,6 @@ void RosTfListener::setup(std::shared_ptr<rclcpp::Node> p_node) {
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 }
 
-
 Transform3D RosTfListener::lookup_transform(const String &p_target_frame, const String &p_source_frame) {
     Transform3D g_xform;
     if (!tf_buffer_ || !node_ || !rclcpp::ok()) return g_xform;
@@ -25,39 +24,26 @@ Transform3D RosTfListener::lookup_transform(const String &p_target_frame, const 
         // 2. Lookup the transform (TimePointZero = latest available)
         auto t = tf_buffer_->lookupTransform(target, source, tf2::TimePointZero);
 
-        // 3. Inverse Position Mapping (ROS -> Godot)
-        // Broadcaster: ros.x=pos.z, ros.y=pos.x, ros.z=pos.y
-        // Listener:    pos.x=ros.y, pos.y=ros.z, pos.z=ros.x
-        g_xform.origin.x = t.transform.translation.y;
-        g_xform.origin.y = t.transform.translation.z;
-        g_xform.origin.z = t.transform.translation.x;
+        // 3. Inverse Position Mapping (ROS 2 -> Godot Ground Vehicle Frame)
+        g_xform.origin.x = -t.transform.translation.y; // ROS +Y (Left)     -> Godot -X (Left)
+        g_xform.origin.y =  t.transform.translation.z; // ROS +Z (Up)       -> Godot +Y (Up)
+        g_xform.origin.z = -t.transform.translation.x; // ROS +X (Forward)  -> Godot -Z (Forward)
 
-        // 4. Inverse Rotation Mapping (ROS -> Godot)
-        // First, get the basis from the ROS quaternion
-        Quaternion q(
+        // 4. Inverse Rotation Mapping (ROS 2 -> Godot Ground Vehicle Frame)
+        Quaternion ros_q(
             t.transform.rotation.x,
             t.transform.rotation.y,
             t.transform.rotation.z,
             t.transform.rotation.w
         );
-        Basis ros_basis(q);
 
-        // Extract the ROS columns
-        Vector3 r_c0 = ros_basis.get_column(0); // Shuffled Forward
-        Vector3 r_c1 = ros_basis.get_column(1); // Shuffled Right
-        Vector3 r_c2 = ros_basis.get_column(2); // Shuffled Up
+        Quaternion godot_q;
+        godot_q.x = -ros_q.y; 
+        godot_q.y =  ros_q.z; 
+        godot_q.z = -ros_q.x; 
+        godot_q.w =  ros_q.w; 
 
-        // Helper to un-shuffle a vector from (z, x, y) back to (x, y, z)
-        auto unshuffle = [](const Vector3 &v) {
-            return Vector3(v.y, v.z, v.x);
-        };
-
-        // Reconstruct Godot Basis
-        // Broadcaster mapping: 
-        // ros_c0 = shuffled g_forward | ros_c1 = shuffled g_right | ros_c2 = shuffled g_up
-        g_xform.basis.set_column(0, unshuffle(r_c1)); // Godot Right
-        g_xform.basis.set_column(1, unshuffle(r_c2)); // Godot Up
-        g_xform.basis.set_column(2, unshuffle(r_c0)); // Godot Forward
+        g_xform.basis = Basis(godot_q);
 
     } catch (const tf2::TransformException &e) {
         // If the transform isn't found, return Identity or log error

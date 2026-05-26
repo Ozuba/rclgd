@@ -17,39 +17,37 @@ void RosTfBroadcaster::setup(std::shared_ptr<rclcpp::Node> p_node) {
 void RosTfBroadcaster::send_transform(const Transform3D &p_transform, const String &p_frame_id, const String &p_parent_frame_id, bool p_is_static, const Ref<RosMsg> &p_time_msg) {
     if (!node_ || !rclcpp::ok()) return;
     
-    //Obtención del timestamp
+    geometry_msgs::msg::TransformStamped t;
+
+    // --- Timestamp Acquisition ---
     if (p_time_msg.is_valid()) {
         int32_t sec = p_time_msg->get("sec");
         uint32_t nanosec = p_time_msg->get("nanosec");
         t.header.stamp = rclcpp::Time(sec, nanosec, node_->get_clock()->get_clock_type());
     } else {
-        // Fallback al tiempo actual del nodo si no se provee mensaje
         t.header.stamp = node_->now();
     }
 
-    t.header.frame_id = RclgdUtils::resolve_frame(node_,p_parent_frame_id);
-    t.child_frame_id = RclgdUtils::resolve_frame(node_,p_frame_id);                        
+    t.header.frame_id = RclgdUtils::resolve_frame(node_, p_parent_frame_id);
+    t.child_frame_id = RclgdUtils::resolve_frame(node_, p_frame_id);                        
 
-    // --- Position Mapping (Godot -> ROS) ---
+    // --- Position Mapping (Godot -> ROS 2 Vehicle Frame) ---
     Vector3 pos = p_transform.origin;
-    t.transform.translation.x = pos.z; 
-    t.transform.translation.y = pos.x; 
-    t.transform.translation.z = pos.y; 
+    t.transform.translation.x = -pos.z; 
+    t.transform.translation.y = -pos.x; 
+    t.transform.translation.z =  pos.y; 
 
-    // --- Rotation Mapping (Godot -> ROS Basis) ---
-    Vector3 g_right = p_transform.basis.get_column(0);
-    Vector3 g_up = p_transform.basis.get_column(1);
-    Vector3 g_forward = p_transform.basis.get_column(2);
+    // --- Rotation Mapping (Godot -> ROS 2 Vehicle Frame) ---
+    Quaternion q = p_transform.basis.get_quaternion();
+    t.transform.rotation.x = -q.z; 
+    t.transform.rotation.y = -q.x; 
+    t.transform.rotation.z =  q.y; 
+    t.transform.rotation.w =  q.w; 
 
-    Basis ros_basis;
-    ros_basis.set_column(0, Vector3(g_forward.z, g_forward.x, g_forward.y));
-    ros_basis.set_column(1, Vector3(g_right.z, g_right.x, g_right.y));
-    ros_basis.set_column(2, Vector3(g_up.z, g_up.x, g_up.y));
-
-    Quaternion q = ros_basis.get_quaternion();
-    t.transform.rotation.x = q.x; t.transform.rotation.y = q.y;
-    t.transform.rotation.z = q.z; t.transform.rotation.w = q.w;
-
-    if (p_is_static) static_broadcaster_->sendTransform(t);
-    else broadcaster_->sendTransform(t);
+    // --- Broadcast Target Selection ---
+    if (p_is_static) {
+        static_broadcaster_->sendTransform(t);
+    } else {
+        broadcaster_->sendTransform(t);
+    }
 }
