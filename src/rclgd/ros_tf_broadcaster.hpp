@@ -22,7 +22,6 @@ private:
     std::shared_ptr<rclcpp::Node> node_;
     std::unique_ptr<tf2_ros::TransformBroadcaster> broadcaster_;
     std::unique_ptr<tf2_ros::StaticTransformBroadcaster> static_broadcaster_;
-    geometry_msgs::msg::TransformStamped t;
 protected:
     static void _bind_methods();
 

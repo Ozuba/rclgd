@@ -13,7 +13,7 @@ based on [ROS Babel Fish](https://github.com/LOEWE-emergenCITY/ros_babel_fish)
 </div>
 
 ## Features
-As for now only the basic set of the rclcpp api are implemented, keep in mind this is highly experimental and not suited yet for production. But it serves as the groundbase for implementing awesome simulation enviroments and visualizers using the powerful features of the godot engine.
+As for now only the basic set of the rclcpp api are implemented, keep in mind this is highly experimental and not suited yet for production. But it serves as the groundbase for implementing awesome simulation environments and visualizers using the powerful features of the godot engine.
 
 - [x] rclgd Singleton
 - [x] Dynamic Msg Type Support
@@ -43,7 +43,7 @@ Clone this package into your workspace and install dependencies, build it and so
 ```bash
 rosdep install --from-paths src --ignore-src -y -r
 colcon build --packages-select rclgd
-source install/install.sh
+source install/setup.bash
 ```
 
 > [!NOTE]
@@ -52,7 +52,7 @@ source install/install.sh
 
 
 ## Integration
-This package is intented to work as a support package, once you build it you can create rclgd packages based on this
+This package is intended to work as a support package, once you build it you can create rclgd packages based on this
 [Template](https://github.com/Ozuba/rclgd-template) in your favourite ros workspace.
 
 ```
@@ -79,9 +79,9 @@ A typical rclgd `package.xml` looks like
 </package>
 ```
 In order to edit those packages you will need to launch the godot editor by `ros2 run rclgd godot` this will ensure that `librclgd.so`
-is accesible by all projects containing the corresponding `rclgd.gdextension`
+is accessible by all projects containing the corresponding `rclgd.gdextension`
 
-Once you run `colcon build` and source your installation you will be able to run your godot-ros applcation
+Once you run `colcon build` and source your installation you will be able to run your godot-ros application
 as any other ros executable.
 > [!TIP]
 > Example: `ros2 run rclgd_demo rclgd_demo`
@@ -113,9 +113,9 @@ func _ready() -> void:
 	ros_node = RosNode.new()
 	ros_node.init("godot_controller_node")
 
-	# 3. Setup Publisher & Subscriber
-	demo_pub = ros_node.create_publisher("/gd_topic", "std_msgs/msg/String.msg")
-	demo_sub = ros_node.create_subscriber("/gd_topic", "std_msgs/msg/String.msg", _on_status_received)
+	# 3. Setup Publisher & Subscription
+	demo_pub = ros_node.create_publisher("/gd_topic", "std_msgs/msg/String")
+	demo_sub = ros_node.create_subscription("/gd_topic", "std_msgs/msg/String", _on_status_received)
 
 	# 4. Start a periodic timer to publish
 	get_tree().create_timer(1.0).timeout.connect(publish_test_msg)
@@ -127,21 +127,35 @@ func publish_test_msg():
 	once created you can access their fields as you would normally do in any 
 	other rcl implementation.
 	"""
-	var msg = RosMsg.from_type("std_msgs/msg/String.msg")
+	var msg = RosMsg.from_type("std_msgs/msg/String")
 	msg.data = "Hi there from Godot!"
 	demo_pub.publish(msg)
 
-# Callbacks from subscriber are triggered on message
+# Callbacks from subscriptions are triggered on message
 func _on_status_received(msg: RosMsg):
 	print(msg)
 
 ```
 
+## Coordinate conventions
+Godot and ROS are both right-handed but use different axis conventions. RCLGD maps between them with a fixed permutation used consistently by the TF broadcaster and listener:
+
+| ROS              | Godot            |
+|------------------|------------------|
+| +X (forward)     | -Z (forward)     |
+| +Y (left)        | -X (left)        |
+| +Z (up)          | +Y (up)          |
+
+If you build poses, twists or other geometry by hand, use the same mapping through the helpers exposed on the singleton: `rclgd.godot_to_ros_vector()`, `rclgd.ros_to_godot_vector()`, `rclgd.godot_to_ros_quat()` and `rclgd.ros_to_godot_quat()`.
+
+## A note on threading
+By default the ROS executor spins in a separate thread (`use_separate_thread:=true`). Subscription and timer callbacks are deferred to the Godot main thread, so regular GDScript code is safe. **Service server callbacks are the exception**: they run synchronously on the executor thread (the response must be filled before returning to the client), so keep them self-contained and use `call_deferred` for any side effects on the scene. With `--ros-args -p use_separate_thread:=false` the executor spins on the physics tick and everything runs on the main thread.
+
 ## A note on performance
 The type masking system used by rclgd depends at this moment in transfering data between godot and ros contexts, however preliminary tests show that working with high bandwidth types like `PointCloud2` with over 250.000 points its handled nicely.
 
 ## A note on ROS2 buildfarm integration
-Releasing rclgd as a package in the buildfarm would imply as far as im concerned in splitting this repo into supackages (godot_vendor,rclgd,rclgd_colcon,godot_cpp_vendor) so they are independent buildable entities. This is something i considered but im not sure if buildfarm will handle the godot build process easily, might try when i have some time. However as it is now source distribution remains a easy 3 line setup process. If somebody has any idea on how to solve this easiliy feel free to open an issue.
+Releasing rclgd as a package in the buildfarm would imply, as far as I'm concerned, splitting this repo into subpackages (godot_vendor, rclgd, rclgd_colcon, godot_cpp_vendor) so they are independently buildable entities. This is something I considered but I'm not sure if the buildfarm will handle the godot build process easily, might try when I have some time. However as it is now source distribution remains an easy 3 line setup process. If somebody has any idea on how to solve this easily feel free to open an issue.
 
 ## Disclaimer
 

@@ -22,9 +22,9 @@ func _execute():
 		# Publish transform repeatedly to ensure it's received
 		broadcaster.send_transform(Transform3D(Basis(), Vector3(1, 2, 3)), "child_frame", "parent_frame", false, node.now())
 		
-		# Try to look up the transform
+		# Try to look up the transform (null means the lookup failed)
 		var transform = listener.lookup_transform("parent_frame", "child_frame")
-		if transform != Transform3D():
+		if transform != null:
 			var origin = transform.origin
 			if abs(origin.x - 1.0) < 0.001 and abs(origin.y - 2.0) < 0.001 and abs(origin.z - 3.0) < 0.001:
 				tf_received = true

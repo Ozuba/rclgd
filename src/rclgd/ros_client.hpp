@@ -19,7 +19,9 @@ protected:
     static void _bind_methods() {
         ClassDB::bind_method(D_METHOD("get_response"), &RosRequest::get_response);
         ClassDB::bind_method(D_METHOD("is_completed"), &RosRequest::is_completed);
-        
+        // Bound so the executor thread can reach it through call_deferred
+        ClassDB::bind_method(D_METHOD("_complete", "response"), &RosRequest::_complete);
+
         // This is the signal GDScript will 'await'
         ADD_SIGNAL(MethodInfo("completed", PropertyInfo(Variant::OBJECT, "response", PROPERTY_HINT_RESOURCE_TYPE, "RosMsg")));
     }
@@ -27,12 +29,14 @@ protected:
 public:
     Ref<RosMsg> get_response() { return response; }
     bool is_completed() { return completed; }
-    
-    // Internal use only to fulfill the "Promise"
-    void _set_finished(Ref<RosMsg> p_res) {
+
+    // Internal use only to fulfill the "Promise". Runs on the main thread
+    // (dispatched via call_deferred from the executor thread) so the state
+    // mutation and the signal emission never race a GDScript poller.
+    void _complete(Ref<RosMsg> p_res) {
         response = p_res;
         completed = true;
-        call_deferred("emit_signal", "completed", response);
+        emit_signal("completed", response);
     }
 };
 

@@ -16,8 +16,14 @@ void RosNode::_bind_methods()
                          &RosNode::create_publisher,
                          DEFVAL(Variant())); // qos default
 
+    ClassDB::bind_method(D_METHOD("create_subscription", "topic", "type", "callback", "qos"),
+                         &RosNode::create_subscription,
+                         DEFVAL(Variant())); // qos default
+
+    // Deprecated alias kept for backwards compatibility; prefer create_subscription
+    // which matches rclcpp/rclpy naming.
     ClassDB::bind_method(D_METHOD("create_subscriber", "topic", "type", "callback", "qos"),
-                         &RosNode::create_subscriber,
+                         &RosNode::create_subscription,
                          DEFVAL(Variant())); // qos default
 
     ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), 
@@ -133,8 +139,9 @@ String RosNode::get_namespace() const
 
 RosNode::~RosNode()
 {
-    // When the GDScript variable is freed, we should remove the node from the ROS executor
-    if (node_)
+    // When the GDScript variable is freed, we should remove the node from the ROS executor.
+    // The singleton may already be gone during engine teardown, so check it.
+    if (node_ && rclgd::get_singleton())
     {
         rclgd::get_singleton()->remove_node(node_);
     }
@@ -156,15 +163,17 @@ void RosNode::declare_parameter(const String &p_name, const Variant &p_default_v
 
 void RosNode::set_parameter(const String &p_name, const Variant &p_val)
 {
-    std::string name = p_name.utf8().get_data();
+    RCLGD_FAIL_COND_MSG(!node_, "RosNode must be initialized before setting parameters.");
 
-    // Using your conversion logic
+    std::string name = p_name.utf8().get_data();
     auto ros_val = RosTypeMapping::variant_to_ros_param(p_val);
     node_->set_parameter(rclcpp::Parameter(name, ros_val));
 }
 
 Variant RosNode::get_parameter(const String &p_name)
 {
+    RCLGD_FAIL_COND_V_MSG(!node_, Variant(), "RosNode must be initialized before getting parameters.");
+
     std::string name = p_name.utf8().get_data();
     if (!node_->has_parameter(name))
         return Variant();
@@ -205,7 +214,7 @@ Ref<RosPublisher> RosNode::create_publisher(const String &topic, const Variant &
     return pub;
 }
 
-Ref<RosSubscriber> RosNode::create_subscriber(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos)
+Ref<RosSubscriber> RosNode::create_subscription(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos)
 {
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
     String ros_type = _get_type_from_variant(type);
@@ -260,6 +269,7 @@ Ref<RosTfListener> RosNode::create_tf_listener()
 }
 
 Ref<RosTimer> RosNode::create_timer(double p_seconds, const Callable &p_callback) {
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating timers.");
     Ref<RosTimer> timer;
     timer.instantiate();
     timer->setup(node_, p_seconds, p_callback);
@@ -281,12 +291,11 @@ Ref<RosMsg> RosNode::now()
 
     if (node_)
     {
-        rclcpp::Time now = node_->now();
-
-        // 2. Set the values using your existing _set logic
-        // (or direct BabelFish access for speed)
-        time_msg->set("sec", (int32_t)now.seconds());
-        time_msg->set("nanosec", (uint32_t)(now.nanoseconds() % 1000000000));
+        // Derive both fields from the integer nanosecond count to avoid any
+        // floating point rounding mismatch at second boundaries.
+        int64_t ns = node_->now().nanoseconds();
+        time_msg->set("sec", (int64_t)(ns / 1000000000));
+        time_msg->set("nanosec", (int64_t)(ns % 1000000000));
     }
 
     return time_msg;

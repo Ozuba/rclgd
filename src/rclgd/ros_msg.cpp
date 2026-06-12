@@ -52,6 +52,10 @@ Ref<RosMsg> RosMsg::from_type(const String &ros_type_name)
     Ref<RosMsg> ref;
     ref.instantiate();
     ref->init(ros_type_name);
+    // If type support lookup failed, return null instead of a hollow message
+    // so callers can detect the failure with is_null()/== null.
+    if (!ref->get_babel())
+        return Ref<RosMsg>();
     return ref;
 }
 
@@ -220,7 +224,7 @@ String RosMsg::_to_string() const
     return out;
 }
 
-// Overloaded Accerors
+// Overloaded Accessors
 
 void RosMsg::_get_property_list(List<PropertyInfo> *p_list) const
 {
@@ -264,8 +268,26 @@ bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
         // Sync Variant -> ROS Buffer
         RBF2_TEMPLATE_CALL(Godot2Ros::call, ros_member.type(), p_value, ros_member);
 
-        // Update Cache
-        members_[p_name] = p_value;
+        // Update Cache.
+        // For compounds (and arrays of compounds) the data was *copied* into
+        // this message's buffer, so caching p_value would leave the cache
+        // wrapping the assigned object's own buffer: later nested writes
+        // (e.g. msg.header.stamp = x) would never reach this message.
+        // Re-wrap the member so the cache aliases our buffer instead.
+        bool is_compound = ros_member.type() == MessageTypes::Compound;
+        bool is_compound_array = ros_member.type() == MessageTypes::Array &&
+                                 ros_member.as<ArrayMessageBase>().elementType() == MessageTypes::Compound;
+        if (is_compound || is_compound_array)
+        {
+            Variant aliased;
+            ros_babel_fish::Message::SharedPtr member_ptr(msg_, &ros_member);
+            RBF2_TEMPLATE_CALL(Ros2Godot::call, ros_member.type(), aliased, member_ptr);
+            members_[p_name] = aliased;
+        }
+        else
+        {
+            members_[p_name] = p_value;
+        }
         return true;
     }
     catch (const std::exception &e)
@@ -288,11 +310,6 @@ Variant RosMsg::get_member(const StringName &p_name) const
 
 void RosMsg::set_member(const StringName &p_name, const Variant &p_value)
 {
-    // 1. Update the actual ROS2 data buffer (BabelFish)
-    // Your existing _set handles the Variant -> ROS conversion
-    if (this->_set(p_name, p_value))
-    {
-        // 2. Sync the cache so getters are immediate
-        members_[p_name] = p_value;
-    }
+    // _set syncs the ROS buffer and refreshes the cache.
+    this->_set(p_name, p_value);
 }

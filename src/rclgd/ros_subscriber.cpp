@@ -7,42 +7,37 @@ void RosSubscriber::setup(const std::shared_ptr<rclcpp::Node> &node,
                           const Callable &p_callback,
                           const rclcpp::QoS &qos)
 {
-    callback_ = p_callback;
-
     std::string std_topic = topic.utf8().get_data();
     std::string std_type = type.utf8().get_data();
     auto &fish = rclgd::get_singleton()->get_fish();
 
-    // Bind our C++ _ros_callback to the BabelFish subscription
+    // The Callable is captured by value so the executor-side callback never
+    // touches `this`: if GDScript drops the last reference to this subscriber
+    // while a callback is in flight, nothing dangles.
+    Callable callback = p_callback;
     try
     {
-        sub_ = fish.create_subscription(*node, std_topic, std_type, qos,
-                                        std::bind(&RosSubscriber::_ros_callback, this, std::placeholders::_1));
+        sub_ = fish.create_subscription(
+            *node, std_topic, std_type, qos,
+            [callback](const ros_babel_fish::CompoundMessage::SharedPtr msg)
+            {
+                if (!callback.is_valid())
+                    return;
+
+                // Wrap the raw BabelFish message into our Godot RosMsg object
+                Ref<RosMsg> wrapper;
+                wrapper.instantiate();
+                wrapper->init_babel(msg);
+
+                // Call immediately or defer depending on the thread we are in
+                if (Thread::is_main_thread())
+                    callback.call(wrapper);
+                else
+                    callback.call_deferred(wrapper);
+            });
     }
     catch (const std::exception &e)
     {
-        RCLGD_FAIL_MSG(vformat("RCLGD Subscription failed: %s", e.what()));
-    }
-}
-
-void RosSubscriber::_ros_callback(const ros_babel_fish::CompoundMessage::SharedPtr msg)
-{
-    if (callback_.is_valid())
-    {
-        // 1. Wrap the raw BabelFish message into our Godot RosMsg object
-        Ref<RosMsg> wrapper;
-        wrapper.instantiate();
-        // Initialize type support for instance
-        wrapper->init_babel(msg);
-
-        // Call inmediately or defer depending on the thread we are in 
-        if (Thread::is_main_thread())
-        {
-            callback_.call(wrapper);
-        }
-        else
-        {
-            callback_.call_deferred(wrapper);
-        }
+        RCLGD_FAIL_MSG(vformat("RCLGD Subscription to '%s' (%s) failed: %s", topic, type, e.what()));
     }
 }

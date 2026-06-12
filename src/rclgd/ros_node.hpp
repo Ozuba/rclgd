@@ -47,9 +47,9 @@ public:
     // Helper to get ros types from shadow scripts
     String _get_type_from_variant(const Variant &p_type);
 
-    // Publisher and subscriber creation
+    // Publisher and subscription creation
     Ref<RosPublisher> create_publisher(const String &topic, const Variant &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
-    Ref<RosSubscriber> create_subscriber(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
+    Ref<RosSubscriber> create_subscription(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
 
     // Service client and subscriber
     Ref<RosClient> create_client(const String &p_srv_name, const Variant &p_srv_type);

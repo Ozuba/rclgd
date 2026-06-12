@@ -79,8 +79,48 @@ namespace RosTypeMapping
                 r_ret = packed;
                 return;
             }
+            // FAST PATH: int32_t -> PackedInt32Array
+            else if constexpr (std::is_same_v<T, int32_t>)
+            {
+                PackedInt32Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(int32_t));
+                r_ret = packed;
+                return;
+            }
+            // FAST PATH: int64_t -> PackedInt64Array
+            else if constexpr (std::is_same_v<T, int64_t>)
+            {
+                PackedInt64Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(int64_t));
+                r_ret = packed;
+                return;
+            }
+            // Small integers (int8/int16/uint16) -> PackedInt32Array (element cast)
+            else if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool> && sizeof(T) < 4)
+            {
+                PackedInt32Array packed;
+                packed.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                    packed.set(i, static_cast<int32_t>(ros_array[i]));
+                r_ret = packed;
+                return;
+            }
+            // Wide unsigned integers (uint32/uint64) -> PackedInt64Array (element cast)
+            else if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>)
+            {
+                PackedInt64Array packed;
+                packed.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                    packed.set(i, static_cast<int64_t>(ros_array[i]));
+                r_ret = packed;
+                return;
+            }
 
-            // SLOW PATH: Strings or other generic types
+            // SLOW PATH: Strings, bools or other generic types
             if constexpr (std::is_same_v<T, std::string>)
             {
                 PackedStringArray packed;
@@ -95,7 +135,9 @@ namespace RosTypeMapping
                 arr.resize(size);
                 for (size_t i = 0; i < size; ++i)
                 {
-                    if constexpr (std::is_arithmetic_v<T>)
+                    if constexpr (std::is_same_v<T, bool>)
+                        arr[i] = static_cast<bool>(ros_array[i]);
+                    else if constexpr (std::is_arithmetic_v<T>)
                         arr[i] = static_cast<double>(ros_array[i]);
                     else
                         arr[i] = Variant();
@@ -143,6 +185,48 @@ namespace RosTypeMapping
                     return;
                 }
             }
+            // FAST PATH: PackedFloat64Array -> double
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                if (p_val.get_type() == Variant::PACKED_FLOAT64_ARRAY)
+                {
+                    PackedFloat64Array pfa = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pfa.size());
+                    size_t limit = std::min((size_t)pfa.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pfa.ptr(), limit * sizeof(double));
+                    return;
+                }
+            }
+            // FAST PATH: PackedInt32Array -> int32_t
+            else if constexpr (std::is_same_v<T, int32_t>)
+            {
+                if (p_val.get_type() == Variant::PACKED_INT32_ARRAY)
+                {
+                    PackedInt32Array pia = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pia.size());
+                    size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pia.ptr(), limit * sizeof(int32_t));
+                    return;
+                }
+            }
+            // FAST PATH: PackedInt64Array -> int64_t
+            else if constexpr (std::is_same_v<T, int64_t>)
+            {
+                if (p_val.get_type() == Variant::PACKED_INT64_ARRAY)
+                {
+                    PackedInt64Array pia = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pia.size());
+                    size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pia.ptr(), limit * sizeof(int64_t));
+                    return;
+                }
+            }
 
             // SLOW PATH: Strings, Bools, or Mixed Arrays
             Array arr_view = p_val;
@@ -155,7 +239,12 @@ namespace RosTypeMapping
                 Variant item = arr_view[i];
                 if constexpr (std::is_same_v<T, std::string>)
                     ros_array[i] = item.operator String().utf8().get_data();
-                else if constexpr (std::is_arithmetic_v<T>)
+                else if constexpr (std::is_same_v<T, bool>)
+                    ros_array[i] = item.operator bool();
+                else if constexpr (std::is_integral_v<T>)
+                    // Go through int64 so large integers keep full precision
+                    ros_array[i] = static_cast<T>(item.operator int64_t());
+                else if constexpr (std::is_floating_point_v<T>)
                     ros_array[i] = static_cast<T>(item.operator double());
             }
         }

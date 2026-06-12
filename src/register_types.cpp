@@ -4,6 +4,7 @@
 #include <godot_cpp/godot.hpp>
 #include <godot_cpp/templates/vector.hpp>
 #include <godot_cpp/classes/engine.hpp>
+#include <godot_cpp/classes/project_settings.hpp>
 
 using namespace godot;
 
@@ -38,6 +39,15 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(RosQoS) //Instance Ros2 Type Creator
 
 
+	// Register the project setting that controls whether RCLGD errors break
+	// into the script debugger (see RCLGD_FAIL_* macros).
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	if (ps && !ps->has_setting("rclgd/debug/break_on_error"))
+	{
+		ps->set_setting("rclgd/debug/break_on_error", true);
+		ps->set_initial_value("rclgd/debug/break_on_error", true);
+	}
+
 	//Create the rclgd singleton
 	_rclgd_singleton = memnew(rclgd);
     Engine::get_singleton()->register_singleton("rclgd", rclgd::get_singleton());
@@ -47,12 +57,18 @@ void rclgd_deinit(ModuleInitializationLevel p_level)
 {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE)
 	{
-	// Remove the global name
-    Engine::get_singleton()->unregister_singleton("rclgd");
+		// Remove the global name
+		Engine::get_singleton()->unregister_singleton("rclgd");
+
+		// Destroying the singleton joins the executor thread and shuts
+		// rclcpp down (see rclgd::~rclgd), so the process can exit cleanly
+		// even if the user never called rclgd.shutdown().
+		if (_rclgd_singleton)
+		{
+			memdelete(_rclgd_singleton);
+			_rclgd_singleton = nullptr;
+		}
 	}
-
-
-
 }
 
 extern "C"

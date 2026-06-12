@@ -29,20 +29,10 @@ void RosTfBroadcaster::send_transform(const Transform3D &p_transform, const Stri
     }
 
     t.header.frame_id = RclgdUtils::resolve_frame(node_, p_parent_frame_id);
-    t.child_frame_id = RclgdUtils::resolve_frame(node_, p_frame_id);                        
+    t.child_frame_id = RclgdUtils::resolve_frame(node_, p_frame_id);
 
-    // --- Position Mapping (Godot -> ROS 2 Vehicle Frame) ---
-    Vector3 pos = p_transform.origin;
-    t.transform.translation.x = -pos.z; 
-    t.transform.translation.y = -pos.x; 
-    t.transform.translation.z =  pos.y; 
-
-    // --- Rotation Mapping (Godot -> ROS 2 Vehicle Frame) ---
-    Quaternion q = p_transform.basis.get_quaternion();
-    t.transform.rotation.x = -q.z; 
-    t.transform.rotation.y = -q.x; 
-    t.transform.rotation.z =  q.y; 
-    t.transform.rotation.w =  q.w; 
+    // --- Convention Mapping (Godot -> ROS, shared helper) ---
+    t.transform = RclgdUtils::godot_to_ros_transform(p_transform);
 
     // --- Broadcast Target Selection ---
     if (p_is_static) {

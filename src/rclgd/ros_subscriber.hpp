@@ -16,7 +16,6 @@ class RosSubscriber : public RefCounted
 
 private:
     std::shared_ptr<ros_babel_fish::BabelFishSubscription> sub_;
-    Callable callback_;
 
 protected:
     static void _bind_methods() {} // No methods to bind for GDScript usually
@@ -30,7 +29,4 @@ public:
                const String &type,
                const Callable &p_callback,
                const rclcpp::QoS &qos = rclcpp::QoS(10));
-
-        // The actual C++ callback that ROS triggers
-        void _ros_callback(const ros_babel_fish::CompoundMessage::SharedPtr msg);
 };

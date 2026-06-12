@@ -24,7 +24,8 @@ void RosClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_
     }
     catch (const std::exception &e)
     {
-        RCLGD_FAIL_MSG(vformat("BabelFish failed to create request..."));
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to create service client '%s' (%s): %s",
+                               p_srv_name, p_srv_type, e.what()));
     }
 }
 
@@ -69,10 +70,10 @@ Ref<RosRequest> RosClient::async_send_request(Ref<RosMsg> p_req) {
     // The lambda captures ros_req by value, incrementing the RefCount, callback is in charge of setting the response and emitting the signal
     client_->async_send_request(p_req->get_babel(),
         [ros_req](std::shared_future<ros_babel_fish::CompoundMessage::SharedPtr> future) {
-            
+
             // 1. Get result from ROS thread
             auto response_ptr = future.get();
-            
+
             // 2. Prepare the Godot message
             Ref<RosMsg> res_msg;
             res_msg.instantiate();
@@ -80,9 +81,10 @@ Ref<RosRequest> RosClient::async_send_request(Ref<RosMsg> p_req) {
                 res_msg->init_babel(response_ptr);
             }
 
-            // 3. Defer the signal emission to the main Godot thread
-            // This prevents race conditions with GDScript execution
-            ros_req->_set_finished(res_msg);
+            // 3. Defer the whole completion (state + signal) to the main
+            // Godot thread so it never races a GDScript poller reading
+            // is_completed()/get_response() mid-update.
+            ros_req->call_deferred("_complete", res_msg);
         });
 
     return ros_req;

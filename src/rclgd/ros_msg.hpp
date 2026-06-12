@@ -1,4 +1,4 @@
-// ros_node.h
+// ros_msg.hpp
 #ifndef ROS_MSG_TYPE_H
 #define ROS_MSG_TYPE_H
 

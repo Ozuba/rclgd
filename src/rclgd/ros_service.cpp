@@ -7,6 +7,19 @@ void RosService::_bind_methods()
     // as the logic is handled by the initial setup and the callback.
 }
 
+/*
+ * THREADING WARNING:
+ * Unlike subscriptions and timers (which defer to the main thread), the
+ * service callback MUST run synchronously so the response is populated
+ * before it is sent back to the client. With the default separate-thread
+ * executor this means the GDScript callback executes on a ROS executor
+ * thread, concurrently with the main thread. Keep service callbacks
+ * self-contained: don't touch the SceneTree or other nodes' state from
+ * them without your own synchronization (e.g. call_deferred for side
+ * effects that don't affect the response).
+ * In physics-synchronous mode (use_separate_thread:=false) callbacks run
+ * on the main thread and none of this applies.
+ */
 void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Callable &p_callback)
 {
     callback_ = p_callback;
@@ -41,6 +54,7 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
     }
     catch (const std::exception &e)
     {
-        RCLGD_FAIL_MSG(vformat("RCLGD Service failed: %s", e.what()));
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to create service '%s' (%s): %s",
+                               p_srv_name, p_srv_type, e.what()));
     }
 }

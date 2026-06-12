@@ -3,6 +3,7 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/variant/transform3d.hpp>
+#include <godot_cpp/variant/variant.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_ros/transform_listener.h>
@@ -29,7 +30,10 @@ public:
     ~RosTfListener() = default;
 
     void setup(std::shared_ptr<rclcpp::Node> p_node);
-    Transform3D lookup_transform(const String &p_target_frame, const String &p_source_frame);
+
+    // Returns a Transform3D on success or null on failure, so callers can
+    // distinguish "lookup failed" from an actual identity transform.
+    Variant lookup_transform(const String &p_target_frame, const String &p_source_frame, double p_timeout_sec = 0.0);
     bool can_transform(const String &p_target_frame, const String &p_source_frame) const;
 };
 
