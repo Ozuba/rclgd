@@ -29,6 +29,8 @@ The ``request`` argument contains the incoming data, and the ``response`` argume
 
 The service remains active as long as this object is not freed.
 
+\ **Threading warning:** Unlike subscription and timer callbacks (which are deferred to the main thread), the service callback runs synchronously on the ROS executor thread, because the response must be populated before it is returned to the client. Keep service callbacks self-contained: don't touch the SceneTree or other nodes' state from them without your own synchronization (use ``call_deferred`` for side effects that don't influence the response). In physics-synchronous mode (``use_separate_thread:=false``) callbacks run on the main thread and this caveat does not apply. For long-running work, prefer an action server (:ref:`RosActionServer<class_RosActionServer>`), whose execute callback runs on the main thread.
+
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`
 .. |const| replace:: :abbr:`const (This method has no side effects. It doesn't modify any of the instance's member variables.)`

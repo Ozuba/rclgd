@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosGoalHandle" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A handle that tracks the lifecycle of a goal sent through a [RosActionClient].
+	</brief_description>
+	<description>
+		[RosGoalHandle] is returned by [method RosActionClient.send_goal] and behaves like a promise: you can poll it with [method is_completed] and [method get_result], or connect to (and [code]await[/code]) its signals.
+		All signals are emitted on the Godot main thread, so it is always safe to touch the scene tree from their handlers.
+		The typical lifecycle is: [signal accepted] (or [signal rejected]) → zero or more [signal feedback] emissions → [signal completed] with the final result and status.
+		[b]Note:[/b] If the goal is rejected by the server, [signal completed] is still emitted (with a [code]null[/code] result and [constant STATUS_UNKNOWN]) so that [code]await handle.completed[/code] never hangs.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="cancel">
+			<return type="void" />
+			<description>
+				Asks the server to cancel this goal. Cancellation is cooperative: the server decides when (and whether) to stop. The outcome still arrives through [signal completed], with [constant STATUS_CANCELED] if the cancellation was honored.
+			</description>
+		</method>
+		<method name="get_result" qualifiers="const">
+			<return type="RosMsg" />
+			<description>
+				Returns the result message once the goal has completed, or [code]null[/code] before completion (and for rejected goals).
+			</description>
+		</method>
+		<method name="get_status" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the terminal status of the goal as one of the [enum Status] constants. Before completion this is [constant STATUS_UNKNOWN].
+			</description>
+		</method>
+		<method name="is_accepted" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] once the server has accepted the goal.
+			</description>
+		</method>
+		<method name="is_completed" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] once the goal has reached a terminal state and the result is available through [method get_result].
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="accepted">
+			<description>
+				Emitted when the server accepts the goal and starts executing it.
+			</description>
+		</signal>
+		<signal name="completed">
+			<param index="0" name="result" type="RosMsg" />
+			<param index="1" name="status" type="int" />
+			<description>
+				Emitted when the goal reaches a terminal state. [param result] holds the action result message ([code]null[/code] if the goal was rejected) and [param status] is one of the [enum Status] constants.
+			</description>
+		</signal>
+		<signal name="feedback">
+			<param index="0" name="msg" type="RosMsg" />
+			<description>
+				Emitted every time the server publishes feedback for this goal.
+			</description>
+		</signal>
+		<signal name="rejected">
+			<description>
+				Emitted when the server rejects the goal. [signal completed] follows immediately with a [code]null[/code] result.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="STATUS_UNKNOWN" value="0" enum="Status">
+			The goal has no terminal status yet (still executing), or it was rejected by the server.
+		</constant>
+		<constant name="STATUS_SUCCEEDED" value="4" enum="Status">
+			The goal finished successfully. Matches [code]action_msgs/GoalStatus.STATUS_SUCCEEDED[/code].
+		</constant>
+		<constant name="STATUS_ABORTED" value="5" enum="Status">
+			The server aborted the goal. Matches [code]action_msgs/GoalStatus.STATUS_ABORTED[/code].
+		</constant>
+		<constant name="STATUS_CANCELED" value="6" enum="Status">
+			The goal was canceled after a cancel request. Matches [code]action_msgs/GoalStatus.STATUS_CANCELED[/code].
+		</constant>
+	</constants>
+</class>

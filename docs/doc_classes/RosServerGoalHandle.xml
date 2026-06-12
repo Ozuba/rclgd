@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosServerGoalHandle" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		The server-side handle for an accepted action goal.
+	</brief_description>
+	<description>
+		[RosServerGoalHandle] is handed to the execute callback of a [RosActionServer] for every accepted goal. It carries the goal message and is used to publish feedback and report the outcome.
+		Every goal must be driven to exactly one terminal state: [method succeed], [method abort] or [method canceled]. Calling a second terminal method on the same handle is an error.
+		For long-running goals, spread the work over multiple frames with [code]await[/code] and poll [method is_cancel_requested] so clients can cancel:
+		[codeblock]
+		func _execute_goal(goal_handle: RosServerGoalHandle):
+		    var result = goal_handle.create_result()
+		    for step in range(goal_handle.get_goal().order):
+		        if goal_handle.is_cancel_requested():
+		            goal_handle.canceled(result)
+		            return
+		        var fb = goal_handle.create_feedback()
+		        goal_handle.publish_feedback(fb)
+		        await get_tree().process_frame
+		    goal_handle.succeed(result)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="abort">
+			<return type="void" />
+			<param index="0" name="result" type="RosMsg" />
+			<description>
+				Terminates the goal as failed, sending [param result] to the client (the client sees [constant RosGoalHandle.STATUS_ABORTED]).
+			</description>
+		</method>
+		<method name="canceled">
+			<return type="void" />
+			<param index="0" name="result" type="RosMsg" />
+			<description>
+				Terminates the goal as canceled, sending [param result] to the client (the client sees [constant RosGoalHandle.STATUS_CANCELED]). Call this in response to [method is_cancel_requested] becoming [code]true[/code].
+			</description>
+		</method>
+		<method name="create_feedback">
+			<return type="RosMsg" />
+			<description>
+				Creates and returns an empty [RosMsg] of this action's feedback type, ready to be filled and passed to [method publish_feedback].
+			</description>
+		</method>
+		<method name="create_result">
+			<return type="RosMsg" />
+			<description>
+				Creates and returns an empty [RosMsg] of this action's result type, ready to be filled and passed to one of the terminal methods.
+			</description>
+		</method>
+		<method name="get_goal" qualifiers="const">
+			<return type="RosMsg" />
+			<description>
+				Returns the goal message sent by the client.
+			</description>
+		</method>
+		<method name="get_goal_id" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the unique identifier of this goal as a hexadecimal string. Useful for logging when handling several concurrent goals.
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] while the goal has not reached a terminal state yet.
+			</description>
+		</method>
+		<method name="is_cancel_requested" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] once a client has requested this goal to be canceled. Poll it inside long-running execute callbacks and finish with [method canceled].
+			</description>
+		</method>
+		<method name="publish_feedback">
+			<return type="void" />
+			<param index="0" name="feedback" type="RosMsg" />
+			<description>
+				Publishes a [param feedback] message for this goal. Clients receive it through the [signal RosGoalHandle.feedback] signal.
+			</description>
+		</method>
+		<method name="succeed">
+			<return type="void" />
+			<param index="0" name="result" type="RosMsg" />
+			<description>
+				Terminates the goal successfully, sending [param result] to the client (the client sees [constant RosGoalHandle.STATUS_SUCCEEDED]).
+			</description>
+		</method>
+	</methods>
+</class>

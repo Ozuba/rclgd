@@ -29,6 +29,11 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(RosClient)
 	GDREGISTER_CLASS(RosRequest)
 	GDREGISTER_CLASS(RosService)
+	//Actions
+	GDREGISTER_CLASS(RosActionClient)
+	GDREGISTER_CLASS(RosGoalHandle)
+	GDREGISTER_CLASS(RosActionServer)
+	GDREGISTER_CLASS(RosServerGoalHandle)
 	//TF2
 	GDREGISTER_CLASS(RosTfBroadcaster)
 	GDREGISTER_CLASS(RosTfListener)

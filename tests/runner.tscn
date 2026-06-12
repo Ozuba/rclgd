@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://cbk1gtutdgxii" path="res://test_latency.gd" id="7"]
 [ext_resource type="Script" uid="uid://dhrvsqt3badmx" path="res://test_bandwidth.gd" id="8"]
 [ext_resource type="Script" uid="uid://cmommywfd6jy8" path="res://test_nesting.gd" id="9"]
+[ext_resource type="Script" path="res://test_action.gd" id="10"]
 
 [node name="Node" type="Node" unique_id=1182878789]
 script = ExtResource("1_m3p76")
@@ -36,3 +37,6 @@ script = ExtResource("8")
 
 [node name="TestNesting" type="Node" parent="." unique_id=206623073]
 script = ExtResource("9")
+
+[node name="TestAction" type="Node" parent="." unique_id=206623074]
+script = ExtResource("10")

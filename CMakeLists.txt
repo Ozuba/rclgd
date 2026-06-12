@@ -76,6 +76,8 @@ target_sources(rclgd PRIVATE
     src/rclgd/ros_subscriber.cpp
     src/rclgd/ros_client.cpp
     src/rclgd/ros_service.cpp
+    src/rclgd/ros_action_client.cpp
+    src/rclgd/ros_action_server.cpp
     src/rclgd/ros_tf_broadcaster.cpp
     src/rclgd/ros_tf_listener.cpp
     src/rclgd/ros_qos.cpp

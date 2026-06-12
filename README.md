@@ -23,7 +23,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Service Clients
 - [x] Service Servers
 - [x] Timers
-- [ ] Actions
+- [x] Action Clients & Servers
 - [x] Parameters
 - [x] TF2 Publishers and Listeners
 - [x] TF2 Listeners And Broadcasters as 3D Nodes in godot (Will be deprecated in future update)
@@ -136,6 +136,42 @@ func _on_status_received(msg: RosMsg):
 	print(msg)
 
 ```
+
+### Actions
+Action servers auto-accept incoming goals and hand them to your execute callback as a [RosServerGoalHandle]; drive each goal to exactly one terminal state (`succeed`, `abort` or `canceled`). Clients get a [RosGoalHandle] back from `send_goal`, which exposes `feedback` and `completed` signals you can `await`.
+
+```GDScript
+# Server: classic Fibonacci action
+var server = ros_node.create_action_server("fibonacci", "example_interfaces/action/Fibonacci",
+	func(goal_handle):
+		var sequence = [0, 1]
+		for i in range(2, goal_handle.get_goal().order):
+			if goal_handle.is_cancel_requested():
+				var canceled_result = goal_handle.create_result()
+				canceled_result.sequence = sequence
+				goal_handle.canceled(canceled_result)
+				return
+			sequence.append(sequence[i - 1] + sequence[i - 2])
+			var fb = goal_handle.create_feedback()
+			fb.sequence = sequence
+			goal_handle.publish_feedback(fb)
+		var result = goal_handle.create_result()
+		result.sequence = sequence
+		goal_handle.succeed(result)
+)
+
+# Client
+var client = ros_node.create_action_client("fibonacci", "example_interfaces/action/Fibonacci")
+if client.wait_for_server(2.0):
+	var goal = client.create_goal()
+	goal.order = 10
+	var goal_handle = client.send_goal(goal)
+	goal_handle.feedback.connect(func(msg): print("Partial: ", msg.sequence))
+	await goal_handle.completed
+	if goal_handle.get_status() == RosGoalHandle.STATUS_SUCCEEDED:
+		print("Result: ", goal_handle.get_result().sequence)
+```
+A running goal can be canceled from the client with `goal_handle.cancel()`; the server sees it through `is_cancel_requested()` and the final status arrives via the `completed` signal as `STATUS_CANCELED`.
 
 ## Coordinate conventions
 Godot and ROS are both right-handed but use different axis conventions. RCLGD maps between them with a fixed permutation used consistently by the TF broadcaster and listener:

@@ -24,6 +24,23 @@
 				Returns the number of subscribers currently active on a specific [param topic] in the ROS 2 graph.
 			</description>
 		</method>
+		<method name="create_action_client">
+			<return type="RosActionClient" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="action_type" type="Variant" />
+			<description>
+				Creates and returns a [RosActionClient] for the specified [param action_name] and [param action_type] (e.g. [code]"example_interfaces/action/Fibonacci"[/code]).
+			</description>
+		</method>
+		<method name="create_action_server">
+			<return type="RosActionServer" />
+			<param index="0" name="action_name" type="String" />
+			<param index="1" name="action_type" type="Variant" />
+			<param index="2" name="execute_callback" type="Callable" />
+			<description>
+				Creates and returns a [RosActionServer] for the specified [param action_name] and [param action_type]. Incoming goals are auto-accepted and handed to [param execute_callback] on the main thread as a [RosServerGoalHandle], which must be driven to a terminal state. See [RosActionServer] for a full example.
+			</description>
+		</method>
 		<method name="create_client">
 			<return type="RosClient" />
 			<param index="0" name="srv_name" type="String" />
@@ -50,14 +67,24 @@
 				Creates and returns a [RosService] server for the specified service name and type. The [param callback] is triggered whenever a request is received.
 			</description>
 		</method>
-		<method name="create_subscriber">
+		<method name="create_subscriber" deprecated="Use [method create_subscription] instead, which matches standard ROS 2 client library naming.">
 			<return type="RosSubscriber" />
 			<param index="0" name="topic" type="String" />
 			<param index="1" name="type" type="Variant" />
 			<param index="2" name="callback" type="Callable" />
 			<param index="3" name="qos" type="RosQoS" default="null" />
 			<description>
-				Creates and returns a [RosSubscriber] to receive messages from a specific [param topic]. The [param callback] is triggered for every new message received.
+				Alias of [method create_subscription], kept for backwards compatibility.
+			</description>
+		</method>
+		<method name="create_subscription">
+			<return type="RosSubscriber" />
+			<param index="0" name="topic" type="String" />
+			<param index="1" name="type" type="Variant" />
+			<param index="2" name="callback" type="Callable" />
+			<param index="3" name="qos" type="RosQoS" default="null" />
+			<description>
+				Creates and returns a [RosSubscriber] to receive messages from a specific [param topic]. The [param callback] is triggered for every new message received, always on the Godot main thread. Use [param qos] to configure the Quality of Service for the subscription.
 			</description>
 		</method>
 		<method name="create_tf_broadcaster">

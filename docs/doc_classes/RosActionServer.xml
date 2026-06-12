@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosActionServer" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Action Server that executes long-running goals from clients.
+	</brief_description>
+	<description>
+		[RosActionServer] lets Godot act as a server for ROS 2 actions. It is created through [method RosNode.create_action_server], passing an execute callback.
+		Incoming goals are accepted automatically and handed to the execute callback on the Godot main thread as a [RosServerGoalHandle]. Cancel requests are accepted automatically too; the execute callback observes them by polling [method RosServerGoalHandle.is_cancel_requested].
+		The execute callback must drive every goal to exactly one terminal state: [method RosServerGoalHandle.succeed], [method RosServerGoalHandle.abort] or [method RosServerGoalHandle.canceled]. Because the callback runs on the main thread, long-running goals should spread their work over frames with [code]await[/code] rather than blocking.
+		[codeblock]
+		var server = ros_node.create_action_server("fibonacci", "example_interfaces/action/Fibonacci",
+		    func(goal_handle):
+		        var sequence = [0, 1]
+		        for i in range(2, goal_handle.get_goal().order):
+		            sequence.append(sequence[i - 1] + sequence[i - 2])
+		            var fb = goal_handle.create_feedback()
+		            fb.sequence = sequence
+		            goal_handle.publish_feedback(fb)
+		            await get_tree().process_frame
+		        var result = goal_handle.create_result()
+		        result.sequence = sequence
+		        goal_handle.succeed(result)
+		)
+		[/codeblock]
+		Keep a reference to the returned server object: like every rclgd interface it unregisters from the ROS graph when it is freed.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

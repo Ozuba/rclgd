@@ -72,33 +72,34 @@ GDScript Examples
 Manual Transform Conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When manually converting a Godot ``Transform3D`` to a ROS 2 data structure, extract the complete rotation as a ``Quaternion``. Re-mapping and shuffling the quaternion components directly preserves structural symmetry and eliminates matrix shearing or skewing errors.
+The exact mapping used internally by the TF broadcaster and listener is exposed on the ``rclgd`` singleton as :ref:`godot_to_ros_vector<class_rclgd_method_godot_to_ros_vector>`, ``ros_to_godot_vector``, ``godot_to_ros_quat`` and ``ros_to_godot_quat``. Use these helpers whenever you build geometry by hand (poses, twists, odometry), so your data always agrees with what TF publishes:
 
 .. code-block:: gdscript
 
     func godot_to_ros_transform(t: Transform3D) -> RosMsg:
         var msg = RosMsg.from_type("geometry_msgs/msg/Transform")
-        
+
         # 1. Map Position (Origin)
-        # Godot -Z is Forward -> ROS +X | Godot -X is Left -> ROS +Y
-        msg.translation.x = -t.origin.z
-        msg.translation.y = -t.origin.x
-        msg.translation.z =  t.origin.y
-        
+        var pos = rclgd.godot_to_ros_vector(t.origin)
+        msg.translation.x = pos.x
+        msg.translation.y = pos.y
+        msg.translation.z = pos.z
+
         # 2. Map Rotation (Quaternion)
-        # Directly transfer components to match translation axis changes
-        var q = t.basis.get_quaternion()
-        msg.rotation.x = -q.z # Maps Godot Forward (-Z) to ROS X
-        msg.rotation.y = -q.x # Maps Godot Right (+X) to ROS Y (negated for Left)
-        msg.rotation.z =  q.y # Maps Godot Up (+Y) to ROS Z
-        msg.rotation.w =  q.w # Real part remains unchanged
-        
+        var q = rclgd.godot_to_ros_quat(t.basis.get_quaternion())
+        msg.rotation.x = q.x
+        msg.rotation.y = q.y
+        msg.rotation.z = q.z
+        msg.rotation.w = q.w
+
         return msg
+
+Under the hood the vector helper applies the table above (``ros = Vector3(-godot.z, -godot.x, godot.y)``), and the quaternion helper shuffles the components the same way, which preserves structural symmetry and eliminates matrix shearing or skewing errors.
 
 Using TF Broadcasters and Listeners
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-High-level nodes like `RosTfBroadcaster`, `RosTfBroadcaster3D`, and `RosTfListener` abstract these conversions natively under the hood, transforming local scene trees directly into valid ROS 2 `/tf` configurations.
+High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these conversions natively under the hood, transforming local scene trees directly into valid ROS 2 `/tf` configurations. Each broadcaster/listener belongs to the `RosNode` that created it, so transforms show up in the ROS graph under the node that publishes them.
 
 .. code-block:: gdscript
 
@@ -116,9 +117,10 @@ High-level nodes like `RosTfBroadcaster`, `RosTfBroadcaster3D`, and `RosTfListen
         broadcaster.send_transform(t, "base_link", "odom")
 
     func get_robot_position():
-        # Looks up a ROS transform and returns a native Godot Transform3D 
-        # with inverse coordinate mappings applied automatically
+        # Looks up a ROS transform and returns a native Godot Transform3D
+        # with inverse coordinate mappings applied automatically.
+        # Returns null when the transform is not (yet) available.
         var t = listener.lookup_transform("odom", "base_link")
-        if t:
+        if t != null:
             print("Robot Position in Godot space: ", t.origin)
             print("Robot Rotation Basis: ", t.basis)

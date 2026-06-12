@@ -23,6 +23,8 @@ Core Concepts Mapping
 *   **Messages** (`RosMsg`): Dynamic data structures passed between nodes, powered by BabelFish.
 *   **Topics** (`RosPublisher` / `RosSubscriber`): Named channels for continuous data streams.
 *   **Services** (`RosService` / `RosClient`): Asynchronous Request/Response communication patterns.
+*   **Actions** (`RosActionServer` / `RosActionClient`): Long-running, cancelable goals with continuous feedback.
 *   **Timers** (`RosTimer`): Executor-synchronized periodic tasks.
+*   **Transforms** (`RosTfBroadcaster` / `RosTfListener`): TF2 integration with automatic Godot/ROS axis convention mapping.
 
 By bringing these concepts natively into GDScript, **rclgd** empowers you to build complex robotics simulations and visualizations with exceptional performance.

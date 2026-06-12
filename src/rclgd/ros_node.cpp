@@ -29,8 +29,14 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), 
                          &RosNode::create_client);
 
-    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"), 
+    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"),
                          &RosNode::create_service);
+
+    ClassDB::bind_method(D_METHOD("create_action_client", "action_name", "action_type"),
+                         &RosNode::create_action_client);
+
+    ClassDB::bind_method(D_METHOD("create_action_server", "action_name", "action_type", "execute_callback"),
+                         &RosNode::create_action_server);
     ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
     ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
     ClassDB::bind_method(D_METHOD("create_timer", "seconds", "callback"), &RosNode::create_timer);
@@ -245,6 +251,28 @@ Ref<RosService> RosNode::create_service(const String &p_srv_name, const Variant 
     Ref<RosService> srv;
     srv.instantiate();
     srv->setup(node_, p_srv_name, ros_type, p_callback);
+    return srv;
+}
+
+Ref<RosActionClient> RosNode::create_action_client(const String &p_action_name, const Variant &p_action_type)
+{
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(p_action_type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Action Client.");
+    Ref<RosActionClient> client;
+    client.instantiate();
+    client->setup(node_, p_action_name, ros_type);
+    return client;
+}
+
+Ref<RosActionServer> RosNode::create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback)
+{
+    RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
+    String ros_type = _get_type_from_variant(p_action_type);
+    RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Action Server.");
+    Ref<RosActionServer> srv;
+    srv.instantiate();
+    srv->setup(node_, p_action_name, ros_type, p_execute_callback);
     return srv;
 }
 

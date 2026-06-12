@@ -54,7 +54,7 @@ We create a subscriber during the turtle's setup. The callback automatically rec
 
     func setup(turtle_name: String):
         # Create the Subscriber:
-        cmd_vel_sub = ros_node.create_subscriber("/" + turtle_name + "/cmd_vel", "geometry_msgs/msg/Twist", _on_cmd_vel)
+        cmd_vel_sub = ros_node.create_subscription("/" + turtle_name + "/cmd_vel", "geometry_msgs/msg/Twist", _on_cmd_vel)
 
     # Handling the callback data:
     func _on_cmd_vel(msg: RosMsg):

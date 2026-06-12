@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosActionClient" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A ROS 2 Action Client for sending goals to an action server.
+	</brief_description>
+	<description>
+		[RosActionClient] allows Godot to send goals to ROS 2 action servers. It is created through [method RosNode.create_action_client].
+		Actions are designed for long-running tasks: unlike services they provide continuous feedback while the goal executes, and they can be canceled mid-flight.
+		Use [method create_goal] to build a goal message, then [method send_goal] to dispatch it. The returned [RosGoalHandle] acts as a handle for the in-flight goal: connect to its signals or [code]await[/code] them to track acceptance, feedback and the final result.
+		[codeblock]
+		var client = ros_node.create_action_client("fibonacci", "example_interfaces/action/Fibonacci")
+		if client.wait_for_server(2.0):
+		    var goal = client.create_goal()
+		    goal.order = 10
+		    var handle = client.send_goal(goal)
+		    handle.feedback.connect(func(msg): print("Partial: ", msg.sequence))
+		    await handle.completed
+		    if handle.get_status() == RosGoalHandle.STATUS_SUCCEEDED:
+		        print("Result: ", handle.get_result().sequence)
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_goal">
+			<return type="RosMsg" />
+			<description>
+				Creates and returns an empty [RosMsg] of the correct type for this client's action goals (e.g. the [code]Goal[/code] part of the action definition).
+			</description>
+		</method>
+		<method name="is_server_ready" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an action server for this action is currently available. Unlike [method wait_for_server] this never blocks.
+			</description>
+		</method>
+		<method name="send_goal">
+			<return type="RosGoalHandle" />
+			<param index="0" name="goal" type="RosMsg" />
+			<description>
+				Sends a [param goal] to the action server asynchronously. Returns a [RosGoalHandle] that tracks the goal's lifecycle: acceptance/rejection, feedback and the final result.
+			</description>
+		</method>
+		<method name="wait_for_server">
+			<return type="bool" />
+			<param index="0" name="timeout_sec" type="float" />
+			<description>
+				Blocks until the action server is available or [param timeout_sec] is reached. Returns [code]true[/code] if the server is available.
+			</description>
+		</method>
+	</methods>
+</class>

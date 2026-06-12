@@ -14,11 +14,19 @@ A core component of **rclgd** is `ros_babel_fish`. This library enables dynamic 
 Threading and Lifecycle
 -----------------------
 
-Under the hood, **rclgd** runs the standard `rclcpp` executor in a background thread to manage network traffic without blocking the Godot main thread.
+Under the hood, **rclgd** runs the standard `rclcpp` executor in a background thread (a `MultiThreadedExecutor`) to manage network traffic without blocking the Godot main thread. Launching with ``--ros-args -p use_separate_thread:=false`` switches to a single-threaded executor spun synchronously on the physics tick, for deterministic setups.
 
-*   **Thread Safety**: Communication between the ROS 2 executor thread and the Godot Engine is carefully synchronized.
+Where do callbacks run?
+
+*   **Subscriptions, timers, action clients and action servers**: always dispatched to the Godot main thread (via ``call_deferred``), so plain GDScript is safe.
+*   **Service servers**: the callback runs synchronously on the executor thread, because the response must be filled before it is returned to the client. Keep these callbacks self-contained, or use an action server for long-running work.
+*   In physics-synchronous mode everything runs on the main thread and no caveats apply.
+
+Lifecycle details:
+
 *   **Node Lifecycle**: The `RosNode` GDScript objects manage the lifetime of their underlying C++ `rclcpp::Node` counterparts.
-*   **Initialization**: `rclcpp::init()` is invoked automatically when the Godot extension loads. You only need to initialize your specific `RosNode` instances inside your scripts.
+*   **Initialization**: ``rclgd.init()`` initializes the ROS 2 context and starts the executor; call it once before creating nodes.
+*   **Shutdown**: ``rclgd.shutdown()`` stops the executor and tears the context down. It is also invoked automatically when the extension unloads, so the process always exits cleanly. ``Ctrl+C`` (SIGINT) is caught and translated into a regular ``SceneTree.quit()`` on the main thread.
 *   **Memory Management**: Most **rclgd** classes inherit from `RefCounted`. They are automatically freed by Godot's memory manager when they fall out of scope, cleanly unregistering themselves from the ROS 2 graph.
 
 Signals vs. Callbacks

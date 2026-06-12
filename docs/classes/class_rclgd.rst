@@ -23,6 +23,12 @@ The **rclgd** singleton is the core of the ROS 2 bridge for Godot. It manages th
 
 Before using any other ROS 2 components, you must call :ref:`init()<class_rclgd_method_init>` to initialize the environment.
 
+\ **Executor modes:** By default the ROS 2 executor spins in a separate thread (subscription, timer and action callbacks are deferred to the Godot main thread, so regular GDScript stays safe). Launch with ``--ros-args -p use_separate_thread:=false`` to spin synchronously on the physics tick instead.
+
+\ **Simulation time:** Launch with ``--ros-args -p use_sim_time:=true`` to make Godot the time source: the physics tick drives and publishes ``/clock``, scaled by ``Engine.time_scale``.
+
+\ **Error handling:** RCLGD errors break into the script debugger by default. Set the ``rclgd/debug/break_on_error`` project setting to ``false`` to only log them instead.
+
 .. rst-class:: classref-reftable-group
 
 Methods
@@ -31,13 +37,21 @@ Methods
 .. table::
    :widths: auto
 
-   +---------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                    | :ref:`init<class_rclgd_method_init>`\ (\ args\: `PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ = PackedStringArray()\ ) |
-   +---------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`ok<class_rclgd_method_ok>`\ (\ ) |const|                                                                                                                               |
-   +---------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                    | :ref:`shutdown<class_rclgd_method_shutdown>`\ (\ )                                                                                                                           |
-   +---------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`godot_to_ros_quat<class_rclgd_method_godot_to_ros_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|      |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`godot_to_ros_vector<class_rclgd_method_godot_to_ros_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|        |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                | :ref:`init<class_rclgd_method_init>`\ (\ args\: `PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ = PackedStringArray()\ ) |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__             | :ref:`ok<class_rclgd_method_ok>`\ (\ ) |const|                                                                                                                               |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`ros_to_godot_quat<class_rclgd_method_ros_to_godot_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|      |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`ros_to_godot_vector<class_rclgd_method_ros_to_godot_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|        |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                | :ref:`shutdown<class_rclgd_method_shutdown>`\ (\ )                                                                                                                           |
+   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -65,6 +79,30 @@ Emitted when the ROS 2 context has been successfully initialized and is ready to
 Method Descriptions
 -------------------
 
+.. _class_rclgd_method_godot_to_ros_quat:
+
+.. rst-class:: classref-method
+
+`Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ **godot_to_ros_quat**\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_godot_to_ros_quat>`
+
+Converts a rotation from the Godot axis convention to the ROS axis convention. This is the exact mapping used internally by :ref:`RosTfBroadcaster<class_RosTfBroadcaster>`, so rotations you build by hand (e.g. for an ``Odometry`` message) stay consistent with TF.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_godot_to_ros_vector:
+
+.. rst-class:: classref-method
+
+`Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__ **godot_to_ros_vector**\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_godot_to_ros_vector>`
+
+Converts a vector from the Godot axis convention (-Z forward, +Y up) to the ROS axis convention (+X forward, +Z up). This is the exact mapping used internally by :ref:`RosTfBroadcaster<class_RosTfBroadcaster>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_rclgd_method_init:
 
 .. rst-class:: classref-method
@@ -86,6 +124,30 @@ Arguments provided in ``args`` are passed to the ROS 2 initialization system (e.
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **ok**\ (\ ) |const| :ref:`🔗<class_rclgd_method_ok>`
 
 Returns ``true`` if the ROS 2 context is currently active and the executor is running.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_ros_to_godot_quat:
+
+.. rst-class:: classref-method
+
+`Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ **ros_to_godot_quat**\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_ros_to_godot_quat>`
+
+Converts a rotation from the ROS axis convention to the Godot axis convention. Inverse of :ref:`godot_to_ros_quat()<class_rclgd_method_godot_to_ros_quat>` and the exact mapping used internally by :ref:`RosTfListener<class_RosTfListener>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_ros_to_godot_vector:
+
+.. rst-class:: classref-method
+
+`Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__ **ros_to_godot_vector**\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_ros_to_godot_vector>`
+
+Converts a vector from the ROS axis convention (+X forward, +Z up) to the Godot axis convention (-Z forward, +Y up). Inverse of :ref:`godot_to_ros_vector()<class_rclgd_method_godot_to_ros_vector>` and the exact mapping used internally by :ref:`RosTfListener<class_RosTfListener>`.
 
 .. rst-class:: classref-item-separator
 

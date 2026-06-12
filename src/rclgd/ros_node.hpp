@@ -10,6 +10,8 @@
 #include "ros_subscriber.hpp"
 #include "ros_client.hpp"
 #include "ros_service.hpp"
+#include "ros_action_client.hpp"
+#include "ros_action_server.hpp"
 #include "ros_tf_broadcaster.hpp"
 #include "ros_tf_listener.hpp"
 #include "ros_timer.hpp"
@@ -51,9 +53,13 @@ public:
     Ref<RosPublisher> create_publisher(const String &topic, const Variant &type, const Ref<RosQoS> &qos = Ref<RosQoS>());
     Ref<RosSubscriber> create_subscription(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
 
-    // Service client and subscriber
+    // Service client and server
     Ref<RosClient> create_client(const String &p_srv_name, const Variant &p_srv_type);
     Ref<RosService> create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback);
+
+    // Action client and server
+    Ref<RosActionClient> create_action_client(const String &p_action_name, const Variant &p_action_type);
+    Ref<RosActionServer> create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback);
 
     // Timers
     Ref<RosTimer> create_timer(double p_seconds, const Callable &p_callback);
