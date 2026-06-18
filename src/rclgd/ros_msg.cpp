@@ -153,18 +153,20 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
     code += "\tinit(ROS_TYPE_NAME)\n\n";
 
     CompoundMessage::SharedPtr babel = msg->get_babel();
-    for (const KeyValue<StringName, Variant> &E : msg->members_)
+    for (const std::string &key_str : babel->keys())
     {
-        String field = String(E.key);
+        StringName field_sn(String(key_str.c_str()));
+        String field = String(key_str.c_str());
+        Variant value = msg->get_member(field_sn); // lazily convert this field
         String type_hint;
 
-        if (E.value.get_type() == Variant::OBJECT)
+        if (value.get_type() == Variant::OBJECT)
         {
-            Ref<RosMsg> nested = Object::cast_to<RosMsg>(E.value);
+            Ref<RosMsg> nested = Object::cast_to<RosMsg>(value);
             type_hint = nested->get_type_name();
             _gen_recursive(nested->get_ros_interface_name(), p_dest_folder, p_processed);
         }
-        else if (E.value.get_type() == Variant::ARRAY)
+        else if (value.get_type() == Variant::ARRAY)
         {
             // An untyped Godot Array is either an array of compounds or of
             // bool/other primitives. (Packed arrays carry their own Variant type
@@ -194,11 +196,11 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
         }
         else
         {
-            type_hint = Variant::get_type_name(E.value.get_type());
+            type_hint = Variant::get_type_name(value.get_type());
         }
 
         // No cast needed: get_member returns the nested message with its shadow
-        // script already attached (see init_babel), so it is genuinely a `type_hint`.
+        // script already attached, so it is genuinely a `type_hint`.
         code += "var " + field + " : " + type_hint + ":\n";
         code += "\tget: return get_member(&\"" + field + "\")\n";
         code += "\tset(v): set_member(&\"" + field + "\", v)\n\n";
@@ -216,43 +218,42 @@ void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
     msg_ = msg;
     members_.clear();
 
-    for (const std::string &key_str : msg_->keys())
-    {
-        StringName member_name = String(key_str.c_str());
-        ros_babel_fish::Message &member = (*msg_)[key_str];
-        Variant value;
-        // If member is compound
-        if (member.type() == ros_babel_fish::MessageTypes::Compound)
-        {
-            // RECURSIVE BRANCH: Initialize nested message
-            Ref<RosMsg> sub;
-            sub.instantiate();
-
-            // Aliasing: 'sub_ptr' points to 'member' but shares ref-count with 'msg_'
-            auto sub_ptr = std::shared_ptr<ros_babel_fish::CompoundMessage>(
-                msg_,
-                &member.as<ros_babel_fish::CompoundMessage>());
-
-            sub->init_babel(sub_ptr);
-            value = sub;
-        } // Here we could check for typed arrays
-        else // If leaf node, primitive or packed array
-        {
-            // LEAF NODE: Primitive or PackedArray
-            // Create a temporary shared_ptr alias to satisfy the Ros2Godot template
-            ros_babel_fish::Message::SharedPtr member_ptr(msg_, &member);
-            RBF2_TEMPLATE_CALL(Ros2Godot::call, member.type(), value, member_ptr);
-        }
-
-        // Store in cache for the GDScript getters
-        members_[member_name] = value;
-    }
-
-    // Promote this message to its typed shadow class (if one was generated) so
-    // top-level, nested, and array-element messages are all real typed instances.
-    // This runs for every message we build, including nested ones (each sub runs
-    // its own init_babel), so the whole tree is typed in one pass.
+    // Members are NOT converted here — that happens lazily on first access in
+    // get_member(). We only attach the typed shadow class (cheap, once) so this
+    // object reports the right type; nested messages are wrapped (and scripted)
+    // only when their field is actually read.
     _apply_script(this);
+}
+
+Variant RosMsg::_convert_member(const StringName &p_name) const
+{
+    if (!msg_)
+        return Variant();
+
+    std::string key = String(p_name).utf8().get_data();
+    if (!msg_->containsKey(key))
+        return Variant();
+
+    ros_babel_fish::Message &member = (*msg_)[key];
+    Variant value;
+    if (member.type() == ros_babel_fish::MessageTypes::Compound)
+    {
+        // Wrap a nested compound. 'sub_ptr' aliases 'member' but shares the
+        // ref-count with 'msg_', so the sub-message writes into our buffer.
+        Ref<RosMsg> sub;
+        sub.instantiate();
+        auto sub_ptr = std::shared_ptr<ros_babel_fish::CompoundMessage>(
+            msg_, &member.as<ros_babel_fish::CompoundMessage>());
+        sub->init_babel(sub_ptr);
+        value = sub;
+    }
+    else
+    {
+        // Leaf node: primitive or (packed/compound) array.
+        ros_babel_fish::Message::SharedPtr member_ptr(msg_, &member);
+        RBF2_TEMPLATE_CALL(Ros2Godot::call, member.type(), value, member_ptr);
+    }
+    return value;
 }
 
 void RosMsg::init(const String &ros_type_name)
@@ -309,17 +310,15 @@ String RosMsg::_to_string() const
     // Start the string representation
     String out = get_type_name() + " {\n";
 
-    // Iterate over the Godot-converted members we already have in our cache
-    for (const KeyValue<StringName, Variant> &E : members_)
+    if (msg_)
     {
-        String key = String(E.key);
-
-        // Variant::stringify() or a simple cast to String works here.
-        // If the member is another RosMsg, Godot will call its _to_string() automatically.
-        String value_str = E.value.stringify();
-
-        // Add indentation for a clean look
-        out += "  \"" + key + "\": " + value_str + "\n";
+        // Walk the schema (not the cache) so every field is shown; get_member
+        // lazily converts each one. Stringifying is a debug path, not hot.
+        for (const std::string &key_str : msg_->keys())
+        {
+            StringName key(String(key_str.c_str()));
+            out += "  \"" + String(key) + "\": " + get_member(key).stringify() + "\n";
+        }
     }
 
     out += "}";
@@ -332,33 +331,47 @@ void RosMsg::_get_property_list(List<PropertyInfo> *p_list) const
 {
     // If we have a script attached, let the script define the properties
     // to avoid double-entries in the inspector.
-    if (get_script().get_type() != Variant::NIL)
+    if (!msg_ || get_script().get_type() != Variant::NIL)
     {
         return;
     }
 
-    for (const KeyValue<StringName, Variant> &E : members_)
+    // Report the schema's members; convert lazily to learn each Variant type
+    // (inspector path only, not the receive hot path).
+    for (const std::string &key_str : msg_->keys())
     {
-        p_list->push_back(PropertyInfo(E.value.get_type(), E.key));
+        StringName key(String(key_str.c_str()));
+        p_list->push_back(PropertyInfo(get_member(key).get_type(), key));
     }
 }
 
 bool RosMsg::_get(const StringName &p_name, Variant &r_ret) const
 {
-    if (members_.has(p_name))
+    if (!msg_)
+        return false;
+    // Fast path: already converted. Avoids a schema key scan on repeated reads.
+    HashMap<StringName, Variant>::Iterator it = members_.find(p_name);
+    if (it)
     {
-        r_ret = members_[p_name];
+        r_ret = it->value;
         return true;
     }
-    return false;
+    // Cold path: membership is decided by the schema, then convert + cache.
+    if (!msg_->containsKey(String(p_name).utf8().get_data()))
+        return false;
+    r_ret = get_member(p_name);
+    return true;
 }
 
 bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
 {
-    if (!msg_ || !members_.has(p_name))
+    if (!msg_)
         return false;
 
     std::string key = String(p_name).utf8().get_data();
+    // Membership is decided by the schema; the cache may not be populated yet.
+    if (!msg_->containsKey(key))
+        return false;
     try
     {
         ros_babel_fish::Message &ros_member = (*msg_)[key];
@@ -399,15 +412,16 @@ bool RosMsg::_set(const StringName &p_name, const Variant &p_value)
     }
 }
 
-// Direct access to the cache
+// Lazy accessor: convert the member on first access, then serve from cache.
 Variant RosMsg::get_member(const StringName &p_name) const
 {
-    // Because of Deep Init, if it's not in the cache, it doesn't exist.
-    if (members_.has(p_name))
-    {
-        return members_[p_name];
-    }
-    return Variant();
+    HashMap<StringName, Variant>::Iterator it = members_.find(p_name);
+    if (it)
+        return it->value;
+
+    Variant value = _convert_member(p_name);
+    members_[p_name] = value;
+    return value;
 }
 
 void RosMsg::set_member(const StringName &p_name, const Variant &p_value)

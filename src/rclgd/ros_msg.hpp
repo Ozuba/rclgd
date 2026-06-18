@@ -34,12 +34,19 @@ using namespace godot;
 
     private:
         //Fish dynamic support
-        
+
         //The message its wrapping its compound because any message its a tree of object nodes with leafs ending up in a convertible ros to godot primitive
         CompoundMessage::SharedPtr msg_;
 
-        //Stores Message contents
-        HashMap<StringName, Variant> members_;
+        // Lazy Godot-side cache of converted members. Members are converted from
+        // the BabelFish buffer on first access (see get_member) rather than all
+        // up front, so receiving a large message you only read a field or two of
+        // stays cheap. Mutable because population happens inside const accessors.
+        mutable HashMap<StringName, Variant> members_;
+
+        // Convert a single member (compound -> nested RosMsg, leaf -> Variant)
+        // straight from the BabelFish buffer, without consulting/updating the cache.
+        Variant _convert_member(const StringName &p_name) const;
 
 
     protected:
