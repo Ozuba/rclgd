@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RosActionClient" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="RosActionClient" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
 		A ROS 2 Action Client for sending goals to an action server.
 	</brief_description>
@@ -48,5 +48,20 @@
 				Blocks until the action server is available or [param timeout_sec] is reached. Returns [code]true[/code] if the server is available.
 			</description>
 		</method>
+		<method name="wait_for_server_async">
+			<return type="void" />
+			<param index="0" name="timeout_sec" type="float" />
+			<description>
+				Asynchronously waits for the action server to become available up to [param timeout_sec] seconds. Emits the [signal server_available] signal when the server state changes or the timeout is reached.
+			</description>
+		</method>
 	</methods>
+	<signals>
+		<signal name="server_available">
+			<param index="0" name="available" type="bool" />
+			<description>
+				Emitted when the action server becomes available or when an asynchronous wait times out.
+			</description>
+		</signal>
+	</signals>
 </class>

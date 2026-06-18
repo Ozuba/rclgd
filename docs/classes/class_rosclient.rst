@@ -33,13 +33,32 @@ Methods
 .. table::
    :widths: auto
 
-   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`RosRequest<class_RosRequest>`                                       | :ref:`async_send_request<class_RosClient_method_async_send_request>`\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ )                                                 |
-   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`RosMsg<class_RosMsg>`                                               | :ref:`create_request<class_RosClient_method_create_request>`\ (\ )                                                                                                |
-   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`wait_for_service<class_RosClient_method_wait_for_service>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) |
-   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`RosRequest<class_RosRequest>`                                       | :ref:`async_send_request<class_RosClient_method_async_send_request>`\ (\ request\: :ref:`RosMsg<class_RosMsg>`\ )                                                             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`RosMsg<class_RosMsg>`                                               | :ref:`create_request<class_RosClient_method_create_request>`\ (\ )                                                                                                            |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`wait_for_service<class_RosClient_method_wait_for_service>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ )             |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                    | :ref:`wait_for_service_async<class_RosClient_method_wait_for_service_async>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) |
+   +---------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Signals
+-------
+
+.. _class_RosClient_signal_service_available:
+
+.. rst-class:: classref-signal
+
+**service_available**\ (\ available\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__\ ) :ref:`🔗<class_RosClient_signal_service_available>`
+
+Emitted when the service server becomes available or when an asynchronous wait times out.
 
 .. rst-class:: classref-section-separator
 
@@ -81,6 +100,18 @@ Creates and returns an empty :ref:`RosMsg<class_RosMsg>` of the correct type for
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **wait_for_service**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosClient_method_wait_for_service>`
 
 Blocks until the service server is available or the ``timeout_sec`` is reached. Returns ``true`` if the service is available.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosClient_method_wait_for_service_async:
+
+.. rst-class:: classref-method
+
+|void| **wait_for_service_async**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosClient_method_wait_for_service_async>`
+
+Asynchronously waits for the service server to become available up to ``timeout_sec`` seconds. Emits the :ref:`service_available<class_RosClient_signal_service_available>` signal when the service state changes or the timeout is reached.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

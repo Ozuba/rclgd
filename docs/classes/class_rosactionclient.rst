@@ -45,15 +45,34 @@ Methods
 .. table::
    :widths: auto
 
-   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`RosMsg<class_RosMsg>`                                               | :ref:`create_goal<class_RosActionClient_method_create_goal>`\ (\ )                                                                                                    |
-   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`is_server_ready<class_RosActionClient_method_is_server_ready>`\ (\ ) |const|                                                                                    |
-   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`RosGoalHandle<class_RosGoalHandle>`                                 | :ref:`send_goal<class_RosActionClient_method_send_goal>`\ (\ goal\: :ref:`RosMsg<class_RosMsg>`\ )                                                                    |
-   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`wait_for_server<class_RosActionClient_method_wait_for_server>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) |
-   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`RosMsg<class_RosMsg>`                                               | :ref:`create_goal<class_RosActionClient_method_create_goal>`\ (\ )                                                                                                                |
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`is_server_ready<class_RosActionClient_method_is_server_ready>`\ (\ ) |const|                                                                                                |
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`RosGoalHandle<class_RosGoalHandle>`                                 | :ref:`send_goal<class_RosActionClient_method_send_goal>`\ (\ goal\: :ref:`RosMsg<class_RosMsg>`\ )                                                                                |
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ | :ref:`wait_for_server<class_RosActionClient_method_wait_for_server>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ )             |
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                    | :ref:`wait_for_server_async<class_RosActionClient_method_wait_for_server_async>`\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) |
+   +---------------------------------------------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+.. rst-class:: classref-section-separator
+
+----
+
+.. rst-class:: classref-descriptions-group
+
+Signals
+-------
+
+.. _class_RosActionClient_signal_server_available:
+
+.. rst-class:: classref-signal
+
+**server_available**\ (\ available\: `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__\ ) :ref:`🔗<class_RosActionClient_signal_server_available>`
+
+Emitted when the action server becomes available or when an asynchronous wait times out.
 
 .. rst-class:: classref-section-separator
 
@@ -107,6 +126,18 @@ Sends a ``goal`` to the action server asynchronously. Returns a :ref:`RosGoalHan
 `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **wait_for_server**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosActionClient_method_wait_for_server>`
 
 Blocks until the action server is available or ``timeout_sec`` is reached. Returns ``true`` if the server is available.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosActionClient_method_wait_for_server_async:
+
+.. rst-class:: classref-method
+
+|void| **wait_for_server_async**\ (\ timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ ) :ref:`🔗<class_RosActionClient_method_wait_for_server_async>`
+
+Asynchronously waits for the action server to become available up to ``timeout_sec`` seconds. Emits the :ref:`server_available<class_RosActionClient_signal_server_available>` signal when the server state changes or the timeout is reached.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

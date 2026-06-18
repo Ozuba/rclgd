@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RosClient" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="RosClient" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
 		A ROS 2 Service Client for making requests to a service server.
 	</brief_description>
@@ -31,5 +31,20 @@
 				Blocks until the service server is available or the [param timeout_sec] is reached. Returns [code]true[/code] if the service is available.
 			</description>
 		</method>
+		<method name="wait_for_service_async">
+			<return type="void" />
+			<param index="0" name="timeout_sec" type="float" />
+			<description>
+				Asynchronously waits for the service server to become available up to [param timeout_sec] seconds. Emits the [signal service_available] signal when the service state changes or the timeout is reached.
+			</description>
+		</method>
 	</methods>
+	<signals>
+		<signal name="service_available">
+			<param index="0" name="available" type="bool" />
+			<description>
+				Emitted when the service server becomes available or when an asynchronous wait times out.
+			</description>
+		</signal>
+	</signals>
 </class>
