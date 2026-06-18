@@ -2,8 +2,10 @@
 #define ROS_ACTION_CLIENT_HPP
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/thread.hpp>
 #include <ros_babel_fish/babel_fish.hpp>
 #include "ros_msg.hpp"
+#include "ros_qos.hpp"
 
 #include <mutex>
 
@@ -77,16 +79,26 @@ private:
     ros_babel_fish::BabelFishActionClient::SharedPtr client_;
     std::string action_type_;
 
+    // Background Godot Thread backing wait_for_server_async.
+    Ref<Thread> wait_thread_;
+    void _run_wait_for_server(double p_timeout_sec); // thread body
+    void _finish_wait_for_server(bool p_available);  // main thread: join + emit
+
 protected:
     static void _bind_methods();
 
 public:
     RosActionClient() = default;
+    ~RosActionClient();
 
     // Internal setup called by RosNode
-    void setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name, const String &p_action_type);
+    void setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name, const String &p_action_type, const Ref<RosQoS> &p_qos = Ref<RosQoS>());
 
+    // Blocking: stalls the calling thread for up to p_timeout_sec.
     bool wait_for_server(double p_timeout_sec);
+    // Non-blocking: emits "server_available(bool)" on the main thread once the
+    // action server appears or the timeout elapses. Await it directly.
+    void wait_for_server_async(double p_timeout_sec);
     bool is_server_ready() const;
     Ref<RosMsg> create_goal();
     Ref<RosGoalHandle> send_goal(const Ref<RosMsg> &p_goal);

@@ -253,6 +253,52 @@ namespace RosTypeMapping
         static void handle(CompoundArrayMessage_<B, FL> &ros_array, const Variant &p_val) {}
     };
 
+    // For a generic (untyped) Godot Array, infer the ROS array type from the
+    // first element. Empty arrays are ambiguous, so they map to NOT_SET.
+    static rclcpp::ParameterValue generic_array_to_ros_param(const Array &p_arr)
+    {
+        if (p_arr.is_empty())
+            return rclcpp::ParameterValue();
+
+        switch (p_arr[0].get_type())
+        {
+        case Variant::BOOL:
+        {
+            std::vector<bool> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((bool)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::INT:
+        {
+            std::vector<int64_t> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((int64_t)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::FLOAT:
+        {
+            std::vector<double> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((double)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::STRING:
+        {
+            std::vector<std::string> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back(p_arr[i].operator String().utf8().get_data());
+            return rclcpp::ParameterValue(v);
+        }
+        default:
+            return rclcpp::ParameterValue();
+        }
+    }
+
     // Inside RosTypeMapping or as a separate helper in your header
     static rclcpp::ParameterValue variant_to_ros_param(const Variant &p_val)
     {
@@ -266,8 +312,56 @@ namespace RosTypeMapping
             return rclcpp::ParameterValue(double(p_val));
         case Variant::STRING:
             return rclcpp::ParameterValue(p_val.operator String().utf8().get_data());
-        // For arrays, you can leverage your existing PackedArray logic if needed,
-        // but ROS parameters usually stick to basic primitives or std::vectors.
+
+        // --- Array parameter types (rcl_interfaces / ROS 2 supports these) ---
+        case Variant::PACKED_BYTE_ARRAY:
+        {
+            PackedByteArray a = p_val;
+            std::vector<uint8_t> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_INT32_ARRAY:
+        {
+            PackedInt32Array a = p_val;
+            std::vector<int64_t> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back((int64_t)a[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_INT64_ARRAY:
+        {
+            PackedInt64Array a = p_val;
+            std::vector<int64_t> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_FLOAT32_ARRAY:
+        {
+            PackedFloat32Array a = p_val;
+            std::vector<double> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back((double)a[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_FLOAT64_ARRAY:
+        {
+            PackedFloat64Array a = p_val;
+            std::vector<double> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_STRING_ARRAY:
+        {
+            PackedStringArray a = p_val;
+            std::vector<std::string> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back(a[i].utf8().get_data());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::ARRAY:
+            return generic_array_to_ros_param(p_val);
+
         default:
             return rclcpp::ParameterValue();
         }
@@ -285,7 +379,54 @@ namespace RosTypeMapping
             return p_param.as_double();
         case rclcpp::ParameterType::PARAMETER_STRING:
             return String(p_param.as_string().c_str());
-        // Add array cases here if you want to support them
+
+        // --- Array parameter types ---
+        case rclcpp::ParameterType::PARAMETER_BYTE_ARRAY:
+        {
+            const std::vector<uint8_t> &v = p_param.as_byte_array();
+            PackedByteArray a;
+            a.resize(v.size());
+            if (!v.empty())
+                std::memcpy(a.ptrw(), v.data(), v.size());
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
+        {
+            const std::vector<bool> &v = p_param.as_bool_array();
+            // No PackedBoolArray exists, so use a generic Array.
+            Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = (bool)v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
+        {
+            const std::vector<int64_t> &v = p_param.as_integer_array();
+            PackedInt64Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
+        {
+            const std::vector<double> &v = p_param.as_double_array();
+            PackedFloat64Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
+        {
+            const std::vector<std::string> &v = p_param.as_string_array();
+            PackedStringArray a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = String(v[i].c_str());
+            return a;
+        }
         default:
             return Variant();
         }
@@ -316,6 +457,13 @@ struct Ros2Godot
             {
                 auto &ros_array = p_msg->as<CompoundArrayMessage>();
                 Array g_arr;
+                // Type the array as Array[RosXxx] (when the shadow script exists)
+                // so it satisfies the generated typed property. set_typed must run
+                // on the empty array, before we fill it.
+                String elem_class = RosMsg::shadow_class_name(String(ros_array.elementDatatype().c_str()));
+                Ref<Script> elem_script = RosMsg::script_for_class(elem_class);
+                if (elem_script.is_valid())
+                    g_arr.set_typed(Variant::OBJECT, "RosMsg", elem_script);
                 g_arr.resize(ros_array.size());
                 for (size_t i = 0; i < ros_array.size(); ++i)
                 {

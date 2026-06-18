@@ -54,12 +54,12 @@ public:
     Ref<RosSubscriber> create_subscription(const String &topic, const Variant &type, const Callable &callback, const Ref<RosQoS> &qos= Ref<RosQoS>());
 
     // Service client and server
-    Ref<RosClient> create_client(const String &p_srv_name, const Variant &p_srv_type);
-    Ref<RosService> create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback);
+    Ref<RosClient> create_client(const String &p_srv_name, const Variant &p_srv_type, const Ref<RosQoS> &qos = Ref<RosQoS>());
+    Ref<RosService> create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback, const Ref<RosQoS> &qos = Ref<RosQoS>());
 
     // Action client and server
-    Ref<RosActionClient> create_action_client(const String &p_action_name, const Variant &p_action_type);
-    Ref<RosActionServer> create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback);
+    Ref<RosActionClient> create_action_client(const String &p_action_name, const Variant &p_action_type, const Ref<RosQoS> &qos = Ref<RosQoS>());
+    Ref<RosActionServer> create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback, const Callable &p_goal_callback = Callable(), const Ref<RosQoS> &qos = Ref<RosQoS>());
 
     // Timers
     Ref<RosTimer> create_timer(double p_seconds, const Callable &p_callback);

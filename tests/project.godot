@@ -13,7 +13,7 @@ config_version=5
 config/name="tests"
 config/description="Unit tests for rclgd"
 run/main_scene="uid://cy6csno8w3xtm"
-config/features=PackedStringArray("4.6", "Forward Plus")
+config/features=PackedStringArray("4.7", "Forward Plus")
 config/icon="res://icon.svg"
 
 [display]

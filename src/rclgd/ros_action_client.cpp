@@ -1,6 +1,8 @@
 #include "ros_action_client.hpp"
 #include "rclgd.hpp"
 
+#include <godot_cpp/variant/callable_method_pointer.hpp>
+
 using BabelGoalHandle = ros_babel_fish::BabelFishActionClient::GoalHandle;
 
 /* -------------------------------- RosGoalHandle -------------------------------- */
@@ -108,24 +110,42 @@ void RosGoalHandle::_on_result(const Ref<RosMsg> &p_result, int p_status)
 void RosActionClient::_bind_methods()
 {
     ClassDB::bind_method(D_METHOD("wait_for_server", "timeout_sec"), &RosActionClient::wait_for_server);
+    ClassDB::bind_method(D_METHOD("wait_for_server_async", "timeout_sec"), &RosActionClient::wait_for_server_async);
     ClassDB::bind_method(D_METHOD("is_server_ready"), &RosActionClient::is_server_ready);
     ClassDB::bind_method(D_METHOD("create_goal"), &RosActionClient::create_goal);
     ClassDB::bind_method(D_METHOD("send_goal", "goal"), &RosActionClient::send_goal);
+
+    // Emitted on the main thread by wait_for_server_async; await it directly.
+    ADD_SIGNAL(MethodInfo("server_available", PropertyInfo(Variant::BOOL, "available")));
 }
 
-void RosActionClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name, const String &p_action_type)
+void RosActionClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name, const String &p_action_type, const Ref<RosQoS> &p_qos)
 {
     action_type_ = p_action_type.utf8().get_data();
 
     auto rclgd_ptr = rclgd::get_singleton();
     ERR_FAIL_NULL_MSG(rclgd_ptr, "RCLGD Singleton is null. Is the extension initialized?");
 
+    // Start from rcl defaults and, if a profile was given, apply it to the
+    // request/response/feedback channels. status_topic_qos is left at its
+    // default (transient_local) so late-joining clients still get goal status.
+    rcl_action_client_options_t options = rcl_action_client_get_default_options();
+    if (p_qos.is_valid())
+    {
+        rmw_qos_profile_t profile = p_qos->get_qos().get_rmw_qos_profile();
+        options.goal_service_qos = profile;
+        options.result_service_qos = profile;
+        options.cancel_service_qos = profile;
+        options.feedback_topic_qos = profile;
+    }
+
     try
     {
         client_ = rclgd_ptr->get_fish().create_action_client(
             *p_node,
             p_action_name.utf8().get_data(),
-            action_type_);
+            action_type_,
+            options);
     }
     catch (const std::exception &e)
     {
@@ -138,6 +158,48 @@ bool RosActionClient::wait_for_server(double p_timeout_sec)
 {
     ERR_FAIL_COND_V_EDMSG(!client_, false, "Cannot wait_for_server: Action client is not initialized.");
     return client_->wait_for_action_server(std::chrono::duration<double>(p_timeout_sec));
+}
+
+void RosActionClient::wait_for_server_async(double p_timeout_sec)
+{
+    if (!client_)
+    {
+        call_deferred("emit_signal", "server_available", false);
+        return;
+    }
+    if (wait_thread_.is_valid() && wait_thread_->is_started())
+    {
+        WARN_PRINT_ED("RosActionClient: a wait_for_server_async is already in progress.");
+        return;
+    }
+
+    // Run the blocking wait on a Godot Thread; the result is marshalled back to
+    // the main thread where the worker is joined and the signal emitted.
+    wait_thread_.instantiate();
+    wait_thread_->start(callable_mp(this, &RosActionClient::_run_wait_for_server).bind(p_timeout_sec));
+}
+
+void RosActionClient::_run_wait_for_server(double p_timeout_sec)
+{
+    bool ok = client_ && client_->wait_for_action_server(std::chrono::duration<double>(p_timeout_sec));
+    callable_mp(this, &RosActionClient::_finish_wait_for_server).call_deferred(ok);
+}
+
+void RosActionClient::_finish_wait_for_server(bool p_available)
+{
+    if (wait_thread_.is_valid())
+    {
+        wait_thread_->wait_to_finish();
+        wait_thread_.unref();
+    }
+    emit_signal("server_available", p_available);
+}
+
+RosActionClient::~RosActionClient()
+{
+    // Join an in-flight wait so the Godot Thread is cleaned up on destruction.
+    if (wait_thread_.is_valid() && wait_thread_->is_started())
+        wait_thread_->wait_to_finish();
 }
 
 bool RosActionClient::is_server_ready() const

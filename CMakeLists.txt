@@ -21,7 +21,7 @@ else()
     message(FATAL_ERROR "Unsupported architecture: ${CMAKE_SYSTEM_PROCESSOR}.")
 endif()
 
-set(GODOT_VERSION "4.6")
+set(GODOT_VERSION "4.7")
 
 # 2. Build the URL using the architecture-aware variables
 set(GODOT_URL "https://downloads.godotengine.org/?version=${GODOT_VERSION}&flavor=stable&slug=${GODOT_SLUG}.zip&platform=${GODOT_PLATFORM}")

@@ -26,3 +26,24 @@ func _execute():
 	node.declare_parameter("test_bool", true)
 	var val_bool = node.get_parameter("test_bool")
 	assert_equal(val_bool, true, "Boolean parameter")
+
+	# Array parameter types (round-trip through the ROS parameter server)
+	var floats := PackedFloat64Array([1.5, 2.5, 3.5])
+	node.declare_parameter("test_floats", floats)
+	assert_equal(node.get_parameter("test_floats"), floats, "Float64 array parameter")
+
+	var ints := PackedInt64Array([10, 20, 30])
+	node.declare_parameter("test_ints", ints)
+	assert_equal(node.get_parameter("test_ints"), ints, "Int64 array parameter")
+
+	var strs := PackedStringArray(["a", "b", "c"])
+	node.declare_parameter("test_strs", strs)
+	assert_equal(node.get_parameter("test_strs"), strs, "String array parameter")
+
+	var bytes := PackedByteArray([1, 2, 3, 255])
+	node.declare_parameter("test_bytes", bytes)
+	assert_equal(node.get_parameter("test_bytes"), bytes, "Byte array parameter")
+
+	# Update an array parameter after declaration
+	node.set_parameter("test_floats", PackedFloat64Array([9.0]))
+	assert_equal(node.get_parameter("test_floats"), PackedFloat64Array([9.0]), "Float64 array update")

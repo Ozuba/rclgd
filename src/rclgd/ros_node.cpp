@@ -26,17 +26,21 @@ void RosNode::_bind_methods()
                          &RosNode::create_subscription,
                          DEFVAL(Variant())); // qos default
 
-    ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type"), 
-                         &RosNode::create_client);
+    ClassDB::bind_method(D_METHOD("create_client", "srv_name", "srv_type", "qos"),
+                         &RosNode::create_client,
+                         DEFVAL(Ref<RosQoS>()));
 
-    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback"),
-                         &RosNode::create_service);
+    ClassDB::bind_method(D_METHOD("create_service", "srv_name", "srv_type", "callback", "qos"),
+                         &RosNode::create_service,
+                         DEFVAL(Ref<RosQoS>()));
 
-    ClassDB::bind_method(D_METHOD("create_action_client", "action_name", "action_type"),
-                         &RosNode::create_action_client);
+    ClassDB::bind_method(D_METHOD("create_action_client", "action_name", "action_type", "qos"),
+                         &RosNode::create_action_client,
+                         DEFVAL(Ref<RosQoS>()));
 
-    ClassDB::bind_method(D_METHOD("create_action_server", "action_name", "action_type", "execute_callback"),
-                         &RosNode::create_action_server);
+    ClassDB::bind_method(D_METHOD("create_action_server", "action_name", "action_type", "execute_callback", "goal_callback", "qos"),
+                         &RosNode::create_action_server,
+                         DEFVAL(Callable()), DEFVAL(Ref<RosQoS>()));
     ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
     ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
     ClassDB::bind_method(D_METHOD("create_timer", "seconds", "callback"), &RosNode::create_timer);
@@ -163,8 +167,17 @@ void RosNode::declare_parameter(const String &p_name, const Variant &p_default_v
     // Use your logic to convert the Godot default value into a ROS parameter value
     auto ros_value = RosTypeMapping::variant_to_ros_param(p_default_value);
 
-    // rclcpp call
-    node_->declare_parameter(name, ros_value);
+    // rclcpp throws if the parameter is already declared (or a constraint
+    // rejects the value); funnel it through the RCLGD error path instead of
+    // letting the exception escape into the engine.
+    try
+    {
+        node_->declare_parameter(name, ros_value);
+    }
+    catch (const std::exception &e)
+    {
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to declare parameter '%s': %s", p_name, e.what()));
+    }
 }
 
 void RosNode::set_parameter(const String &p_name, const Variant &p_val)
@@ -173,7 +186,16 @@ void RosNode::set_parameter(const String &p_name, const Variant &p_val)
 
     std::string name = p_name.utf8().get_data();
     auto ros_val = RosTypeMapping::variant_to_ros_param(p_val);
-    node_->set_parameter(rclcpp::Parameter(name, ros_val));
+    // set_parameter throws if the parameter was never declared (unless the node
+    // allows undeclared params) or a set-callback rejects it.
+    try
+    {
+        node_->set_parameter(rclcpp::Parameter(name, ros_val));
+    }
+    catch (const std::exception &e)
+    {
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to set parameter '%s': %s", p_name, e.what()));
+    }
 }
 
 Variant RosNode::get_parameter(const String &p_name)
@@ -232,47 +254,47 @@ Ref<RosSubscriber> RosNode::create_subscription(const String &topic, const Varia
     return sub;
 }
 
-Ref<RosClient> RosNode::create_client(const String &p_srv_name, const Variant &p_srv_type)
+Ref<RosClient> RosNode::create_client(const String &p_srv_name, const Variant &p_srv_type, const Ref<RosQoS> &qos)
 {
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
     String ros_type = _get_type_from_variant(p_srv_type);
     RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Client.");
     Ref<RosClient> client;
     client.instantiate();
-    client->setup(node_, p_srv_name, ros_type);
+    client->setup(node_, p_srv_name, ros_type, qos);
     return client;
 }
 
-Ref<RosService> RosNode::create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback)
+Ref<RosService> RosNode::create_service(const String &p_srv_name, const Variant &p_srv_type, const Callable &p_callback, const Ref<RosQoS> &qos)
 {
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
     String ros_type = _get_type_from_variant(p_srv_type);
     RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Service.");
     Ref<RosService> srv;
     srv.instantiate();
-    srv->setup(node_, p_srv_name, ros_type, p_callback);
+    srv->setup(node_, p_srv_name, ros_type, p_callback, qos);
     return srv;
 }
 
-Ref<RosActionClient> RosNode::create_action_client(const String &p_action_name, const Variant &p_action_type)
+Ref<RosActionClient> RosNode::create_action_client(const String &p_action_name, const Variant &p_action_type, const Ref<RosQoS> &qos)
 {
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
     String ros_type = _get_type_from_variant(p_action_type);
     RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Action Client.");
     Ref<RosActionClient> client;
     client.instantiate();
-    client->setup(node_, p_action_name, ros_type);
+    client->setup(node_, p_action_name, ros_type, qos);
     return client;
 }
 
-Ref<RosActionServer> RosNode::create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback)
+Ref<RosActionServer> RosNode::create_action_server(const String &p_action_name, const Variant &p_action_type, const Callable &p_execute_callback, const Callable &p_goal_callback, const Ref<RosQoS> &qos)
 {
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized.");
     String ros_type = _get_type_from_variant(p_action_type);
     RCLGD_FAIL_COND_V_MSG(ros_type.is_empty(), nullptr, "RCLGD: Could not resolve ROS type for Action Server.");
     Ref<RosActionServer> srv;
     srv.instantiate();
-    srv->setup(node_, p_action_name, ros_type, p_execute_callback);
+    srv->setup(node_, p_action_name, ros_type, p_execute_callback, p_goal_callback, qos);
     return srv;
 }
 

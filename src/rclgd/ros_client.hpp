@@ -2,8 +2,10 @@
 #define ROS_CLIENT_HPP
 
 #include <godot_cpp/classes/ref_counted.hpp>
+#include <godot_cpp/classes/thread.hpp>
 #include <ros_babel_fish/babel_fish.hpp>
 #include "ros_msg.hpp"
+#include "ros_qos.hpp"
 
 using namespace godot;
 
@@ -48,15 +50,28 @@ private:
     ros_babel_fish::BabelFishServiceClient::SharedPtr client_;
     std::string service_type_;
 
+    // Background Godot Thread backing wait_for_service_async.
+    Ref<Thread> wait_thread_;
+    void _run_wait_for_service(double p_timeout_sec); // thread body
+    void _finish_wait_for_service(bool p_available);  // main thread: join + emit
+
 protected:
     static void _bind_methods();
 
 public:
     RosClient() = default;
-    void setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type);
+    ~RosClient();
+    void setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Ref<RosQoS> &p_qos = Ref<RosQoS>());
+
+    // Blocking: stalls the calling thread for up to p_timeout_sec.
     bool wait_for_service(double p_timeout_sec);
+    // Non-blocking: returns immediately and emits "service_available(bool)" on
+    // the main thread once the service appears or the timeout elapses. Use as
+    // `client.wait_for_service_async(t); var ok = await client.service_available`.
+    void wait_for_service_async(double p_timeout_sec);
+
     Ref<RosMsg> create_request();
-    
+
     // Returns the RosRequest handle
     Ref<RosRequest> async_send_request(Ref<RosMsg> p_req);
 };

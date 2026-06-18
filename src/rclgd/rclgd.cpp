@@ -117,6 +117,11 @@ void rclgd::shutdown()
     if (!is_running_)
         return;
 
+    // Stop receiving physics ticks before tearing down the ROS objects they use.
+    SceneTree *tree = Object::cast_to<SceneTree>(Engine::get_singleton()->get_main_loop());
+    if (tree && tree->is_connected("physics_frame", callable_mp(this, &rclgd::_on_physics_tick)))
+        tree->disconnect("physics_frame", callable_mp(this, &rclgd::_on_physics_tick));
+
     if (executor_)
     {
         executor_->cancel();
@@ -175,6 +180,13 @@ void rclgd::_on_physics_tick()
             return;
         }
     }
+
+    // After shutdown() the executor and sim-time publisher are reset. The
+    // physics_frame signal may still fire (shutdown disconnects it, but a
+    // queued emission or teardown ordering can still reach here), so bail out
+    // before touching any of the released ROS objects.
+    if (!is_running_)
+        return;
 
     if (use_sim_time_)
     {

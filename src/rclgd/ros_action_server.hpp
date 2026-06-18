@@ -5,6 +5,7 @@
 #include <godot_cpp/variant/callable.hpp>
 #include <ros_babel_fish/babel_fish.hpp>
 #include "ros_msg.hpp"
+#include "ros_qos.hpp"
 
 using namespace godot;
 
@@ -61,12 +62,19 @@ protected:
 public:
     RosActionServer() = default;
 
-    // Internal setup called by RosNode. Goals are auto-accepted and handed to
+    // Internal setup called by RosNode. Accepted goals are handed to
     // p_execute_callback on the main thread as a RosServerGoalHandle. Cancel
-    // requests are auto-accepted too; the execute callback should poll
+    // requests are auto-accepted; the execute callback should poll
     // is_cancel_requested() and finish with canceled().
+    //
+    // p_goal_callback is optional. When valid it decides whether to accept a
+    // goal: it is called *synchronously on the ROS executor thread* (rclcpp
+    // requires the goal response there) with the goal RosMsg and must return a
+    // bool. Keep it short and self-contained — same threading rules as a service
+    // callback. When invalid (the default), every goal is accepted.
     void setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name,
-               const String &p_action_type, const Callable &p_execute_callback);
+               const String &p_action_type, const Callable &p_execute_callback,
+               const Callable &p_goal_callback = Callable(), const Ref<RosQoS> &p_qos = Ref<RosQoS>());
 };
 
 #endif // ROS_ACTION_SERVER_HPP

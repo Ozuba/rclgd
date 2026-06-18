@@ -1,13 +1,19 @@
 #include "ros_client.hpp"
 #include "rclgd.hpp"
 
+#include <godot_cpp/variant/callable_method_pointer.hpp>
+
 void RosClient::_bind_methods() {
     ClassDB::bind_method(D_METHOD("wait_for_service", "timeout_sec"), &RosClient::wait_for_service);
+    ClassDB::bind_method(D_METHOD("wait_for_service_async", "timeout_sec"), &RosClient::wait_for_service_async);
     ClassDB::bind_method(D_METHOD("create_request"), &RosClient::create_request);
     ClassDB::bind_method(D_METHOD("async_send_request", "request"), &RosClient::async_send_request);
+
+    // Emitted on the main thread by wait_for_service_async; await it directly.
+    ADD_SIGNAL(MethodInfo("service_available", PropertyInfo(Variant::BOOL, "available")));
 }
 
-void RosClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type)
+void RosClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Ref<RosQoS> &p_qos)
 {
     service_type_ = p_srv_type.utf8().get_data();
 
@@ -15,12 +21,17 @@ void RosClient::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_
     auto rclgd_ptr = rclgd::get_singleton();
     ERR_FAIL_NULL_V_EDMSG(rclgd_ptr, , "RCLGD Singleton is null. Is the extension initialized?");
 
+    rmw_qos_profile_t qos_profile = p_qos.is_valid()
+        ? p_qos->get_qos().get_rmw_qos_profile()
+        : rmw_qos_profile_services_default;
+
     try
     {
         client_ = rclgd_ptr->get_fish().create_service_client(
             *p_node,
             p_srv_name.utf8().get_data(),
-            p_srv_type.utf8().get_data());
+            p_srv_type.utf8().get_data(),
+            qos_profile);
     }
     catch (const std::exception &e)
     {
@@ -35,6 +46,52 @@ bool RosClient::wait_for_service(double p_timeout_sec)
     ERR_FAIL_COND_V_EDMSG(!client_, false, "Cannot wait_for_service: Service client is not initialized.");
 
     return client_->wait_for_service(std::chrono::duration<double>(p_timeout_sec));
+}
+
+void RosClient::wait_for_service_async(double p_timeout_sec)
+{
+    if (!client_)
+    {
+        // Report failure on the main thread so callers can always `await`.
+        call_deferred("emit_signal", "service_available", false);
+        return;
+    }
+    if (wait_thread_.is_valid() && wait_thread_->is_started())
+    {
+        WARN_PRINT_ED("RosClient: a wait_for_service_async is already in progress.");
+        return;
+    }
+
+    // Run the blocking wait on a Godot Thread so the main thread (and the ROS
+    // executor) keep running. The result is marshalled back to the main thread
+    // where the worker is joined and the signal emitted.
+    wait_thread_.instantiate();
+    wait_thread_->start(callable_mp(this, &RosClient::_run_wait_for_service).bind(p_timeout_sec));
+}
+
+void RosClient::_run_wait_for_service(double p_timeout_sec)
+{
+    bool ok = client_ && client_->wait_for_service(std::chrono::duration<double>(p_timeout_sec));
+    // Hop back to the main thread to join the thread and emit the signal.
+    callable_mp(this, &RosClient::_finish_wait_for_service).call_deferred(ok);
+}
+
+void RosClient::_finish_wait_for_service(bool p_available)
+{
+    if (wait_thread_.is_valid())
+    {
+        wait_thread_->wait_to_finish(); // worker has already returned; this just joins
+        wait_thread_.unref();
+    }
+    emit_signal("service_available", p_available);
+}
+
+RosClient::~RosClient()
+{
+    // If a wait is still in flight when the client is dropped, join it so the
+    // Godot Thread is cleaned up (bounded by the wait's timeout).
+    if (wait_thread_.is_valid() && wait_thread_->is_started())
+        wait_thread_->wait_to_finish();
 }
 
 Ref<RosMsg> RosClient::create_request()

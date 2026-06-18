@@ -20,9 +20,15 @@ void RosService::_bind_methods()
  * In physics-synchronous mode (use_separate_thread:=false) callbacks run
  * on the main thread and none of this applies.
  */
-void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Callable &p_callback)
+void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Callable &p_callback, const Ref<RosQoS> &p_qos)
 {
     callback_ = p_callback;
+
+    // BabelFish takes an rmw_qos_profile_t for services; fall back to the ROS
+    // service defaults when no profile was provided.
+    rmw_qos_profile_t qos_profile = p_qos.is_valid()
+        ? p_qos->get_qos().get_rmw_qos_profile()
+        : rmw_qos_profile_services_default;
 
     // Create the service via BabelFish
     try
@@ -50,7 +56,8 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
                     // Call synchronously so the response is populated before returning to the client
                     callback_.call(godot_req, godot_res);
                 }
-            });
+            },
+            qos_profile);
     }
     catch (const std::exception &e)
     {

@@ -1,5 +1,11 @@
 #include "ros_msg.hpp"
 #include "utils/ros_type_utils.hpp"
+#include <godot_cpp/classes/project_settings.hpp>
+#include <godot_cpp/classes/resource_loader.hpp>
+#include <godot_cpp/classes/script.hpp>
+#include <godot_cpp/variant/dictionary.hpp>
+#include <godot_cpp/variant/typed_array.hpp>
+#include <mutex>
 #include <sstream>
 
 RosMsg::RosMsg()
@@ -59,6 +65,60 @@ Ref<RosMsg> RosMsg::from_type(const String &ros_type_name)
     return ref;
 }
 
+Ref<Script> RosMsg::script_for_class(const String &p_class_name)
+{
+    // The class-name -> path index is built once from the project's global class
+    // list (cheap, no resource loading); the Scripts themselves are loaded lazily
+    // on first request and cached. Guarded with a mutex because messages are
+    // wrapped on the ROS executor thread, not just the main thread.
+    static std::mutex registry_mutex;
+    static HashMap<String, String> paths;
+    static HashMap<String, Ref<Script>> loaded;
+    static bool indexed = false;
+
+    std::lock_guard<std::mutex> lock(registry_mutex);
+
+    if (!indexed)
+    {
+        TypedArray<Dictionary> classes = ProjectSettings::get_singleton()->get_global_class_list();
+        for (int i = 0; i < classes.size(); ++i)
+        {
+            Dictionary d = classes[i];
+            // Every generated shadow type derives directly from RosMsg.
+            if (String(d.get("base", "")) != "RosMsg")
+                continue;
+            String name = d.get("class", "");
+            String path = d.get("path", "");
+            if (!name.is_empty() && !path.is_empty())
+                paths[name] = path;
+        }
+        indexed = true;
+    }
+
+    if (loaded.has(p_class_name))
+        return loaded[p_class_name];
+    if (!paths.has(p_class_name))
+        return Ref<Script>();
+
+    // Cache the result either way (valid or null) so we don't retry on every message.
+    Ref<Script> scr = ResourceLoader::get_singleton()->load(paths[p_class_name]);
+    loaded[p_class_name] = scr;
+    return scr;
+}
+
+void RosMsg::_apply_script(RosMsg *p_msg)
+{
+    if (!p_msg)
+        return;
+    // Already a scripted instance (e.g. built via `RosXxx.new()`): leave it alone.
+    if (p_msg->get_script().get_type() != Variant::NIL)
+        return;
+
+    Ref<Script> scr = script_for_class(p_msg->get_type_name());
+    if (scr.is_valid())
+        p_msg->set_script(scr); // re-runs _init -> init(), which no-ops (msg_ is set)
+}
+
 void RosMsg::gen_editor_support(const String &p_type, const String &p_dest_folder)
 {
     RCLGD_FAIL_COND_MSG(p_type.is_empty(), "RCLGD: Cannot generate support for empty type name.");
@@ -92,26 +152,55 @@ void RosMsg::_gen_recursive(const String &p_type, const String &p_dest_folder, H
     code += "func _init():\n";
     code += "\tinit(ROS_TYPE_NAME)\n\n";
 
+    CompoundMessage::SharedPtr babel = msg->get_babel();
     for (const KeyValue<StringName, Variant> &E : msg->members_)
     {
         String field = String(E.key);
         String type_hint;
-        bool needs_cast = false;
 
         if (E.value.get_type() == Variant::OBJECT)
         {
             Ref<RosMsg> nested = Object::cast_to<RosMsg>(E.value);
             type_hint = nested->get_type_name();
-            needs_cast = true; 
             _gen_recursive(nested->get_ros_interface_name(), p_dest_folder, p_processed);
+        }
+        else if (E.value.get_type() == Variant::ARRAY)
+        {
+            // An untyped Godot Array is either an array of compounds or of
+            // bool/other primitives. (Packed arrays carry their own Variant type
+            // and fall through to the default branch.) The cached Array may be
+            // empty for a fresh message, so read the element type from BabelFish.
+            std::string key = field.utf8().get_data();
+            ros_babel_fish::Message &member = (*babel)[key];
+            Ref<RosMsg> elem;
+            if (member.type() == MessageTypes::Array &&
+                member.as<ArrayMessageBase>().elementType() == MessageTypes::Compound)
+            {
+                String elem_iface = String(member.as<CompoundArrayMessage>().elementName().c_str());
+                elem = RosMsg::from_type(elem_iface);
+            }
+
+            if (elem.is_valid())
+            {
+                // Array[RosXxx]: element type matches the typed instances that
+                // get_member hands back, so it satisfies the typed property.
+                type_hint = "Array[" + elem->get_type_name() + "]";
+                _gen_recursive(elem->get_ros_interface_name(), p_dest_folder, p_processed);
+            }
+            else
+            {
+                type_hint = "Array";
+            }
         }
         else
         {
             type_hint = Variant::get_type_name(E.value.get_type());
         }
 
+        // No cast needed: get_member returns the nested message with its shadow
+        // script already attached (see init_babel), so it is genuinely a `type_hint`.
         code += "var " + field + " : " + type_hint + ":\n";
-        code += "\tget: return get_member(&\"" + field + "\")" + (needs_cast ? " as RosMsg" : "") + "\n";
+        code += "\tget: return get_member(&\"" + field + "\")\n";
         code += "\tset(v): set_member(&\"" + field + "\", v)\n\n";
     }
 
@@ -158,14 +247,22 @@ void RosMsg::init_babel(const CompoundMessage::SharedPtr msg)
         // Store in cache for the GDScript getters
         members_[member_name] = value;
     }
+
+    // Promote this message to its typed shadow class (if one was generated) so
+    // top-level, nested, and array-element messages are all real typed instances.
+    // This runs for every message we build, including nested ones (each sub runs
+    // its own init_babel), so the whole tree is typed in one pass.
+    _apply_script(this);
 }
 
 void RosMsg::init(const String &ros_type_name)
 {
     // If msg_ is already set, we've already initialized this instance.
+    // Re-entry is expected and benign: attaching the shadow script via set_script
+    // re-runs the GDScript _init, which calls init() again on an already-built
+    // message. Treat it as a deliberate no-op rather than warning.
     if (msg_)
     {
-        WARN_PRINT_ED(vformat("RCLGD: RosMsg already initialized as '%s'. Ignoring second init.", get_type_name()));
         return;
     }
 
@@ -183,13 +280,18 @@ void RosMsg::init(const String &ros_type_name)
     }
 }
 
+String RosMsg::shadow_class_name(const String &p_ros_datatype)
+{
+    // "std_msgs::msg::Header" -> "RosStdMsgsHeader"
+    return "Ros" + p_ros_datatype.replace("::msg::", " ").replace("::", " ").to_pascal_case();
+}
+
 String RosMsg::get_type_name() const
 {
     if (!msg_)
         return "RosUnknownType";
     // We use the C++ Datatype "std_msgs::msg::Header" to build the class name
-    String raw = String(msg_->datatype().c_str());
-    return "Ros" + raw.replace("::msg::", " ").replace("::", " ").to_pascal_case();
+    return shadow_class_name(String(msg_->datatype().c_str()));
 }
 
 // For the ROS Factory: "std_msgs/msg/Header"

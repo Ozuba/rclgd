@@ -125,7 +125,8 @@ void RosServerGoalHandle::canceled(const Ref<RosMsg> &p_result)
 /* ------------------------------- RosActionServer ------------------------------- */
 
 void RosActionServer::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_action_name,
-                            const String &p_action_type, const Callable &p_execute_callback)
+                            const String &p_action_type, const Callable &p_execute_callback,
+                            const Callable &p_goal_callback, const Ref<RosQoS> &p_qos)
 {
     auto rclgd_ptr = rclgd::get_singleton();
     ERR_FAIL_NULL_MSG(rclgd_ptr, "RCLGD Singleton is null. Is the extension initialized?");
@@ -133,6 +134,20 @@ void RosActionServer::setup(std::shared_ptr<rclcpp::Node> p_node, const String &
     // Captured by value so the executor-side callbacks never touch `this`
     // (same lifetime pattern as RosSubscriber).
     Callable callback = p_execute_callback;
+    Callable goal_callback = p_goal_callback;
+
+    // Apply an optional QoS profile to the request/response/feedback channels;
+    // status_topic_qos stays at its default (transient_local) so late joiners
+    // still receive goal status.
+    rcl_action_server_options_t options = rcl_action_server_get_default_options();
+    if (p_qos.is_valid())
+    {
+        rmw_qos_profile_t profile = p_qos->get_qos().get_rmw_qos_profile();
+        options.goal_service_qos = profile;
+        options.result_service_qos = profile;
+        options.cancel_service_qos = profile;
+        options.feedback_topic_qos = profile;
+    }
 
     try
     {
@@ -140,11 +155,22 @@ void RosActionServer::setup(std::shared_ptr<rclcpp::Node> p_node, const String &
             *p_node,
             p_action_name.utf8().get_data(),
             p_action_type.utf8().get_data(),
-            // handle_goal: needs a synchronous answer on the executor thread,
-            // so goals are auto-accepted instead of round-tripping to GDScript.
-            [](const rclcpp_action::GoalUUID &, std::shared_ptr<const CompoundMessage>)
+            // handle_goal: needs a synchronous answer on the executor thread.
+            // With no goal_callback every goal is accepted; otherwise GDScript
+            // decides (synchronously, on this thread — same rules as a service).
+            [goal_callback](const rclcpp_action::GoalUUID &, std::shared_ptr<const CompoundMessage> goal)
             {
-                return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+                if (!goal_callback.is_valid())
+                    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
+
+                Ref<RosMsg> g;
+                g.instantiate();
+                if (goal)
+                    g->init_babel(std::const_pointer_cast<CompoundMessage>(goal));
+
+                bool accept = goal_callback.call(g);
+                return accept ? rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE
+                              : rclcpp_action::GoalResponse::REJECT;
             },
             // handle_cancel: auto-accept; the execute callback observes it
             // through RosServerGoalHandle.is_cancel_requested().
@@ -162,7 +188,8 @@ void RosActionServer::setup(std::shared_ptr<rclcpp::Node> p_node, const String &
                 gh.instantiate();
                 gh->_set_native(handle);
                 callback.call_deferred(gh);
-            });
+            },
+            options);
     }
     catch (const std::exception &e)
     {
