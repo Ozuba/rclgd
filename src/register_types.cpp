@@ -65,6 +65,12 @@ void rclgd_deinit(ModuleInitializationLevel p_level)
 		// Remove the global name
 		Engine::get_singleton()->unregister_singleton("rclgd");
 
+		// Drop cached shadow-type Script refs while the engine (and its
+		// ResourceDB) is still alive. If left to destruct at libc atexit, those
+		// static Refs would unref Scripts whose backing Godot already freed,
+		// crashing with SIGSEGV on exit.
+		RosMsg::clear_type_registry();
+
 		// Destroying the singleton joins the executor thread and shuts
 		// rclcpp down (see rclgd::~rclgd), so the process can exit cleanly
 		// even if the user never called rclgd.shutdown().

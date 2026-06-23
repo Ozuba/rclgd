@@ -107,7 +107,12 @@ using namespace godot;
         // already carries a script, e.g. when created via `RosXxx.new()`).
         static void _apply_script(RosMsg *p_msg);
 
-     
+        // Drop the cached Script Refs. MUST be called during extension de-init
+        // (engine still alive); otherwise the static Refs destruct at atexit after
+        // Godot freed their backing -> use-after-free crash on exit.
+        static void clear_type_registry();
+
+
     };
 
 

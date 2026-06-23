@@ -65,20 +65,29 @@ Ref<RosMsg> RosMsg::from_type(const String &ros_type_name)
     return ref;
 }
 
+// Shadow-type registry. Kept at file scope (not function-local statics) so it can
+// be cleared during extension de-initialization via clear_type_registry(). It must
+// NOT hold its Ref<Script> values past engine teardown: a static Ref destructing at
+// libc atexit unrefs a Script whose backing Godot already freed -> use-after-free
+// crash on exit. So g_loaded is emptied in clear_type_registry() while the engine
+// is still alive.
+namespace
+{
+    std::mutex g_registry_mutex;
+    HashMap<String, String> g_class_paths;     // class name -> .gd path (no Refs, safe)
+    HashMap<String, Ref<Script>> g_loaded;     // class name -> loaded Script (cleared at deinit)
+    bool g_registry_indexed = false;
+}
+
 Ref<Script> RosMsg::script_for_class(const String &p_class_name)
 {
     // The class-name -> path index is built once from the project's global class
     // list (cheap, no resource loading); the Scripts themselves are loaded lazily
     // on first request and cached. Guarded with a mutex because messages are
     // wrapped on the ROS executor thread, not just the main thread.
-    static std::mutex registry_mutex;
-    static HashMap<String, String> paths;
-    static HashMap<String, Ref<Script>> loaded;
-    static bool indexed = false;
+    std::lock_guard<std::mutex> lock(g_registry_mutex);
 
-    std::lock_guard<std::mutex> lock(registry_mutex);
-
-    if (!indexed)
+    if (!g_registry_indexed)
     {
         TypedArray<Dictionary> classes = ProjectSettings::get_singleton()->get_global_class_list();
         for (int i = 0; i < classes.size(); ++i)
@@ -90,20 +99,31 @@ Ref<Script> RosMsg::script_for_class(const String &p_class_name)
             String name = d.get("class", "");
             String path = d.get("path", "");
             if (!name.is_empty() && !path.is_empty())
-                paths[name] = path;
+                g_class_paths[name] = path;
         }
-        indexed = true;
+        g_registry_indexed = true;
     }
 
-    if (loaded.has(p_class_name))
-        return loaded[p_class_name];
-    if (!paths.has(p_class_name))
+    if (g_loaded.has(p_class_name))
+        return g_loaded[p_class_name];
+    if (!g_class_paths.has(p_class_name))
         return Ref<Script>();
 
     // Cache the result either way (valid or null) so we don't retry on every message.
-    Ref<Script> scr = ResourceLoader::get_singleton()->load(paths[p_class_name]);
-    loaded[p_class_name] = scr;
+    Ref<Script> scr = ResourceLoader::get_singleton()->load(g_class_paths[p_class_name]);
+    g_loaded[p_class_name] = scr;
     return scr;
+}
+
+void RosMsg::clear_type_registry()
+{
+    // Called from extension de-init while the engine is still up. Drops the cached
+    // Script Refs here so they are NOT unref'd later at atexit (when Godot's
+    // ResourceDB is gone), which would crash. Safe to rebuild lazily afterwards.
+    std::lock_guard<std::mutex> lock(g_registry_mutex);
+    g_loaded.clear();
+    g_class_paths.clear();
+    g_registry_indexed = false;
 }
 
 void RosMsg::_apply_script(RosMsg *p_msg)

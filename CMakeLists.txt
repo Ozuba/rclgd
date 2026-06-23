@@ -94,6 +94,11 @@ ament_target_dependencies(rclgd rclcpp ros_babel_fish tf2_ros)
 target_link_libraries(rclgd godot_cpp_no_cmake_warnings)
 
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    target_link_options(rclgd PRIVATE -Wl,--exclude-libs,ALL)
+endif()
+
+
 
 #####################################################[ INSTALLATION ]###############################################################
 
