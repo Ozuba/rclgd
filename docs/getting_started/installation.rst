@@ -38,6 +38,20 @@ Building from Source
 
       source install/setup.bash
 
+Running the Godot Editor
+------------------------
+
+The build downloads a matching Godot Engine binary and installs it alongside the
+extension. Once the workspace is sourced, launch the editor through ROS 2:
+
+.. code-block:: bash
+
+   ros2 run rclgd godot
+
+Running Godot this way guarantees the editor is started from the sourced ROS 2
+environment, so `librclgd.so` and all required runtime dependencies resolve
+automatically.
+
 Integrating with Godot
 ----------------------
 
