@@ -48,6 +48,8 @@ find_package(std_msgs REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 # Build godot-cpp
+# Need shaderd libstdc to catch external exception errors from babel_fish or other dloaded libs
+set(GODOTCPP_USE_STATIC_CPP OFF CACHE BOOL "Link libgcc/libstdc++ statically" FORCE)
 add_subdirectory(godot-cpp)
 # Add godot-cpp cmake module for documentation embedding
 list(APPEND CMAKE_MODULE_PATH "${godot-cpp_SOURCE_DIR}/cmake")
