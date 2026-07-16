@@ -17,7 +17,7 @@ func before_test():
 	
 	var topic = "/rclgd/loopback_test"
 	pub = ros_node.create_publisher(topic, "std_msgs/msg/String")
-	sub = ros_node.create_subscriber(topic, "std_msgs/msg/String", _on_message)
+	sub = ros_node.create_subscription(topic, "std_msgs/msg/String", _on_message)
 	
 	# Wait for self-discovery
 	await get_tree().create_timer(1.0).timeout

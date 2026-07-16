@@ -18,10 +18,11 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
 
 - **Seamless Integration**: Use ROS2 nodes directly within Godot (now with Godot 4.7 support).
 - **High Performance**: Built on top of `rclcpp` and `ros_babel_fish` for efficient message handling.
-- **GDScript Friendly**: Simple and intuitive API for GDScript users, with auto-script attachment for shadowed types.
+- **GDScript Friendly**: Simple and intuitive API for GDScript users, with typed message wrappers generated automatically from your package's dependencies.
 - **Dynamic Messaging**: Support for custom ROS2 messages without recompilation thanks to BabelFish.
 - **Full Communication Support**: Full support for Publishers, Subscribers, Timers, as well as awaitable Services and Actions.
-- **Advanced ROS2 Features**: Comprehensive Quality of Service (QoS) support and support for parameter arrays.
+- **Advanced ROS2 Features**: Comprehensive Quality of Service (QoS) support, parameters (including arrays) and simulation time.
+- **First-class Tooling**: Godot projects are native colcon packages (``build_type: rclgd``), managed end to end by the ``ros2 rclgd`` command.
 
 .. toctree::
    :hidden:
@@ -30,6 +31,7 @@ The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling 
    :name: sec-get-started
 
    getting_started/installation
+   getting_started/cli
    getting_started/introduction
 
 .. toctree::

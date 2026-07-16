@@ -25,6 +25,13 @@ The `RosNode` is the entry point for all ROS 2 communication. It should be initi
         print("Node Name: ", ros_node.get_name())
         print("Namespace: ", ros_node.get_namespace())
 
+.. warning::
+    All rclgd communication objects (``RosNode``, ``RosPublisher``,
+    ``RosSubscriber``, ``RosTimer``, ...) are ``RefCounted``: they live only as
+    long as something holds a reference to them. Always store the value
+    returned by the ``create_*`` factories in a member variable — a discarded
+    subscription or timer is freed immediately and silently stops working.
+
 Topics (Pub/Sub)
 ----------------
 
@@ -63,12 +70,11 @@ Subscribing
 
 .. note::
     Subscription callbacks are always invoked on the Godot main thread, so it is safe to touch the scene tree from them.
-    ``create_subscriber`` is a deprecated alias of ``create_subscription``.
 
 Timers
 ------
 
-Use `RosTimer` for periodic logic instead of Godot's built-in timers when synchronization with the ROS executor is required.
+Use `RosTimer` for periodic logic instead of Godot's built-in timers when synchronization with the ROS executor is required. Timers run on the node's clock: with ``use_sim_time:=true`` they follow ``/clock`` and pause when the simulation pauses.
 
 .. code-block:: gdscript
 

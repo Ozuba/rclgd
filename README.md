@@ -32,23 +32,70 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] QoS -> Through QoS RosQoS resource
 - [x] Godot template project
 - [x] Godot Editor Support -> Pseudo-Static Type Wrappers
-- [x] Simulation Time -> Use `--ros-args -p use_sim_time:=true` 
+- [x] Simulation Time -> `-p publish_sim_time:=true` publishes the Godot physics clock on `/clock`; the standard `-p use_sim_time:=true` makes clocks and timers follow `/clock`
 - [x] Native RCLGD packages in colcon
 
 
 
+## Repository layout
+The suite is split into independently releasable ROS 2 packages:
+
+| Package | Type | Contents |
+|---|---|---|
+| `rclgd` | ament_cmake | the GDExtension (librclgd.so), godot launcher, runtime manifest |
+| `colcon_rclgd` | ament_python | the `build_type: rclgd` colcon extension |
+| `rclgd_cli` | ament_python | the `ros2 rclgd` command and the editor addon template |
+| `rclgd_tests` | rclgd | the system-test suite (`tests/`), itself a native rclgd package |
+
 ## Installation
-Clone this package into your workspace and install dependencies, build it and source it.
+Clone this repository into your workspace and install dependencies, build it and source it.
+The Godot editor binary is not downloaded during the build (keeps builds
+offline/buildfarm friendly) — `ros2 rclgd setup` fetches the pinned version
+into the install prefix (`lib/rclgd/godot-bin`, next to `librclgd.so`) and
+verifies its checksum. Re-run it after wiping `install/`.
 
 ```bash
 rosdep install --from-paths src --ignore-src -y -r
-colcon build --packages-select rclgd
+colcon build --packages-up-to rclgd
 source install/setup.bash
+ros2 rclgd setup
 ```
 
-> [!NOTE]
-> rclgd has been tested with Godot 4.5 & 4.6.  
-> You can change the target by retargetting the submodule to corresponding tag and using `-DGODOT_VERSION=4.5`
+To run the system tests, build the test package (it dogfoods the whole
+`build_type: rclgd` pipeline — it needs the suite above built and sourced
+first) and run it like any other rclgd package:
+
+```bash
+colcon build --packages-select rclgd_tests && source install/setup.bash
+ros2 run rclgd_tests rclgd_tests --headless   # exits 0 only if all tests pass
+```
+
+`ros2 rclgd setup` downloads exactly the Godot version this rclgd build
+targets (recorded at build time in `share/rclgd/godot_version`, matching the
+godot-cpp bindings librclgd was compiled against). To use a different Godot
+version, retarget the `godot-cpp` submodule to the corresponding branch, edit
+`GODOT_VERSION` in `rclgd/CMakeLists.txt`, rebuild, and run
+`ros2 rclgd setup` again.
+
+## Command line tools
+rclgd ships a `ros2 rclgd` command:
+
+| Verb | Purpose |
+|---|---|
+| `ros2 rclgd create <name>` | Scaffold a new rclgd package (package.xml, project, addon, demo pub/sub) |
+| `ros2 rclgd editor [pkg]` | Open the Godot editor on a package's **source** project (no argument: current directory, or the project selection screen) |
+| `ros2 rclgd setup` | Download the Godot editor binary matching this build |
+| `ros2 rclgd list` | List built rclgd packages |
+| `ros2 rclgd doctor` | Diagnose broken setups (versions, extension wiring, imports) |
+
+Typed GDScript wrappers (shadow classes) are generated automatically: when a
+project opens in the editor, the rclgd plugin reads the dependencies declared
+in the project's `package.xml` and (re)generates wrappers for their message
+types into `res://addons/rclgd/gen`. Add a `<depend>` to package.xml, reopen
+the editor (or use *Project > Tools > Regenerate ROS2 Types*), and the typed
+classes appear. The generated wrappers are plain GDScript files meant to be
+committed with the project — they regenerate automatically whenever the
+dependency set changes.
 
 
 ## Integration
@@ -78,8 +125,11 @@ A typical rclgd `package.xml` looks like
   </export>
 </package>
 ```
-In order to edit those packages you will need to launch the godot editor by `ros2 run rclgd godot` this will ensure that `librclgd.so`
-is accessible by all projects containing the corresponding `rclgd.gdextension`
+In order to edit those packages launch the godot editor through
+`ros2 rclgd editor <package>` (plain `ros2 rclgd editor` opens the project
+selection screen; `ros2 run rclgd godot` runs the raw engine binary) — this
+resolves the right Godot binary and ensures `librclgd.so` is accessible by
+all projects containing the corresponding `rclgd.gdextension`
 
 Once you run `colcon build` and source your installation you will be able to run your godot-ros application
 as any other ros executable.
@@ -191,7 +241,14 @@ By default the ROS executor spins in a separate thread (`use_separate_thread:=tr
 The type masking system used by rclgd depends at this moment in transfering data between godot and ros contexts, however preliminary tests show that working with high bandwidth types like `PointCloud2` with over 250.000 points its handled nicely.
 
 ## A note on ROS2 buildfarm integration
-Releasing rclgd as a package in the buildfarm would imply, as far as I'm concerned, splitting this repo into subpackages (godot_vendor, rclgd, rclgd_colcon, godot_cpp_vendor) so they are independently buildable entities. This is something I considered but I'm not sure if the buildfarm will handle the godot build process easily, might try when I have some time. However as it is now source distribution remains an easy 3 line setup process. If somebody has any idea on how to solve this easily feel free to open an issue.
+The repository is now split into independently buildable packages (`rclgd`,
+`colcon_rclgd`, `rclgd_cli`) and the engine binary is provisioned at runtime
+(`ros2 rclgd setup`) instead of being downloaded during the build, so no
+`godot_vendor` package is needed. The remaining open point for a buildfarm
+release is the `godot-cpp` git submodule inside the `rclgd` package (bloom
+release tarballs do not include submodules) — options are vendoring the
+godot-cpp sources into the package or a `godot_cpp_vendor` package that
+fetches a pinned source tarball at build time, as many `*_vendor` packages do.
 
 ## Disclaimer
 

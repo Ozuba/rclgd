@@ -3,5 +3,5 @@ log
 install
 **/core.*
 docs/_build
-*/__pycache__
+**/__pycache__/
 *.godot/

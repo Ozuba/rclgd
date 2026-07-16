@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>$name</name>
+  <version>0.1.0</version>
+  <description>$description</description>
+  <maintainer email="$maintainer_email">$maintainer_name</maintainer>
+  <license>$license</license>
+
+  <buildtool_depend>rclgd</buildtool_depend>
+$depends
+  <export>
+    <build_type>rclgd</build_type>
+  </export>
+</package>

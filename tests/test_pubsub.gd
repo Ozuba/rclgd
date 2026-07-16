@@ -7,7 +7,7 @@ func _execute():
 	node.init("test_loopback_node")
 	
 	# Subscriber
-	var sub = node.create_subscriber("/test_topic", "std_msgs/msg/String", func(msg):
+	var sub = node.create_subscription("/test_topic", "std_msgs/msg/String", func(msg):
 		received_msg = msg.data
 	)
 	

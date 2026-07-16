@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>rclgd</name>
+  <version>1.0.0</version>
+  <description>GODOT implementation of rclcpp</description>
+  <maintainer email="miguelozubas@gmail.com">ozuba</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <depend>rclcpp</depend>
+  <depend>ros_babel_fish</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>rosgraph_msgs</depend>
+  <exec_depend>ros2launch</exec_depend>
+
+  <!-- Pull in the rest of the rclgd suite so a single
+       `<buildtool_depend>rclgd</buildtool_depend>` in downstream Godot
+       packages provides the colcon build type and the ros2 CLI. -->
+  <exec_depend>colcon_rclgd</exec_depend>
+  <exec_depend>rclgd_cli</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

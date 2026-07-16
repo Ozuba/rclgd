@@ -105,34 +105,35 @@ In ``world.gd``, we host the ``/spawn`` service:
         # ... [node init] ...
         spawn_srv = ros_node.create_service("/spawn", "turtlesim/srv/Spawn", _on_spawn)
 
-    # The callback receives a Request and Response RosMsg
+    # The callback receives a Request and Response RosMsg. Fill the response
+    # in place — it is sent when the callback returns.
     func _on_spawn(req: RosMsg, res: RosMsg):
         var name = req.name
         if name == "":
             name = "turtle" + str(turtles.size() + 1)
-        
-        # Instantiate our Godot Custom Scene
-        var success = spawn_turtle(name, Vector2(req.x * 50.0, 500.0 - req.y * 50.0), req.theta)
-        
-        if success:
-            res.name = name  # Modify the response directly
-        return success
+        res.name = name  # Modify the response directly
 
-Automatic Thread Safety
-^^^^^^^^^^^^^^^^^^^^^^^
+        # Instantiate our Godot scene on the main thread (see the tip below)
+        spawn_turtle.call_deferred(name, Vector2(req.x * 50.0, 500.0 - req.y * 50.0), req.theta)
+
+Threading in Callbacks
+^^^^^^^^^^^^^^^^^^^^^^
 
 .. tip::
-    **Crucial Detail:** Behind the scenes, ``rclgd`` executes the actual ROS C++ callbacks in a background thread, but inherently marshals all GDScript callbacks back to Godot's main thread using ``call_deferred``. You **can** safely modify Godot's physics engine or visual SceneTree directly inside a service or topic callback without worrying about locks.
+    **Crucial Detail:** Behind the scenes, ``rclgd`` executes the actual ROS C++ callbacks in a background thread, but marshals **topic, timer and action** GDScript callbacks back to Godot's main thread using ``call_deferred`` — you can safely touch the SceneTree from those. **Service server callbacks are the exception**: they run synchronously on the executor thread (the response must be filled before returning to the client), so defer any scene mutation with ``call_deferred``.
 
-Notice how ``turtle.gd`` handles the teleportation service by directly translating the physics, safe in the knowledge it is on the main thread:
+``turtle.gd`` handles the teleportation service accordingly — the response is
+filled in place, while the scene change is deferred to the main thread:
 
 .. code-block:: gdscript
 
-    func _on_teleport_absolute(req: RosMsg, res: RosMsg):
-        # We are safely on the main Godot thread!
-        position = Vector2(req.x * 50.0, 500.0 - req.y * 50.0)
-        rotation = req.theta
-        return true
+    func _on_teleport_absolute(req: RosMsg, _res: RosMsg):
+        # Service callback: executor thread! Defer the scene mutation.
+        _apply_teleport.call_deferred(Vector2(req.x * 50.0, 500.0 - req.y * 50.0), req.theta)
+
+    func _apply_teleport(pos: Vector2, theta: float):
+        position = pos
+        rotation = theta
 
 ----------------------------------
 

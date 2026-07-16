@@ -1789,7 +1789,9 @@ def make_rst_index(grouped_classes: dict[str, list[str]], dry_run: bool, output_
                 f.write(f"    :name: toc-class-ref-{group_name}s\n")
                 f.write("\n")
 
-                if group_name in CLASS_GROUPS_BASE:
+                # Only link the group's base class when it is part of this doc
+                # set (rclgd does not ship Godot's own Variant/Object pages).
+                if group_name in CLASS_GROUPS_BASE and CLASS_GROUPS_BASE[group_name] in grouped_classes[group_name]:
                     f.write(f"    class_{sanitize_class_name(CLASS_GROUPS_BASE[group_name], True)}\n")
 
                 for class_name in grouped_classes[group_name]:

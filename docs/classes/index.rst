@@ -17,7 +17,6 @@ Variant types
     :maxdepth: 1
     :name: toc-class-ref-variants
 
-    class_variant
     class_rclgd
     class_rosactionclient
     class_rosactionserver

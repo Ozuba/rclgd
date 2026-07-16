@@ -20,6 +20,10 @@ config/icon="res://icon.svg"
 
 window/vsync/vsync_mode=0
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/rclgd/plugin.cfg")
+
 [physics]
 
 common/physics_ticks_per_second=400

@@ -26,8 +26,24 @@ Lifecycle details:
 
 *   **Node Lifecycle**: The `RosNode` GDScript objects manage the lifetime of their underlying C++ `rclcpp::Node` counterparts.
 *   **Initialization**: ``rclgd.init()`` initializes the ROS 2 context and starts the executor; call it once before creating nodes.
-*   **Shutdown**: ``rclgd.shutdown()`` stops the executor and tears the context down. It is also invoked automatically when the extension unloads, so the process always exits cleanly. ``Ctrl+C`` (SIGINT) is caught and translated into a regular ``SceneTree.quit()`` on the main thread.
-*   **Memory Management**: Most **rclgd** classes inherit from `RefCounted`. They are automatically freed by Godot's memory manager when they fall out of scope, cleanly unregistering themselves from the ROS 2 graph.
+*   **Shutdown**: ``rclgd.shutdown()`` stops the executor and tears the context down. It is also invoked automatically when the extension unloads, so the process always exits cleanly. ``Ctrl+C`` (SIGINT) and SIGTERM (``ros2 launch`` shutdown, timeouts, systemd) are caught and translated into a regular ``SceneTree.quit()`` on the main thread, so DDS participants are always torn down cleanly.
+*   **Memory Management**: Most **rclgd** classes inherit from `RefCounted`. They are automatically freed by Godot's memory manager when they fall out of scope, cleanly unregistering themselves from the ROS 2 graph. The flip side: keep a reference to every entity you create, or it disappears (see the warning in :doc:`/tutorials/basic_usage`).
+*   **Hidden node**: rclgd maintains one internal node per process, named ``rclgd_<pid>`` so several Godot apps can run side by side. It carries the process-level parameters below and, when enabled, the ``/clock`` publisher.
+
+Simulation Time
+---------------
+
+rclgd separates the two roles around ``/clock``:
+
+*   ``--ros-args -p use_sim_time:=true`` — standard ROS semantics: node clocks
+    and :ref:`RosTimer<class_RosTimer>` follow ``/clock``. Use this alone in a
+    Godot app that runs next to an external simulator (Gazebo, another Godot
+    instance).
+*   ``--ros-args -p publish_sim_time:=true`` — Godot **is** the time source:
+    the physics tick drives ``/clock``, scaled by ``Engine.time_scale`` (a
+    time scale of 0 pauses the clock).
+
+A Godot app that is itself the simulator typically passes both.
 
 Signals vs. Callbacks
 ---------------------

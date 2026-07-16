@@ -1,0 +1,574 @@
+#ifndef ROS_TYPE_UTILS_HPP
+#define ROS_TYPE_UTILS_HPP
+
+#include <godot_cpp/variant/variant.hpp>
+#include <godot_cpp/variant/string.hpp>
+#include <godot_cpp/variant/packed_byte_array.hpp>
+#include <godot_cpp/variant/packed_float32_array.hpp>
+#include <godot_cpp/variant/packed_float64_array.hpp>
+#include <godot_cpp/variant/packed_int32_array.hpp>
+#include <godot_cpp/variant/packed_int64_array.hpp>
+#include <godot_cpp/variant/packed_string_array.hpp>
+#include <godot_cpp/variant/array.hpp>
+
+#include <ros_babel_fish/babel_fish.hpp>
+#include <ros_babel_fish/macros.hpp>
+#include <ros_babel_fish/messages/message.hpp>
+#include <ros_babel_fish/messages/compound_message.hpp>
+#include <ros_babel_fish/messages/array_message.hpp>
+#include <ros_babel_fish/messages/value_message.hpp>
+
+#include "../ros_msg.hpp"
+
+#include <type_traits>
+#include <string>
+#include <algorithm>
+#include <cstring>
+
+using namespace godot;
+using namespace ros_babel_fish;
+
+namespace RosTypeMapping
+{
+
+    // Helper to safely get the address of the underlying data in a BabelFish array.
+    // BabelFish storage for arithmetic types is always contiguous.
+    template <typename T, bool B, bool FL>
+    static void *get_ros_ptr(ArrayMessage_<T, B, FL> &ros_array)
+    {
+        if (ros_array.size() == 0)
+            return nullptr;
+        return (void *)(&ros_array[0]);
+    }
+
+    // --- ROS TO GODOT (Reading/Subscribing) ---
+    struct RosToGodotProvider
+    {
+        template <typename T, bool B, bool FL>
+        static void handle(ArrayMessage_<T, B, FL> &ros_array, Variant &r_ret)
+        {
+            size_t size = ros_array.size();
+
+            // FAST PATH: uint8_t -> PackedByteArray
+            if constexpr (std::is_same_v<T, uint8_t>)
+            {
+                PackedByteArray packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size);
+                r_ret = packed;
+                return;
+            }
+            // FAST PATH: float -> PackedFloat32Array
+            else if constexpr (std::is_same_v<T, float>)
+            {
+                PackedFloat32Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(float));
+                r_ret = packed;
+                return;
+            }
+            // FAST PATH: double -> PackedFloat64Array
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                PackedFloat64Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(double));
+                r_ret = packed;
+                return;
+            }
+            // FAST PATH: int32_t -> PackedInt32Array
+            else if constexpr (std::is_same_v<T, int32_t>)
+            {
+                PackedInt32Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(int32_t));
+                r_ret = packed;
+                return;
+            }
+            // FAST PATH: int64_t -> PackedInt64Array
+            else if constexpr (std::is_same_v<T, int64_t>)
+            {
+                PackedInt64Array packed;
+                packed.resize(size);
+                if (size > 0)
+                    std::memcpy(packed.ptrw(), get_ros_ptr(ros_array), size * sizeof(int64_t));
+                r_ret = packed;
+                return;
+            }
+            // Small integers (int8/int16/uint16) -> PackedInt32Array (element cast)
+            else if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool> && sizeof(T) < 4)
+            {
+                PackedInt32Array packed;
+                packed.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                    packed.set(i, static_cast<int32_t>(ros_array[i]));
+                r_ret = packed;
+                return;
+            }
+            // Wide unsigned integers (uint32/uint64) -> PackedInt64Array (element cast)
+            else if constexpr (std::is_integral_v<T> && !std::is_same_v<T, bool>)
+            {
+                PackedInt64Array packed;
+                packed.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                    packed.set(i, static_cast<int64_t>(ros_array[i]));
+                r_ret = packed;
+                return;
+            }
+
+            // SLOW PATH: Strings, bools or other generic types
+            if constexpr (std::is_same_v<T, std::string>)
+            {
+                PackedStringArray packed;
+                packed.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                    packed.set(i, ros_array[i].c_str());
+                r_ret = packed;
+            }
+            else
+            {
+                Array arr;
+                arr.resize(size);
+                for (size_t i = 0; i < size; ++i)
+                {
+                    if constexpr (std::is_same_v<T, bool>)
+                        arr[i] = static_cast<bool>(ros_array[i]);
+                    else if constexpr (std::is_arithmetic_v<T>)
+                        arr[i] = static_cast<double>(ros_array[i]);
+                    else
+                        arr[i] = Variant();
+                }
+                r_ret = arr;
+            }
+        }
+
+        template <bool B, bool FL>
+        static void handle(CompoundArrayMessage_<B, FL> &ros_array, Variant &r_ret) {}
+    };
+
+    // --- GODOT TO ROS (Writing/Publishing) ---
+    struct GodotToRosProvider
+    {
+        template <typename T, bool B, bool FL>
+        static void handle(ArrayMessage_<T, B, FL> &ros_array, const Variant &p_val)
+        {
+
+            // FAST PATH: PackedByteArray -> uint8_t
+            if constexpr (std::is_same_v<T, uint8_t>)
+            {
+                if (p_val.get_type() == Variant::PACKED_BYTE_ARRAY)
+                {
+                    PackedByteArray pba = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pba.size());
+                    size_t limit = std::min((size_t)pba.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pba.ptr(), limit);
+                    return;
+                }
+            }
+            // FAST PATH: PackedFloat32Array -> float
+            else if constexpr (std::is_same_v<T, float>)
+            {
+                if (p_val.get_type() == Variant::PACKED_FLOAT32_ARRAY)
+                {
+                    PackedFloat32Array pfa = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pfa.size());
+                    size_t limit = std::min((size_t)pfa.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pfa.ptr(), limit * sizeof(float));
+                    return;
+                }
+            }
+            // FAST PATH: PackedFloat64Array -> double
+            else if constexpr (std::is_same_v<T, double>)
+            {
+                if (p_val.get_type() == Variant::PACKED_FLOAT64_ARRAY)
+                {
+                    PackedFloat64Array pfa = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pfa.size());
+                    size_t limit = std::min((size_t)pfa.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pfa.ptr(), limit * sizeof(double));
+                    return;
+                }
+            }
+            // FAST PATH: PackedInt32Array -> int32_t
+            else if constexpr (std::is_same_v<T, int32_t>)
+            {
+                if (p_val.get_type() == Variant::PACKED_INT32_ARRAY)
+                {
+                    PackedInt32Array pia = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pia.size());
+                    size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pia.ptr(), limit * sizeof(int32_t));
+                    return;
+                }
+            }
+            // FAST PATH: PackedInt64Array -> int64_t
+            else if constexpr (std::is_same_v<T, int64_t>)
+            {
+                if (p_val.get_type() == Variant::PACKED_INT64_ARRAY)
+                {
+                    PackedInt64Array pia = p_val;
+                    if constexpr (!FL)
+                        ros_array.resize(pia.size());
+                    size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
+                    if (limit > 0)
+                        std::memcpy(get_ros_ptr(ros_array), pia.ptr(), limit * sizeof(int64_t));
+                    return;
+                }
+            }
+
+            // SLOW PATH: Strings, Bools, or Mixed Arrays
+            Array arr_view = p_val;
+            size_t g_size = arr_view.size();
+            if constexpr (!FL)
+                ros_array.resize(g_size);
+            size_t limit = std::min((size_t)ros_array.size(), g_size);
+            for (size_t i = 0; i < limit; ++i)
+            {
+                Variant item = arr_view[i];
+                if constexpr (std::is_same_v<T, std::string>)
+                    ros_array[i] = item.operator String().utf8().get_data();
+                else if constexpr (std::is_same_v<T, bool>)
+                    ros_array[i] = item.operator bool();
+                else if constexpr (std::is_integral_v<T>)
+                    // Go through int64 so large integers keep full precision
+                    ros_array[i] = static_cast<T>(item.operator int64_t());
+                else if constexpr (std::is_floating_point_v<T>)
+                    ros_array[i] = static_cast<T>(item.operator double());
+            }
+        }
+
+        template <bool B, bool FL>
+        static void handle(CompoundArrayMessage_<B, FL> &ros_array, const Variant &p_val) {}
+    };
+
+    // For a generic (untyped) Godot Array, infer the ROS array type from the
+    // first element. Empty arrays are ambiguous, so they map to NOT_SET.
+    static rclcpp::ParameterValue generic_array_to_ros_param(const Array &p_arr)
+    {
+        if (p_arr.is_empty())
+            return rclcpp::ParameterValue();
+
+        switch (p_arr[0].get_type())
+        {
+        case Variant::BOOL:
+        {
+            std::vector<bool> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((bool)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::INT:
+        {
+            std::vector<int64_t> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((int64_t)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::FLOAT:
+        {
+            std::vector<double> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back((double)p_arr[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::STRING:
+        {
+            std::vector<std::string> v;
+            v.reserve(p_arr.size());
+            for (int i = 0; i < p_arr.size(); ++i)
+                v.push_back(p_arr[i].operator String().utf8().get_data());
+            return rclcpp::ParameterValue(v);
+        }
+        default:
+            return rclcpp::ParameterValue();
+        }
+    }
+
+    // Compound arrays come in three distinct template instantiations
+    // (unbounded, bounded `[<=N]`, fixed-length `[N]`) and as<CompoundArrayMessage>()
+    // only matches the unbounded one — casting a bounded array with it throws.
+    // Dispatch on the runtime flags and hand the correctly-typed array to f.
+    template <typename F>
+    static void with_compound_array(Message &p_msg, F &&f)
+    {
+        ArrayMessageBase &base = p_msg.as<ArrayMessageBase>();
+        if (base.isFixedSize())
+            f(p_msg.as<FixedLengthCompoundArrayMessage>());
+        else if (base.isBounded())
+            f(p_msg.as<BoundedCompoundArrayMessage>());
+        else
+            f(p_msg.as<CompoundArrayMessage>());
+    }
+
+    // Inside RosTypeMapping or as a separate helper in your header
+    static rclcpp::ParameterValue variant_to_ros_param(const Variant &p_val)
+    {
+        switch (p_val.get_type())
+        {
+        case Variant::BOOL:
+            return rclcpp::ParameterValue(bool(p_val));
+        case Variant::INT:
+            return rclcpp::ParameterValue(int64_t(p_val));
+        case Variant::FLOAT:
+            return rclcpp::ParameterValue(double(p_val));
+        case Variant::STRING:
+            return rclcpp::ParameterValue(p_val.operator String().utf8().get_data());
+
+        // --- Array parameter types (rcl_interfaces / ROS 2 supports these) ---
+        case Variant::PACKED_BYTE_ARRAY:
+        {
+            PackedByteArray a = p_val;
+            std::vector<uint8_t> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_INT32_ARRAY:
+        {
+            PackedInt32Array a = p_val;
+            std::vector<int64_t> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back((int64_t)a[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_INT64_ARRAY:
+        {
+            PackedInt64Array a = p_val;
+            std::vector<int64_t> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_FLOAT32_ARRAY:
+        {
+            PackedFloat32Array a = p_val;
+            std::vector<double> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back((double)a[i]);
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_FLOAT64_ARRAY:
+        {
+            PackedFloat64Array a = p_val;
+            std::vector<double> v(a.ptr(), a.ptr() + a.size());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::PACKED_STRING_ARRAY:
+        {
+            PackedStringArray a = p_val;
+            std::vector<std::string> v;
+            v.reserve(a.size());
+            for (int i = 0; i < a.size(); ++i)
+                v.push_back(a[i].utf8().get_data());
+            return rclcpp::ParameterValue(v);
+        }
+        case Variant::ARRAY:
+            return generic_array_to_ros_param(p_val);
+
+        default:
+            return rclcpp::ParameterValue();
+        }
+    }
+
+    static Variant ros_param_to_variant(const rclcpp::Parameter &p_param)
+    {
+        switch (p_param.get_type())
+        {
+        case rclcpp::ParameterType::PARAMETER_BOOL:
+            return p_param.as_bool();
+        case rclcpp::ParameterType::PARAMETER_INTEGER:
+            return p_param.as_int();
+        case rclcpp::ParameterType::PARAMETER_DOUBLE:
+            return p_param.as_double();
+        case rclcpp::ParameterType::PARAMETER_STRING:
+            return String(p_param.as_string().c_str());
+
+        // --- Array parameter types ---
+        case rclcpp::ParameterType::PARAMETER_BYTE_ARRAY:
+        {
+            const std::vector<uint8_t> &v = p_param.as_byte_array();
+            PackedByteArray a;
+            a.resize(v.size());
+            if (!v.empty())
+                std::memcpy(a.ptrw(), v.data(), v.size());
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_BOOL_ARRAY:
+        {
+            const std::vector<bool> &v = p_param.as_bool_array();
+            // No PackedBoolArray exists, so use a generic Array.
+            Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = (bool)v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY:
+        {
+            const std::vector<int64_t> &v = p_param.as_integer_array();
+            PackedInt64Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY:
+        {
+            const std::vector<double> &v = p_param.as_double_array();
+            PackedFloat64Array a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = v[i];
+            return a;
+        }
+        case rclcpp::ParameterType::PARAMETER_STRING_ARRAY:
+        {
+            const std::vector<std::string> &v = p_param.as_string_array();
+            PackedStringArray a;
+            a.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i)
+                a[i] = String(v[i].c_str());
+            return a;
+        }
+        default:
+            return Variant();
+        }
+    }
+
+}
+
+// --- PRIMARY DISPATCHERS ---
+
+struct Ros2Godot
+{
+    template <typename T>
+    static void call(Variant &r_ret, Message::SharedPtr p_msg)
+    {
+        // Handle Compound
+        if constexpr (std::is_same_v<T, CompoundMessage>)
+        {
+            Ref<RosMsg> sub;
+            sub.instantiate();
+            sub->init_babel(std::static_pointer_cast<CompoundMessage>(p_msg));
+            r_ret = sub;
+        }
+        // Handle Array
+        else if constexpr (std::is_base_of_v<ArrayMessageBase, T>)
+        {
+            auto &base_arr = p_msg->as<ArrayMessageBase>();
+            if (base_arr.elementType() == MessageTypes::Compound)
+            {
+                RosTypeMapping::with_compound_array(*p_msg, [&](auto &ros_array)
+                {
+                    Array g_arr;
+                    // Type the array as Array[RosXxx] (when the shadow script exists)
+                    // so it satisfies the generated typed property. set_typed must run
+                    // on the empty array, before we fill it.
+                    String elem_class = RosMsg::shadow_class_name(String(ros_array.elementDatatype().c_str()));
+                    Ref<Script> elem_script = RosMsg::script_for_class(elem_class);
+                    if (elem_script.is_valid())
+                        g_arr.set_typed(Variant::OBJECT, "RosMsg", elem_script);
+                    g_arr.resize(ros_array.size());
+                    for (size_t i = 0; i < ros_array.size(); ++i)
+                    {
+                        Variant el;
+                        Message::SharedPtr element_ptr(p_msg, &ros_array[i]);
+                        RBF2_TEMPLATE_CALL(Ros2Godot::call, MessageTypes::Compound, el, element_ptr);
+                        g_arr[i] = el;
+                    }
+                    r_ret = g_arr;
+                });
+            }
+            else
+            {
+                RBF2_TEMPLATE_CALL_ARRAY_TYPES(RosTypeMapping::RosToGodotProvider::handle, base_arr, r_ret);
+            }
+        }
+        // Handle Primitive
+        else
+        {
+            auto &val_msg = p_msg->as<ValueMessage<T>>();
+            if constexpr (std::is_same_v<T, std::string>)
+                r_ret = String(val_msg.getValue().c_str());
+            else if constexpr (std::is_same_v<T, bool>)
+                r_ret = val_msg.getValue();
+            else if constexpr (std::is_integral_v<T>)
+                r_ret = (int64_t)val_msg.getValue();
+            else if constexpr (std::is_floating_point_v<T>)
+                r_ret = (double)val_msg.getValue();
+
+            else
+                r_ret = Variant();
+        }
+    }
+};
+
+struct Godot2Ros
+{
+    template <typename T>
+    static void call(const Variant &p_val, Message &p_ros_msg)
+    {
+        if constexpr (std::is_same_v<T, CompoundMessage>)
+        {
+            Ref<RosMsg> sub = p_val;
+            if (sub.is_valid() && sub->get_babel())
+                p_ros_msg.as<CompoundMessage>() = *(sub->get_babel());
+        }
+        else if constexpr (std::is_base_of_v<ArrayMessageBase, T>)
+        {
+            auto &base_arr = p_ros_msg.as<ArrayMessageBase>();
+            if (base_arr.elementType() == MessageTypes::Compound)
+            {
+                RosTypeMapping::with_compound_array(p_ros_msg, [&](auto &ros_array)
+                {
+                    Array g_arr = p_val;
+                    // resize() throws for fixed-length arrays and past the upper
+                    // bound of bounded ones; excess Godot elements are dropped.
+                    size_t target = g_arr.size();
+                    if (ros_array.isBounded())
+                        target = std::min(target, ros_array.maxSize());
+                    if (!ros_array.isFixedSize())
+                        ros_array.resize(target);
+                    size_t limit = std::min((size_t)ros_array.size(), (size_t)g_arr.size());
+                    for (size_t i = 0; i < limit; ++i)
+                    {
+                        Ref<RosMsg> sub = g_arr[i];
+                        if (sub.is_valid() && sub->get_babel())
+                            ros_array[i] = *(sub->get_babel());
+                    }
+                });
+            }
+            else
+            {
+                RBF2_TEMPLATE_CALL_ARRAY_TYPES(RosTypeMapping::GodotToRosProvider::handle, base_arr, p_val);
+            }
+        }
+        else
+        {
+            auto &val_msg = p_ros_msg.as<ValueMessage<T>>();
+            if constexpr (std::is_same_v<T, std::string>)
+                val_msg.setValue(p_val.operator String().utf8().get_data());
+            else if constexpr (std::is_integral_v<T>)
+                val_msg.setValue((T)p_val.operator int64_t());
+            else if constexpr (std::is_floating_point_v<T>)
+                val_msg.setValue((T)p_val.operator double());
+            else if constexpr (std::is_same_v<T, bool>)
+                val_msg.setValue(p_val.operator bool());
+        }
+    }
+};
+
+#endif
