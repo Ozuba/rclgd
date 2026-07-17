@@ -11,7 +11,7 @@
   <url type="bugtracker">https://github.com/Ozuba/rclgd/issues</url>
   <url type="website">https://rclgd.readthedocs.io/</url>
 
-  <exec_depend>python3-colcon-core</exec_depend>
+  <exec_depend>python3-colcon-common-extensions</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
