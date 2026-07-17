@@ -4,7 +4,7 @@ package_name = 'rclgd_cli'
 
 setup(
     name=package_name,
-    version='1.0.0',
+    version='2.1.0',
     packages=find_packages(exclude=['test']),
     # Minimal project layout copied by `ros2 rclgd create` (globs must name
     # each directory level and skip dotfiles, so .gitignore is listed

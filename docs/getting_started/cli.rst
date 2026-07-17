@@ -3,13 +3,12 @@ The ros2 rclgd Command
 
 rclgd ships a ``ros2 rclgd`` command (provided by the ``rclgd_cli`` package)
 that covers the whole lifecycle of a Godot-ROS package: scaffolding, opening
-the editor, provisioning the engine and diagnosing broken setups.
+the editor and diagnosing broken setups.
 
 .. code-block:: text
 
    ros2 rclgd create <name>    Scaffold a new rclgd package
    ros2 rclgd editor [pkg]     Open the Godot editor on a package's source project
-   ros2 rclgd setup            Download the Godot editor binary matching this build
    ros2 rclgd list             List built rclgd packages
    ros2 rclgd doctor           Check the installation and report problems
 
@@ -60,20 +59,6 @@ be silently overwritten by the next ``colcon build``.
 ``--import-only`` runs the headless asset import and exits, which is handy in
 CI or after cloning a project whose ``.godot`` folder is (correctly) not
 committed.
-
-setup
------
-
-Downloads the pinned Godot release into the install prefix (next to
-``librclgd.so``) and verifies its SHA-512 checksum against the official
-release sums.
-
-.. code-block:: bash
-
-   ros2 rclgd setup             # no-op if the binary is already there
-   ros2 rclgd setup --force     # re-download (e.g. after a corrupted download)
-
-``--skip-checksum`` skips verification when the sums file is unreachable.
 
 list
 ----

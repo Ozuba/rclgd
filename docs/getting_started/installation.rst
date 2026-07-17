@@ -60,20 +60,14 @@ The repository contains three ROS 2 packages that are built together:
 
 .. _godot-setup:
 
-Downloading the Godot Editor
-----------------------------
+The Godot Editor binary
+-----------------------
 
-The build itself never touches the network (buildfarm friendly). Instead it
-records the engine version librclgd was compiled against, and a single command
-downloads exactly that release — checksum-verified — into the install prefix,
-right next to ``librclgd.so``:
-
-.. code-block:: bash
-
-   ros2 rclgd setup
-
-That's the whole mechanism: no caches, no environment variables. If you wipe
-``install/``, run ``ros2 rclgd setup`` again after rebuilding.
+The build downloads exactly the engine release librclgd was compiled against
+— verified against a pinned SHA-512 — and installs it into the prefix as
+``lib/rclgd/godot-bin``, right next to ``librclgd.so``. That's the whole
+mechanism: no caches, no environment variables, no extra step; a built (or
+apt-installed) rclgd is complete out of the box.
 
 To verify everything is wired up:
 
@@ -82,7 +76,7 @@ To verify everything is wired up:
    ros2 rclgd doctor
 
 ``doctor`` checks the ROS environment, the extension library, the launcher,
-the version pin and the downloaded binary, and prints a hint for anything that
+the version pin and the engine binary, and prints a hint for anything that
 is off.
 
 Targeting a different Godot version
@@ -93,8 +87,10 @@ bindings were generated from. To change it:
 
 1. Retarget the ``godot-cpp`` submodule to the branch/tag matching the desired
    version.
-2. Edit ``GODOT_VERSION`` in ``rclgd/CMakeLists.txt`` to the matching release.
-3. Rebuild and run ``ros2 rclgd setup`` again.
+2. Edit ``GODOT_VERSION`` and the ``GODOT_SHA512_*`` pins in
+   ``rclgd/CMakeLists.txt`` to the matching release (the sums come from the
+   release's ``SHA512-SUMS.txt``).
+3. Rebuild.
 
 The build warns if the pinned version and the submodule's API version disagree.
 
@@ -115,9 +111,9 @@ How extension resolution works
 
 Projects created with ``ros2 rclgd create`` ship a tiny
 ``addons/rclgd/bin/rclgd.gdextension`` that references ``librclgd.so`` by bare
-name. Godot resolves it relative to the running executable, and since
-``ros2 rclgd setup`` places the engine binary next to ``librclgd.so`` in the
-install prefix, there is exactly **one** copy of the library on the machine and
+name. Godot resolves it relative to the running executable, and since the
+build installs the engine binary next to ``librclgd.so`` in the install
+prefix, there is exactly **one** copy of the library on the machine and
 every project uses it. No per-project binaries, no symlinks — packages stay
 pure source and fully portable.
 

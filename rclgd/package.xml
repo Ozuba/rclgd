@@ -2,10 +2,14 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rclgd</name>
-  <version>1.0.0</version>
+  <version>2.1.0</version>
   <description>GODOT implementation of rclcpp</description>
   <maintainer email="miguelozubas@gmail.com">ozuba</maintainer>
   <license>MIT</license>
+
+  <url type="repository">https://github.com/Ozuba/rclgd</url>
+  <url type="bugtracker">https://github.com/Ozuba/rclgd/issues</url>
+  <url type="website">https://rclgd.readthedocs.io/</url>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

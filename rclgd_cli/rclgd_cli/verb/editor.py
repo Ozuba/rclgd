@@ -60,8 +60,9 @@ class EditorVerb(VerbExtension):
                 project = None
 
         if not godot.binary_path(rclgd_prefix).exists():
-            return (f'Godot {version} is not installed. '
-                    "hint: run 'ros2 rclgd setup' to download it")
+            return (f'Godot {version} missing from {rclgd_prefix} — broken '
+                    'install. hint: rebuild rclgd (the engine is installed '
+                    'by the build)')
 
         if args.import_only:
             if project is None:

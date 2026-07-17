@@ -1,21 +1,26 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)
 project(rclgd)
 
-# Compiler options
-add_compile_options("-O3")
+# Optimized by default; buildfarm/CI overrides via -DCMAKE_BUILD_TYPE
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
 find_package(ament_cmake REQUIRED)
 #####################################################[ GODOT RUNTIME ]##########################################################
-# The engine binary is a *runtime* dependency: librclgd.so only needs godot-cpp
-# to compile. The build just records the required version and `ros2 rclgd
-# setup` downloads the editor binary into lib/rclgd/ afterwards, keeping the
-# build network-free (buildfarm/offline friendly).
+# The engine binary is downloaded at build time and installed as
+# lib/rclgd/godot-bin — next to librclgd.so, where GDExtension resolves the
+# bare "librclgd.so" path in rclgd.gdextension. It ships with the package, so
+# an apt/deb install is complete out of the box and the file is owned by the
+# package manager. The archive is verified against a pinned SHA512 before use.
 
 # The one supported engine version: the version the godot-cpp submodule (and
-# therefore librclgd.so) is built against. `ros2 rclgd setup` downloads
-# exactly this release. To target another version, retarget the submodule and
-# edit this line — a plain variable (not CACHE), so the edit always takes
-# effect on rebuild.
+# therefore librclgd.so) is built against. To target another version,
+# retarget the submodule, edit this line, and refresh the SHA512 pins below
+# from the release's SHA512-SUMS.txt — plain variables (not CACHE), so edits
+# always take effect on rebuild.
 set(GODOT_VERSION "4.7.1")
+set(GODOT_SHA512_LINUX_X86_64 "4ccdab7a48eeccbe8819a2fc1f6262f8d72065d98601bcb3743fcbd7ebd39f373758a788ee3293a05ec5b2c48538266c437404312e372225cd2df273945a2de9")
+set(GODOT_SHA512_LINUX_ARM64 "de64efe4d936ac0403769e078a73d961a9c647cab04168c5fb5a7fe33728e200a67324ed99368eeb27964e205e72a61e48efb63b52d5de34d12dd6a95ca0fc45")
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/godot-cpp/gdextension/extension_api.json" _gdcpp_api_head LIMIT 2048)
 string(REGEX MATCH "\"version_major\"[ \t]*:[ \t]*([0-9]+)" _unused "${_gdcpp_api_head}")
 set(_gdcpp_api_major "${CMAKE_MATCH_1}")
@@ -28,14 +33,50 @@ if(_gdcpp_api_major AND _gdcpp_api_minor
         "(API ${_gdcpp_api_major}.${_gdcpp_api_minor}). Retarget the submodule to the "
         "matching branch so the downloaded engine and the bindings agree.")
 endif()
-# Version pin consumed by `ros2 rclgd setup` (one line, e.g. "4.7.1")
+# Version pin, kept for the CLI (`ros2 rclgd doctor`/`editor`) to report
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/godot_version" "${GODOT_VERSION}\n")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/godot_version" DESTINATION share/${PROJECT_NAME})
 
-# Launcher: exec's the engine binary that `ros2 rclgd setup` downloads as
-# lib/rclgd/godot-bin (next to librclgd.so, where GDExtension resolves the
-# extension library). Installed as lib/rclgd/godot so `ros2 run rclgd godot`
-# works.
+# Download the official release archive for the target architecture and
+# verify it. file(DOWNLOAD) skips the fetch when the file already exists
+# with a matching hash, so only clean rebuilds hit the network.
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(FATAL_ERROR "rclgd currently targets Linux (got ${CMAKE_SYSTEM_NAME})")
+endif()
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set(_godot_slug "linux.x86_64")
+    set(_godot_sha512 "${GODOT_SHA512_LINUX_X86_64}")
+elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+    set(_godot_slug "linux.arm64")
+    set(_godot_sha512 "${GODOT_SHA512_LINUX_ARM64}")
+else()
+    message(FATAL_ERROR "no Godot release for architecture ${CMAKE_SYSTEM_PROCESSOR}")
+endif()
+set(_godot_name "Godot_v${GODOT_VERSION}-stable_${_godot_slug}")
+set(_godot_zip "${CMAKE_CURRENT_BINARY_DIR}/${_godot_name}.zip")
+message(STATUS "rclgd: providing Godot ${GODOT_VERSION} (${_godot_slug})")
+file(DOWNLOAD
+    "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/${_godot_name}.zip"
+    "${_godot_zip}"
+    EXPECTED_HASH SHA512=${_godot_sha512}
+    INACTIVITY_TIMEOUT 60
+    STATUS _godot_dl_status)
+list(GET _godot_dl_status 0 _godot_dl_code)
+if(NOT _godot_dl_code EQUAL 0)
+    list(GET _godot_dl_status 1 _godot_dl_msg)
+    message(FATAL_ERROR
+        "rclgd: downloading Godot ${GODOT_VERSION} failed: ${_godot_dl_msg}\n"
+        "The build needs network access to fetch the engine binary.")
+endif()
+file(ARCHIVE_EXTRACT INPUT "${_godot_zip}" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/godot-engine")
+if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/godot-engine/${_godot_name}")
+    message(FATAL_ERROR "rclgd: unexpected layout in ${_godot_name}.zip")
+endif()
+install(PROGRAMS "${CMAKE_CURRENT_BINARY_DIR}/godot-engine/${_godot_name}"
+    DESTINATION lib/${PROJECT_NAME} RENAME godot-bin)
+
+# Launcher: exec's godot-bin next to itself. Installed as lib/rclgd/godot so
+# `ros2 run rclgd godot` works.
 install(PROGRAMS cmake/godot-launcher.sh DESTINATION lib/${PROJECT_NAME} RENAME godot)
 #####################################################[ (rclgd ) ]########################################################
 

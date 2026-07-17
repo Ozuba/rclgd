@@ -45,37 +45,38 @@ The suite is split into independently releasable ROS 2 packages:
 | `rclgd` | ament_cmake | the GDExtension (librclgd.so), godot launcher, runtime manifest |
 | `colcon_rclgd` | ament_python | the `build_type: rclgd` colcon extension |
 | `rclgd_cli` | ament_python | the `ros2 rclgd` command and the editor addon template |
-| `rclgd_tests` | rclgd | the system-test suite (`tests/`), itself a native rclgd package |
+
+The system-test suite (`rclgd_tests`, itself a native rclgd package) is
+maintained separately so this repository contains only the releasable
+packages.
 
 ## Installation
 Clone this repository into your workspace and install dependencies, build it and source it.
-The Godot editor binary is not downloaded during the build (keeps builds
-offline/buildfarm friendly) — `ros2 rclgd setup` fetches the pinned version
-into the install prefix (`lib/rclgd/godot-bin`, next to `librclgd.so`) and
-verifies its checksum. Re-run it after wiping `install/`.
+The build downloads the pinned Godot editor binary (SHA-512 verified against
+the official release sums) and installs it as `lib/rclgd/godot-bin`, next to
+`librclgd.so` — the install is complete out of the box, no extra step.
 
 ```bash
 rosdep install --from-paths src --ignore-src -y -r
 colcon build --packages-up-to rclgd
 source install/setup.bash
-ros2 rclgd setup
 ```
 
-To run the system tests, build the test package (it dogfoods the whole
-`build_type: rclgd` pipeline — it needs the suite above built and sourced
-first) and run it like any other rclgd package:
+To run the system tests, put the `rclgd_tests` package in your workspace and
+build it (it dogfoods the whole `build_type: rclgd` pipeline — it needs the
+suite above built and sourced first), then run it like any other rclgd
+package:
 
 ```bash
 colcon build --packages-select rclgd_tests && source install/setup.bash
 ros2 run rclgd_tests rclgd_tests --headless   # exits 0 only if all tests pass
 ```
 
-`ros2 rclgd setup` downloads exactly the Godot version this rclgd build
-targets (recorded at build time in `share/rclgd/godot_version`, matching the
-godot-cpp bindings librclgd was compiled against). To use a different Godot
-version, retarget the `godot-cpp` submodule to the corresponding branch, edit
-`GODOT_VERSION` in `rclgd/CMakeLists.txt`, rebuild, and run
-`ros2 rclgd setup` again.
+The build installs exactly the Godot version librclgd was compiled against
+(the version of the godot-cpp bindings; recorded in
+`share/rclgd/godot_version`). To use a different Godot version, retarget the
+`godot-cpp` submodule to the corresponding branch, edit `GODOT_VERSION` and
+the `GODOT_SHA512_*` pins in `rclgd/CMakeLists.txt`, and rebuild.
 
 ## Command line tools
 rclgd ships a `ros2 rclgd` command:
@@ -84,7 +85,6 @@ rclgd ships a `ros2 rclgd` command:
 |---|---|
 | `ros2 rclgd create <name>` | Scaffold a new rclgd package (package.xml, project, addon, demo pub/sub) |
 | `ros2 rclgd editor [pkg]` | Open the Godot editor on a package's **source** project (no argument: current directory, or the project selection screen) |
-| `ros2 rclgd setup` | Download the Godot editor binary matching this build |
 | `ros2 rclgd list` | List built rclgd packages |
 | `ros2 rclgd doctor` | Diagnose broken setups (versions, extension wiring, imports) |
 
@@ -239,16 +239,6 @@ By default the ROS executor spins in a separate thread (`use_separate_thread:=tr
 
 ## A note on performance
 The type masking system used by rclgd depends at this moment in transfering data between godot and ros contexts, however preliminary tests show that working with high bandwidth types like `PointCloud2` with over 250.000 points its handled nicely.
-
-## A note on ROS2 buildfarm integration
-The repository is now split into independently buildable packages (`rclgd`,
-`colcon_rclgd`, `rclgd_cli`) and the engine binary is provisioned at runtime
-(`ros2 rclgd setup`) instead of being downloaded during the build, so no
-`godot_vendor` package is needed. The remaining open point for a buildfarm
-release is the `godot-cpp` git submodule inside the `rclgd` package (bloom
-release tarballs do not include submodules) — options are vendoring the
-godot-cpp sources into the package or a `godot_cpp_vendor` package that
-fetches a pinned source tarball at build time, as many `*_vendor` packages do.
 
 ## Disclaimer
 

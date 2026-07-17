@@ -76,19 +76,20 @@ class DoctorVerb(VerbExtension):
 
         binary = godot.binary_path(prefix)
         if not binary.exists():
-            report.fail(f'Godot {wanted} not installed ({binary} missing)',
-                        'ros2 rclgd setup')
+            report.fail(f'Godot {wanted} missing ({binary}) — broken install',
+                        'colcon build --packages-select rclgd '
+                        '(the engine is installed by the build)')
         elif not os.access(binary, os.X_OK):
             report.fail(f'{binary} is not executable')
         else:
             version = self._godot_version(binary)
             if version is None:
                 report.fail(f'{binary} did not run',
-                            'ros2 rclgd setup --force')
+                            'rebuild rclgd to reinstall the engine')
             elif not version.startswith(wanted):
                 report.warn(
                     f'binary reports {version} but rclgd was built for {wanted}',
-                    'ros2 rclgd setup --force')
+                    'rebuild rclgd to reinstall the engine')
             else:
                 report.ok(f'godot {version} at {binary}')
 

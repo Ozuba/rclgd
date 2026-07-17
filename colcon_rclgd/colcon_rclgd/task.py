@@ -163,7 +163,8 @@ exec "$LAUNCHER" --path "$PREFIX/share/{pkg_name}" "${{GODOT_ARGS[@]}}"
                 else:
                     print(f"[{pkg_name}] Warning: asset import failed "
                           f"(exit {completed.returncode}). If no Godot binary "
-                          "is installed yet, run 'ros2 rclgd setup' and rebuild.")
+                          "is installed, rebuild rclgd (the engine is "
+                          "installed by its build).")
         except Exception as e:
             print(f"[{pkg_name}] Resource import encountered an error: {e}")
 

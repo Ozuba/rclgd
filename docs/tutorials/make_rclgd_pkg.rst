@@ -76,7 +76,7 @@ When you run ``colcon build``, the **rclgd** build extension performs several sp
 1.  **Project Synchronization**: It syncs your Godot source files to the ``install/`` directory. (Using ``--symlink-install`` creates a symbolic link, which is recommended for faster iteration).
 2.  **Ament Indexing**: It registers the package in the Ament Resource Index — this is how ``ros2 pkg prefix``, ``ros2 rclgd list`` and ``ros2 rclgd editor`` locate your project.
 3.  **Launcher Shim**: It creates an executable script in ``install/lib/<package_name>/<package_name>``. This script locates the Godot binary through the sourced environment and runs it with the correct project path, forwarding any ``--ros-args`` you pass on the command line.
-4.  **Headless Asset Import**: It invokes the Godot editor in ``--headless`` mode to trigger the initial import of assets, so resources are ready before the first launch. (This step is skipped with a warning if the engine binary has not been provisioned yet — run ``ros2 rclgd setup``.)
+4.  **Headless Asset Import**: It invokes the Godot editor in ``--headless`` mode to trigger the initial import of assets, so resources are ready before the first launch. (This step is skipped with a warning if the engine binary is missing — rebuild ``rclgd``, which installs it.)
 
 Launching Your Package
 ----------------------
