@@ -2,6 +2,11 @@
 Changelog for package rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.1.1 (2026-08-02)
+------------------
+* Bugfix: fixed liveliness unavailability inside RosQoS
+* Contributors: Miguel Oroz Zubasti
+
 2.1.0 (2026-07-17)
 ------------------
 * Restructure into a three-package suite: rclgd (GDExtension),

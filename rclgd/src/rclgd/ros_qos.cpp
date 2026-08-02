@@ -39,6 +39,15 @@ void RosQoS::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_lifespan"), &RosQoS::get_lifespan);
     ClassDB::bind_method(D_METHOD("set_lifespan", "p_val"), &RosQoS::set_lifespan);
     ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lifespan_seconds"), "set_lifespan", "get_lifespan");
+
+    // Bind Liveliness
+    ClassDB::bind_method(D_METHOD("get_liveliness"), &RosQoS::get_liveliness);
+    ClassDB::bind_method(D_METHOD("set_liveliness", "p_val"), &RosQoS::set_liveliness);
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "liveliness", PROPERTY_HINT_ENUM, "Automatic,Manual By Topic,System Default"), "set_liveliness", "get_liveliness");
+
+    ClassDB::bind_method(D_METHOD("get_lease_duration"), &RosQoS::get_lease_duration);
+    ClassDB::bind_method(D_METHOD("set_lease_duration", "p_val"), &RosQoS::set_lease_duration);
+    ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lease_duration_seconds"), "set_lease_duration", "get_lease_duration");
 }
 
 rclcpp::QoS RosQoS::get_qos() const {

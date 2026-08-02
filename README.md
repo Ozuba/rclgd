@@ -51,25 +51,38 @@ maintained separately so this repository contains only the releasable
 packages.
 
 ## Installation
-Clone this repository into your workspace and install dependencies, build it and source it.
-The build downloads the pinned Godot editor binary (SHA-512 verified against
-the official release sums) and installs it as `lib/rclgd/godot-bin`, next to
-`librclgd.so` — the install is complete out of the box, no extra step.
+
+### From apt (recommended)
+rclgd is published to the ROS 2 build farm, so on a machine with the ROS 2 apt
+repositories configured you can install the whole suite in one command:
 
 ```bash
+sudo apt update
+sudo apt install ros-jazzy-rclgd
+```
+
+This installs all three packages plus the pinned Godot editor binary — the
+install is complete out of the box, no extra step. Replace `jazzy` with your
+ROS 2 distribution if needed (rclgd is developed and tested on Jazzy).
+
+```bash
+source /opt/ros/jazzy/setup.bash
+ros2 rclgd doctor   # verify the install
+```
+
+### Building from source
+Build from source to track `main`, hack on rclgd, or target a different Godot
+version. Clone into your workspace, install dependencies, build and source.
+The `rclgd` build downloads the pinned Godot editor binary (SHA-512 verified
+against the official release sums) and installs it as `lib/rclgd/godot-bin`,
+next to `librclgd.so` — provisioning happens inside the build, so the install
+is complete out of the box with no separate setup step.
+
+```bash
+git clone --recurse-submodules https://github.com/Ozuba/rclgd.git src/rclgd
 rosdep install --from-paths src --ignore-src -y -r
 colcon build --packages-up-to rclgd
 source install/setup.bash
-```
-
-To run the system tests, put the `rclgd_tests` package in your workspace and
-build it (it dogfoods the whole `build_type: rclgd` pipeline — it needs the
-suite above built and sourced first), then run it like any other rclgd
-package:
-
-```bash
-colcon build --packages-select rclgd_tests && source install/setup.bash
-ros2 run rclgd_tests rclgd_tests --headless   # exits 0 only if all tests pass
 ```
 
 The build installs exactly the Godot version librclgd was compiled against
@@ -77,6 +90,7 @@ The build installs exactly the Godot version librclgd was compiled against
 `share/rclgd/godot_version`). To use a different Godot version, retarget the
 `godot-cpp` submodule to the corresponding branch, edit `GODOT_VERSION` and
 the `GODOT_SHA512_*` pins in `rclgd/CMakeLists.txt`, and rebuild.
+
 
 ## Command line tools
 rclgd ships a `ros2 rclgd` command:
@@ -97,44 +111,6 @@ classes appear. The generated wrappers are plain GDScript files meant to be
 committed with the project — they regenerate automatically whenever the
 dependency set changes.
 
-
-## Integration
-This package is intended to work as a support package, once you build it you can create rclgd packages based on this
-[Template](https://github.com/Ozuba/rclgd-template) in your favourite ros workspace.
-
-```
-rclgd_ws
-└── src
-    ├── rclgd
-    ├── rclgd-template
-    └── rclgd_demo
-```
-A typical rclgd `package.xml` looks like
-```xml
-<?xml version="1.0"?>
-<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
-<package format="3">
-  <name>rclgd-template</name>
-  <version>0.1.0</version>
-  <maintainer email="example@example.com">Ozuba</maintainer>
-  <license>MIT</license>
-
-  <buildtool_depend>rclgd</buildtool_depend>
-  <export>
-	<build_type>rclgd</build_type>
-  </export>
-</package>
-```
-In order to edit those packages launch the godot editor through
-`ros2 rclgd editor <package>` (plain `ros2 rclgd editor` opens the project
-selection screen; `ros2 run rclgd godot` runs the raw engine binary) — this
-resolves the right Godot binary and ensures `librclgd.so` is accessible by
-all projects containing the corresponding `rclgd.gdextension`
-
-Once you run `colcon build` and source your installation you will be able to run your godot-ros application
-as any other ros executable.
-> [!TIP]
-> Example: `ros2 run rclgd_demo rclgd_demo`
 
 
 ## Usage
@@ -234,11 +210,6 @@ Godot and ROS are both right-handed but use different axis conventions. RCLGD ma
 
 If you build poses, twists or other geometry by hand, use the same mapping through the helpers exposed on the singleton: `rclgd.godot_to_ros_vector()`, `rclgd.ros_to_godot_vector()`, `rclgd.godot_to_ros_quat()` and `rclgd.ros_to_godot_quat()`.
 
-## A note on threading
-By default the ROS executor spins in a separate thread (`use_separate_thread:=true`). Subscription and timer callbacks are deferred to the Godot main thread, so regular GDScript code is safe. **Service server callbacks are the exception**: they run synchronously on the executor thread (the response must be filled before returning to the client), so keep them self-contained and use `call_deferred` for any side effects on the scene. With `--ros-args -p use_separate_thread:=false` the executor spins on the physics tick and everything runs on the main thread.
-
-## A note on performance
-The type masking system used by rclgd depends at this moment in transfering data between godot and ros contexts, however preliminary tests show that working with high bandwidth types like `PointCloud2` with over 250.000 points its handled nicely.
 
 ## Disclaimer
 

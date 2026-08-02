@@ -22,8 +22,14 @@
 		<member name="history" type="int" setter="set_history" getter="get_history" default="0">
 			Determines how messages are buffered in the queue. See [enum History] for options.
 		</member>
+		<member name="lease_duration_seconds" type="float" setter="set_lease_duration" getter="get_lease_duration" default="0.0">
+			The maximum amount of time a publisher may go without asserting liveliness before subscribers consider it lost. Only meaningful when [member liveliness] is not [constant SYSTEM_DEFAULT]. A value of [code]0.0[/code] leaves the lease duration at the RMW default (infinite).
+		</member>
 		<member name="lifespan_seconds" type="float" setter="set_lifespan" getter="get_lifespan" default="0.0">
 			The maximum amount of time a message is considered "valid" after being published. Messages older than this duration will be removed from the publisher's queue and ignored by subscribers. A value of [code]0.0[/code] means messages live forever.
+		</member>
+		<member name="liveliness" type="int" setter="set_liveliness" getter="get_liveliness" default="2">
+			Determines how a publisher reports that it is still alive. See [enum Liveliness] for options. Defaults to [constant SYSTEM_DEFAULT], which leaves the policy to the underlying RMW implementation.
 		</member>
 		<member name="reliability" type="int" setter="set_reliability" getter="get_reliability" default="0">
 			Determines whether message delivery is guaranteed. See [enum Reliability] for options.

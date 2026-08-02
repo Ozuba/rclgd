@@ -31,19 +31,23 @@ Properties
 .. table::
    :widths: auto
 
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`deadline_seconds<class_RosQoS_property_deadline_seconds>` | ``0.0`` |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`depth<class_RosQoS_property_depth>`                       | ``10``  |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`durability<class_RosQoS_property_durability>`             | ``0``   |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`history<class_RosQoS_property_history>`                   | ``0``   |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`lifespan_seconds<class_RosQoS_property_lifespan_seconds>` | ``0.0`` |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
-   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`reliability<class_RosQoS_property_reliability>`           | ``0``   |
-   +-----------------------------------------------------------------------------+-----------------------------------------------------------------+---------+
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`deadline_seconds<class_RosQoS_property_deadline_seconds>`             | ``0.0`` |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`depth<class_RosQoS_property_depth>`                                   | ``10``  |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`durability<class_RosQoS_property_durability>`                         | ``0``   |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`history<class_RosQoS_property_history>`                               | ``0``   |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`lease_duration_seconds<class_RosQoS_property_lease_duration_seconds>` | ``0.0`` |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ | :ref:`lifespan_seconds<class_RosQoS_property_lifespan_seconds>`             | ``0.0`` |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`liveliness<class_RosQoS_property_liveliness>`                         | ``2``   |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
+   | `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__     | :ref:`reliability<class_RosQoS_property_reliability>`                       | ``0``   |
+   +-----------------------------------------------------------------------------+-----------------------------------------------------------------------------+---------+
 
 .. rst-class:: classref-section-separator
 
@@ -239,6 +243,23 @@ Determines how messages are buffered in the queue. See :ref:`History<enum_RosQoS
 
 ----
 
+.. _class_RosQoS_property_lease_duration_seconds:
+
+.. rst-class:: classref-property
+
+`float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ **lease_duration_seconds** = ``0.0`` :ref:`🔗<class_RosQoS_property_lease_duration_seconds>`
+
+.. rst-class:: classref-property-setget
+
+- |void| **set_lease_duration**\ (\ value\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__\ )
+- `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ **get_lease_duration**\ (\ )
+
+The maximum amount of time a publisher may go without asserting liveliness before subscribers consider it lost. Only meaningful when :ref:`liveliness<class_RosQoS_property_liveliness>` is not :ref:`SYSTEM_DEFAULT<class_RosQoS_constant_SYSTEM_DEFAULT>`. A value of ``0.0`` leaves the lease duration at the RMW default (infinite).
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_RosQoS_property_lifespan_seconds:
 
 .. rst-class:: classref-property
@@ -251,6 +272,23 @@ Determines how messages are buffered in the queue. See :ref:`History<enum_RosQoS
 - `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ **get_lifespan**\ (\ )
 
 The maximum amount of time a message is considered "valid" after being published. Messages older than this duration will be removed from the publisher's queue and ignored by subscribers. A value of ``0.0`` means messages live forever.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosQoS_property_liveliness:
+
+.. rst-class:: classref-property
+
+`int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **liveliness** = ``2`` :ref:`🔗<class_RosQoS_property_liveliness>`
+
+.. rst-class:: classref-property-setget
+
+- |void| **set_liveliness**\ (\ value\: `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__\ )
+- `int <https://docs.godotengine.org/en/stable/classes/class_int.html>`__ **get_liveliness**\ (\ )
+
+Determines how a publisher reports that it is still alive. See :ref:`Liveliness<enum_RosQoS_Liveliness>` for options. Defaults to :ref:`SYSTEM_DEFAULT<class_RosQoS_constant_SYSTEM_DEFAULT>`, which leaves the policy to the underlying RMW implementation.
 
 .. rst-class:: classref-item-separator
 
