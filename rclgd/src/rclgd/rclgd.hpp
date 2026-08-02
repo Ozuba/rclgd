@@ -94,6 +94,11 @@ public:
 
     bool ok() const { return is_running_; }
 
+    // Whether the executor runs on its own thread. TF2 needs to know: it
+    // refuses to honour a lookup timeout unless something other than the
+    // calling thread is filling the buffer.
+    bool uses_separate_thread() const { return use_separate_thread_; }
+
     // RCLGD node accessor
     std::shared_ptr<rclcpp::Node> get_rclgd_node() const { return rclgd_node_; }
 

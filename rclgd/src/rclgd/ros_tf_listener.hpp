@@ -53,13 +53,16 @@ public:
     Variant lookup_transform(const String &p_target_frame, const String &p_source_frame,
                              const Variant &p_time = Variant(), double p_timeout_sec = 0.0);
     bool can_transform(const String &p_target_frame, const String &p_source_frame,
-                       const Variant &p_time = Variant()) const;
+                       const Variant &p_time = Variant(), double p_timeout_sec = 0.0) const;
 
     // Advanced ("time travel") lookup: where source_frame was at source_time,
     // expressed in target_frame at target_time, bridged through fixed_frame.
     Variant lookup_transform_full(const String &p_target_frame, const Variant &p_target_time,
                                   const String &p_source_frame, const Variant &p_source_time,
                                   const String &p_fixed_frame, double p_timeout_sec = 0.0);
+    bool can_transform_full(const String &p_target_frame, const Variant &p_target_time,
+                            const String &p_source_frame, const Variant &p_source_time,
+                            const String &p_fixed_frame, double p_timeout_sec = 0.0) const;
 
     // --- Frame graph introspection ---
     // Which frames exist, how they nest, and how fresh each one is.

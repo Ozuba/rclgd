@@ -11,11 +11,15 @@ void RosTfListener::_bind_methods() {
     ClassDB::bind_method(D_METHOD("lookup_transform", "target_frame", "source_frame",
                                   "time", "timeout_sec"),
                          &RosTfListener::lookup_transform, DEFVAL(Variant()), DEFVAL(0.0));
-    ClassDB::bind_method(D_METHOD("can_transform", "target_frame", "source_frame", "time"),
-                         &RosTfListener::can_transform, DEFVAL(Variant()));
+    ClassDB::bind_method(D_METHOD("can_transform", "target_frame", "source_frame",
+                                  "time", "timeout_sec"),
+                         &RosTfListener::can_transform, DEFVAL(Variant()), DEFVAL(0.0));
     ClassDB::bind_method(D_METHOD("lookup_transform_full", "target_frame", "target_time", "source_frame",
                                   "source_time", "fixed_frame", "timeout_sec"),
                          &RosTfListener::lookup_transform_full, DEFVAL(0.0));
+    ClassDB::bind_method(D_METHOD("can_transform_full", "target_frame", "target_time", "source_frame",
+                                  "source_time", "fixed_frame", "timeout_sec"),
+                         &RosTfListener::can_transform_full, DEFVAL(0.0));
 
     ClassDB::bind_method(D_METHOD("get_frame_names"), &RosTfListener::get_frame_names);
     ClassDB::bind_method(D_METHOD("frame_exists", "frame"), &RosTfListener::frame_exists);
@@ -37,6 +41,15 @@ void RosTfListener::setup(std::shared_ptr<rclcpp::Node> p_node, double p_cache_t
     // Subscribe through the owning node (spun by the global executor) instead
     // of letting TransformListener spawn its own internal node and thread.
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node_, false);
+
+    // Without this TF2 rejects every non-zero timeout ("Do not call
+    // canTransform or lookupTransform with a timeout unless you are using
+    // another thread for populating data"), which made the timeout argument
+    // useless. It is only true when the executor really is on its own thread;
+    // claiming it under a single-threaded executor would let a timeout block
+    // the main thread forever with nobody left to fill the buffer.
+    if (rclgd::get_singleton() && rclgd::get_singleton()->uses_separate_thread())
+        tf_buffer_->setUsingDedicatedThread(true);
 }
 
 tf2::TimePoint RosTfListener::_to_time_point(const Variant &p_time) {
@@ -96,13 +109,30 @@ Variant RosTfListener::lookup_transform(const String &p_target_frame, const Stri
 }
 
 bool RosTfListener::can_transform(const String &p_target_frame, const String &p_source_frame,
-                                  const Variant &p_time) const {
+                                  const Variant &p_time, double p_timeout_sec) const {
     if (!tf_buffer_ || !node_ || !rclcpp::ok()) return false;
     std::string target = RclgdUtils::resolve_frame(node_, p_target_frame);
     std::string source = RclgdUtils::resolve_frame(node_, p_source_frame);
     std::string err;
     bool ok = tf_buffer_->canTransform(target, source, _to_time_point(p_time),
-                                       tf2::durationFromSec(0.0), &err);
+                                       tf2::durationFromSec(p_timeout_sec), &err);
+    if (!ok)
+        last_error_ = String(err.c_str());
+    return ok;
+}
+
+
+bool RosTfListener::can_transform_full(const String &p_target_frame, const Variant &p_target_time,
+                                       const String &p_source_frame, const Variant &p_source_time,
+                                       const String &p_fixed_frame, double p_timeout_sec) const {
+    if (!tf_buffer_ || !node_ || !rclcpp::ok()) return false;
+    std::string target = RclgdUtils::resolve_frame(node_, p_target_frame);
+    std::string source = RclgdUtils::resolve_frame(node_, p_source_frame);
+    std::string fixed = RclgdUtils::resolve_frame(node_, p_fixed_frame);
+    std::string err;
+    bool ok = tf_buffer_->canTransform(target, _to_time_point(p_target_time),
+                                       source, _to_time_point(p_source_time),
+                                       fixed, tf2::durationFromSec(p_timeout_sec), &err);
     if (!ok)
         last_error_ = String(err.c_str());
     return ok;

@@ -6,6 +6,8 @@ Changelog for package rclgd
 ------------------
 * Bugfix: fixed liveliness unavailability inside RosQoS
 * Feature: Added support for stamped TF lookups and other TF listener features
+* Bugfix: TF lookup timeouts are now honoured; the buffer was never told the
+  executor runs on its own thread, so any non-zero timeout was rejected
 * Contributors: Miguel Oroz Zubasti
 
 2.1.0 (2026-07-17)

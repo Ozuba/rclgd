@@ -14,6 +14,7 @@
 		    push_warning(tf.get_last_error())
 		[/codeblock]
 		Every [code]time[/code] argument accepts [code]null[/code] (latest available transform), a [code]float[/code] of seconds since the epoch, or a [RosMsg] holding a [code]builtin_interfaces/msg/Time[/code].
+		The method names and argument order mirror [code]tf2_ros.Buffer[/code], so code and habits carry over from rclpy. The one deliberate difference is that [code]time[/code] is optional here — TF2 requires it, and expects a zero time to mean "latest".
 	</description>
 	<tutorials>
 	</tutorials>
@@ -29,8 +30,22 @@
 			<param index="0" name="target_frame" type="String" />
 			<param index="1" name="source_frame" type="String" />
 			<param index="2" name="time" type="Variant" default="null" />
+			<param index="3" name="timeout_sec" type="float" default="0.0" />
 			<description>
 				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is available at [param time], or right now when [param time] is omitted. On failure the reason is available through [method get_last_error].
+				Asks the same question as [method lookup_transform] without doing the work, and takes the same [param timeout_sec].
+			</description>
+		</method>
+		<method name="can_transform_full" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="target_time" type="Variant" />
+			<param index="2" name="source_frame" type="String" />
+			<param index="3" name="source_time" type="Variant" />
+			<param index="4" name="fixed_frame" type="String" />
+			<param index="5" name="timeout_sec" type="float" default="0.0" />
+			<description>
+				Whether [method lookup_transform_full] would succeed for the same arguments. On failure the reason is available through [method get_last_error].
 			</description>
 		</method>
 		<method name="clear">
@@ -87,7 +102,7 @@
 			<description>
 				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] (already converted to the Godot axis convention) representing the position and orientation of the source frame relative to the target frame.
 				With [param time] omitted the newest available transform is used. Given a time, the transform is resolved at that moment instead, interpolating between the surrounding samples — pass a message's [code]header.stamp[/code] to place its data where the robot was when the data was produced.
-				Returns [code]null[/code] if the transform is not available — the frames are not connected, or the stamp falls outside the buffer — so a failed lookup can be distinguished from a genuine identity transform; [method get_last_error] then explains why. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
+				Returns [code]null[/code] if the transform is not available — the frames are not connected, or the stamp falls outside the buffer — so a failed lookup can be distinguished from a genuine identity transform; [method get_last_error] then explains why. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available. This works because rclgd spins the executor on its own thread by default; under [code]-p use_separate_thread:=false[/code] nothing would be left to fill the buffer while the caller waits, so the timeout is not applied.
 			</description>
 		</method>
 		<method name="lookup_transform_full">
