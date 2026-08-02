@@ -65,7 +65,7 @@ public:
     Ref<RosTimer> create_timer(double p_seconds, const Callable &p_callback);
 
     //TF2 support built in
-    Ref<RosTfListener> create_tf_listener();
+    Ref<RosTfListener> create_tf_listener(double p_cache_time_sec = 10.0);
     Ref<RosTfBroadcaster> create_tf_broadcaster();
     String resolve_frame(const String &p_id);
 

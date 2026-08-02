@@ -5,6 +5,7 @@ Changelog for package rclgd
 2.1.1 (2026-08-02)
 ------------------
 * Bugfix: fixed liveliness unavailability inside RosQoS
+* Feature: Added support for stamped TF lookups and other TF listener features
 * Contributors: Miguel Oroz Zubasti
 
 2.1.0 (2026-07-17)

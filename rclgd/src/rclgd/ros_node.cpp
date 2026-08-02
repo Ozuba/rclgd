@@ -36,7 +36,8 @@ void RosNode::_bind_methods()
                          &RosNode::create_action_server,
                          DEFVAL(Callable()), DEFVAL(Ref<RosQoS>()));
     ClassDB::bind_method(D_METHOD("create_tf_broadcaster"), &RosNode::create_tf_broadcaster);
-    ClassDB::bind_method(D_METHOD("create_tf_listener"), &RosNode::create_tf_listener);
+    ClassDB::bind_method(D_METHOD("create_tf_listener", "cache_time_sec"), &RosNode::create_tf_listener,
+                         DEFVAL(10.0));
     ClassDB::bind_method(D_METHOD("create_timer", "seconds", "callback"), &RosNode::create_timer);
 
     // Functions
@@ -300,13 +301,13 @@ Ref<RosTfBroadcaster> RosNode::create_tf_broadcaster()
     return bc;
 }
 
-Ref<RosTfListener> RosNode::create_tf_listener()
+Ref<RosTfListener> RosNode::create_tf_listener(double p_cache_time_sec)
 {
     RCLGD_FAIL_COND_V_MSG(!rclcpp::ok(), nullptr, "ROS2 Global Context is not OK. Did it shut down?");
     RCLGD_FAIL_COND_V_MSG(!node_, nullptr, "RosNode must be initialized before creating TF Listeners.");
     Ref<RosTfListener> ls;
     ls.instantiate();
-    ls->setup(node_);
+    ls->setup(node_, p_cache_time_sec);
     return ls;
 }
 

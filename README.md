@@ -25,7 +25,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Timers
 - [x] Action Clients & Servers
 - [x] Parameters
-- [x] TF2 Publishers and Listeners
+- [x] TF2 Publishers and Listeners -> Including stamped lookups, time travel and frame-graph introspection
 - [x] TF2 Listeners And Broadcasters as 3D Nodes in godot (Will be deprecated in future update)
 - [x] Node and TF Namespacing
 - [x] ROS Graph Inspection

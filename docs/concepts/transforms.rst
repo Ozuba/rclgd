@@ -124,3 +124,54 @@ High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these co
         if t != null:
             print("Robot Position in Godot space: ", t.origin)
             print("Robot Rotation Basis: ", t.basis)
+Looking up transforms at the time data was captured
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``lookup_transform`` always returns the newest transform in the buffer. That is
+the right answer when you are asking "where is the robot now", and the wrong
+one when you are placing data that was captured a moment ago: a laser scan
+stamped 80 ms back belongs where the sensor was 80 ms back, not where it is
+now. Rendering it against the newest transform makes the world appear to slide
+around whenever the robot moves quickly.
+
+``lookup_transform_at`` resolves the transform at a specific time instead,
+interpolating between the surrounding samples. Feed it the ``header.stamp`` of
+the message you are about to draw:
+
+.. code-block:: gdscript
+
+    func _on_scan(msg: RosMsg):
+        var t = listener.lookup_transform_at("map", msg.header.frame_id, msg.header.stamp)
+        if t == null:
+            push_warning(listener.get_last_error())
+            return
+        render_scan_at(t, msg)
+
+The ``time`` argument accepts ``null`` (latest available, i.e. the
+``lookup_transform`` behaviour), a ``float`` of seconds since the epoch, or a
+``RosMsg`` holding a ``builtin_interfaces/msg/Time`` as above.
+
+How far back you can reach is bounded by the buffer length, which defaults to
+10 seconds and is set when the listener is created —
+``ros_node.create_tf_listener(30.0)``. Reaching past it fails the same way a
+missing frame does: the lookup returns ``null`` and ``get_last_error()``
+carries TF2's own explanation, which is worth surfacing to the user rather than
+swallowing, because it distinguishes "this frame does not exist" from "this
+stamp is too old".
+
+Inspecting the frame graph
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A listener can also report what it knows about, which is what you need to
+populate a frame picker or draw the tree:
+
+.. code-block:: gdscript
+
+    for frame in listener.get_frame_names():
+        var parent := listener.get_frame_parent(frame)   # "" for a tree root
+        var age := listener.get_frame_latest_time(frame) # 0.0 if static-only
+        print("%s <- %s" % [parent, frame])
+
+``all_frames_as_yaml()`` returns the same dump as
+``ros2 run tf2_tools view_frames``, including each frame's broadcaster and
+publish rate, when you want the whole picture at once.

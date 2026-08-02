@@ -90,8 +90,10 @@
 		</method>
 		<method name="create_tf_listener">
 			<return type="RosTfListener" />
+			<param index="0" name="cache_time_sec" type="float" default="10.0" />
 			<description>
 				Creates and returns a [RosTfListener] for looking up coordinate transforms in the TF2 system.
+				[param cache_time_sec] is how far back the buffer keeps transforms, which bounds how old a [method RosTfListener.lookup_transform_at] stamp may be. Raise it when replaying a bag or when data arrives well behind TF.
 			</description>
 		</method>
 		<method name="create_timer">

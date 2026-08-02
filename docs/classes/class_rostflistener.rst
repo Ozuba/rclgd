@@ -23,6 +23,16 @@ Description
 
 By listening for transforms, you can determine the position and rotation of robot parts, sensors, or other objects relative to each other or a global frame.
 
+The ``_at`` variants take the time the data was captured, so sensor readings stay pinned to where the robot actually was when they were taken instead of snapping to the newest transform. Pass a message's ``header.stamp`` straight through:
+
+::
+
+    var xform = tf.lookup_transform_at("map", msg.header.frame_id, msg.header.stamp)
+    if xform == null:
+        push_warning(tf.get_last_error())
+
+Every method that takes a ``time`` accepts ``null`` (latest available transform), a ``float`` of seconds since the epoch, or a :ref:`RosMsg<class_RosMsg>` holding a ``builtin_interfaces/msg/Time``.
+
 .. rst-class:: classref-reftable-group
 
 Methods
@@ -31,11 +41,33 @@ Methods
 .. table::
    :widths: auto
 
-   +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__       | :ref:`can_transform<class_RosTfListener_method_can_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                |
-   +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__ | :ref:`lookup_transform<class_RosTfListener_method_lookup_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ ) |
-   +---------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__                       | :ref:`all_frames_as_yaml<class_RosTfListener_method_all_frames_as_yaml>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__                           | :ref:`can_transform<class_RosTfListener_method_can_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                     |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__                           | :ref:`can_transform_at<class_RosTfListener_method_can_transform_at>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                       |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                              | :ref:`clear<class_RosTfListener_method_clear>`\ (\ )                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__                           | :ref:`frame_exists<class_RosTfListener_method_frame_exists>`\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__                         | :ref:`get_cache_time<class_RosTfListener_method_get_cache_time>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__                         | :ref:`get_frame_latest_time<class_RosTfListener_method_get_frame_latest_time>`\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ | :ref:`get_frame_names<class_RosTfListener_method_get_frame_names>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__                       | :ref:`get_frame_parent<class_RosTfListener_method_get_frame_parent>`\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__                       | :ref:`get_last_error<class_RosTfListener_method_get_last_error>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__                     | :ref:`lookup_transform<class_RosTfListener_method_lookup_transform>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ )                                                                                                                                                                                                                                                                                                      |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__                     | :ref:`lookup_transform_at<class_RosTfListener_method_lookup_transform_at>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ )                                                                                                                                                                                                        |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__                     | :ref:`lookup_transform_full<class_RosTfListener_method_lookup_transform_full>`\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, target_time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, fixed_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ ) |
+   +-----------------------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -45,6 +77,18 @@ Methods
 
 Method Descriptions
 -------------------
+
+.. _class_RosTfListener_method_all_frames_as_yaml:
+
+.. rst-class:: classref-method
+
+`String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **all_frames_as_yaml**\ (\ ) |const| :ref:`🔗<class_RosTfListener_method_all_frames_as_yaml>`
+
+Returns the TF2 debug dump of every known frame, with the same content as ``ros2 run tf2_tools view_frames``: each frame's parent, broadcasting authority, publish rate and buffer extent.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_RosTfListener_method_can_transform:
 
@@ -58,6 +102,102 @@ Returns ``true`` if a transformation between ``source_frame`` and ``target_frame
 
 ----
 
+.. _class_RosTfListener_method_can_transform_at:
+
+.. rst-class:: classref-method
+
+`bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **can_transform_at**\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ ) |const| :ref:`🔗<class_RosTfListener_method_can_transform_at>`
+
+Returns ``true`` if a transformation between ``source_frame`` and ``target_frame`` is available at ``time``. On failure the reason is available through :ref:`get_last_error()<class_RosTfListener_method_get_last_error>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_clear:
+
+.. rst-class:: classref-method
+
+|void| **clear**\ (\ ) :ref:`🔗<class_RosTfListener_method_clear>`
+
+Drops every stored transform, for instance after ``/clock`` jumps backwards. Frame names stay registered, so :ref:`get_frame_names()<class_RosTfListener_method_get_frame_names>` keeps reporting them; create a fresh listener to forget the frames as well.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_frame_exists:
+
+.. rst-class:: classref-method
+
+`bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__ **frame_exists**\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosTfListener_method_frame_exists>`
+
+Returns ``true`` if ``frame`` is known to the buffer.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_get_cache_time:
+
+.. rst-class:: classref-method
+
+`float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ **get_cache_time**\ (\ ) |const| :ref:`🔗<class_RosTfListener_method_get_cache_time>`
+
+Returns how far back, in seconds, the buffer keeps transforms. Set through :ref:`RosNode.create_tf_listener()<class_RosNode_method_create_tf_listener>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_get_frame_latest_time:
+
+.. rst-class:: classref-method
+
+`float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ **get_frame_latest_time**\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosTfListener_method_get_frame_latest_time>`
+
+Returns the stamp of the newest transform stored for ``frame``, in seconds. Returns ``0.0`` for an unknown frame, and also for a frame that is only published statically, since static transforms are stored at time zero.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_get_frame_names:
+
+.. rst-class:: classref-method
+
+`PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ **get_frame_names**\ (\ ) |const| :ref:`🔗<class_RosTfListener_method_get_frame_names>`
+
+Returns every frame name the buffer has heard of, in no particular order. Useful for building a frame picker.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_get_frame_parent:
+
+.. rst-class:: classref-method
+
+`String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **get_frame_parent**\ (\ frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosTfListener_method_get_frame_parent>`
+
+Returns the frame ``frame`` is attached to, or an empty string when it is a tree root or is unknown. Walking this repeatedly reconstructs the frame tree.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_get_last_error:
+
+.. rst-class:: classref-method
+
+`String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **get_last_error**\ (\ ) |const| :ref:`🔗<class_RosTfListener_method_get_last_error>`
+
+Returns the TF2 message explaining why the most recent lookup failed, or an empty string once one succeeds. This is the text to show a user when a frame is missing or a stamp falls outside the buffer.
+
+.. rst-class:: classref-item-separator
+
+----
+
 .. _class_RosTfListener_method_lookup_transform:
 
 .. rst-class:: classref-method
@@ -66,7 +206,35 @@ Returns ``true`` if a transformation between ``source_frame`` and ``target_frame
 
 Attempts to find the coordinate transformation from ``source_frame`` to ``target_frame``. Returns a `Transform3D <https://docs.godotengine.org/en/stable/classes/class_transform3d.html>`__ (already converted to the Godot axis convention) representing the position and orientation of the source frame relative to the target frame.
 
-Returns ``null`` if the transform is not available, so a failed lookup can be distinguished from a genuine identity transform. If ``timeout_sec`` is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
+Returns ``null`` if the transform is not available, so a failed lookup can be distinguished from a genuine identity transform; :ref:`get_last_error()<class_RosTfListener_method_get_last_error>` then explains why. If ``timeout_sec`` is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_lookup_transform_at:
+
+.. rst-class:: classref-method
+
+`Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__ **lookup_transform_at**\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ ) :ref:`🔗<class_RosTfListener_method_lookup_transform_at>`
+
+Like :ref:`lookup_transform()<class_RosTfListener_method_lookup_transform>`, but resolved at ``time`` rather than at the newest available transform, interpolating between the surrounding samples. Pass a message's ``header.stamp`` to place its data where the robot was when the data was produced.
+
+Returns ``null`` when the stamp falls outside the buffer or the frames are not connected; see :ref:`get_last_error()<class_RosTfListener_method_get_last_error>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_RosTfListener_method_lookup_transform_full:
+
+.. rst-class:: classref-method
+
+`Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__ **lookup_transform_full**\ (\ target_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, target_time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, source_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, source_time\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, fixed_frame\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, timeout_sec\: `float <https://docs.godotengine.org/en/stable/classes/class_float.html>`__ = 0.0\ ) :ref:`🔗<class_RosTfListener_method_lookup_transform_full>`
+
+The advanced ("time travel") lookup: where ``source_frame`` was at ``source_time``, expressed in ``target_frame`` as it is at ``target_time``, bridged through ``fixed_frame`` — a frame assumed not to move over that interval, typically ``map`` or ``odom``.
+
+Returns ``null`` on failure; see :ref:`get_last_error()<class_RosTfListener_method_get_last_error>`.
 
 .. |virtual| replace:: :abbr:`virtual (This method should typically be overridden by the user to have any effect.)`
 .. |required| replace:: :abbr:`required (This method is required to be overridden when extending its base class.)`

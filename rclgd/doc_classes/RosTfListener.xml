@@ -6,16 +6,83 @@
 	<description>
 		[RosTfListener] allows Godot to query the current spatial relationships between different coordinate frames in the ROS 2 TF2 tree. It is created through [method RosNode.create_tf_listener].
 		By listening for transforms, you can determine the position and rotation of robot parts, sensors, or other objects relative to each other or a global frame.
+		The [code]_at[/code] variants take the time the data was captured, so sensor readings stay pinned to where the robot actually was when they were taken instead of snapping to the newest transform. Pass a message's [code]header.stamp[/code] straight through:
+		[codeblock lang=gdscript]
+		var xform = tf.lookup_transform_at("map", msg.header.frame_id, msg.header.stamp)
+		if xform == null:
+		    push_warning(tf.get_last_error())
+		[/codeblock]
+		Every method that takes a [code]time[/code] accepts [code]null[/code] (latest available transform), a [code]float[/code] of seconds since the epoch, or a [RosMsg] holding a [code]builtin_interfaces/msg/Time[/code].
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="all_frames_as_yaml" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the TF2 debug dump of every known frame, with the same content as [code]ros2 run tf2_tools view_frames[/code]: each frame's parent, broadcasting authority, publish rate and buffer extent.
+			</description>
+		</method>
 		<method name="can_transform" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="target_frame" type="String" />
 			<param index="1" name="source_frame" type="String" />
 			<description>
 				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is currently available in the TF2 tree.
+			</description>
+		</method>
+		<method name="can_transform_at" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="source_frame" type="String" />
+			<param index="2" name="time" type="Variant" />
+			<description>
+				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is available at [param time]. On failure the reason is available through [method get_last_error].
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Drops every stored transform, for instance after [code]/clock[/code] jumps backwards. Frame names stay registered, so [method get_frame_names] keeps reporting them; create a fresh listener to forget the frames as well.
+			</description>
+		</method>
+		<method name="frame_exists" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="frame" type="String" />
+			<description>
+				Returns [code]true[/code] if [param frame] is known to the buffer.
+			</description>
+		</method>
+		<method name="get_cache_time" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns how far back, in seconds, the buffer keeps transforms. Set through [method RosNode.create_tf_listener].
+			</description>
+		</method>
+		<method name="get_frame_latest_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="frame" type="String" />
+			<description>
+				Returns the stamp of the newest transform stored for [param frame], in seconds. Returns [code]0.0[/code] for an unknown frame, and also for a frame that is only published statically, since static transforms are stored at time zero.
+			</description>
+		</method>
+		<method name="get_frame_names" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns every frame name the buffer has heard of, in no particular order. Useful for building a frame picker.
+			</description>
+		</method>
+		<method name="get_frame_parent" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="frame" type="String" />
+			<description>
+				Returns the frame [param frame] is attached to, or an empty string when it is a tree root or is unknown. Walking this repeatedly reconstructs the frame tree.
+			</description>
+		</method>
+		<method name="get_last_error" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the TF2 message explaining why the most recent lookup failed, or an empty string once one succeeds. This is the text to show a user when a frame is missing or a stamp falls outside the buffer.
 			</description>
 		</method>
 		<method name="lookup_transform">
@@ -25,7 +92,31 @@
 			<param index="2" name="timeout_sec" type="float" default="0.0" />
 			<description>
 				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] (already converted to the Godot axis convention) representing the position and orientation of the source frame relative to the target frame.
-				Returns [code]null[/code] if the transform is not available, so a failed lookup can be distinguished from a genuine identity transform. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
+				Returns [code]null[/code] if the transform is not available, so a failed lookup can be distinguished from a genuine identity transform; [method get_last_error] then explains why. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
+			</description>
+		</method>
+		<method name="lookup_transform_at">
+			<return type="Variant" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="source_frame" type="String" />
+			<param index="2" name="time" type="Variant" />
+			<param index="3" name="timeout_sec" type="float" default="0.0" />
+			<description>
+				Like [method lookup_transform], but resolved at [param time] rather than at the newest available transform, interpolating between the surrounding samples. Pass a message's [code]header.stamp[/code] to place its data where the robot was when the data was produced.
+				Returns [code]null[/code] when the stamp falls outside the buffer or the frames are not connected; see [method get_last_error].
+			</description>
+		</method>
+		<method name="lookup_transform_full">
+			<return type="Variant" />
+			<param index="0" name="target_frame" type="String" />
+			<param index="1" name="target_time" type="Variant" />
+			<param index="2" name="source_frame" type="String" />
+			<param index="3" name="source_time" type="Variant" />
+			<param index="4" name="fixed_frame" type="String" />
+			<param index="5" name="timeout_sec" type="float" default="0.0" />
+			<description>
+				The advanced ("time travel") lookup: where [param source_frame] was at [param source_time], expressed in [param target_frame] as it is at [param target_time], bridged through [param fixed_frame] — a frame assumed not to move over that interval, typically [code]map[/code] or [code]odom[/code].
+				Returns [code]null[/code] on failure; see [method get_last_error].
 			</description>
 		</method>
 	</methods>
