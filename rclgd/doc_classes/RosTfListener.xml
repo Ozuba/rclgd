@@ -6,13 +6,14 @@
 	<description>
 		[RosTfListener] allows Godot to query the current spatial relationships between different coordinate frames in the ROS 2 TF2 tree. It is created through [method RosNode.create_tf_listener].
 		By listening for transforms, you can determine the position and rotation of robot parts, sensors, or other objects relative to each other or a global frame.
-		The [code]_at[/code] variants take the time the data was captured, so sensor readings stay pinned to where the robot actually was when they were taken instead of snapping to the newest transform. Pass a message's [code]header.stamp[/code] straight through:
+		Omit the [code]time[/code] argument to get the newest transform available. Pass the time the data was captured instead — a message's [code]header.stamp[/code] goes straight through — and the reading stays pinned to where the robot actually was when it was taken, rather than snapping to the newest transform:
 		[codeblock lang=gdscript]
-		var xform = tf.lookup_transform_at("map", msg.header.frame_id, msg.header.stamp)
-		if xform == null:
+		var here = tf.lookup_transform("map", "base_link")                       # now
+		var then = tf.lookup_transform("map", msg.header.frame_id, msg.header.stamp)
+		if then == null:
 		    push_warning(tf.get_last_error())
 		[/codeblock]
-		Every method that takes a [code]time[/code] accepts [code]null[/code] (latest available transform), a [code]float[/code] of seconds since the epoch, or a [RosMsg] holding a [code]builtin_interfaces/msg/Time[/code].
+		Every [code]time[/code] argument accepts [code]null[/code] (latest available transform), a [code]float[/code] of seconds since the epoch, or a [RosMsg] holding a [code]builtin_interfaces/msg/Time[/code].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -27,17 +28,9 @@
 			<return type="bool" />
 			<param index="0" name="target_frame" type="String" />
 			<param index="1" name="source_frame" type="String" />
+			<param index="2" name="time" type="Variant" default="null" />
 			<description>
-				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is currently available in the TF2 tree.
-			</description>
-		</method>
-		<method name="can_transform_at" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="target_frame" type="String" />
-			<param index="1" name="source_frame" type="String" />
-			<param index="2" name="time" type="Variant" />
-			<description>
-				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is available at [param time]. On failure the reason is available through [method get_last_error].
+				Returns [code]true[/code] if a transformation between [param source_frame] and [param target_frame] is available at [param time], or right now when [param time] is omitted. On failure the reason is available through [method get_last_error].
 			</description>
 		</method>
 		<method name="clear">
@@ -89,21 +82,12 @@
 			<return type="Variant" />
 			<param index="0" name="target_frame" type="String" />
 			<param index="1" name="source_frame" type="String" />
-			<param index="2" name="timeout_sec" type="float" default="0.0" />
-			<description>
-				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] (already converted to the Godot axis convention) representing the position and orientation of the source frame relative to the target frame.
-				Returns [code]null[/code] if the transform is not available, so a failed lookup can be distinguished from a genuine identity transform; [method get_last_error] then explains why. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
-			</description>
-		</method>
-		<method name="lookup_transform_at">
-			<return type="Variant" />
-			<param index="0" name="target_frame" type="String" />
-			<param index="1" name="source_frame" type="String" />
-			<param index="2" name="time" type="Variant" />
+			<param index="2" name="time" type="Variant" default="null" />
 			<param index="3" name="timeout_sec" type="float" default="0.0" />
 			<description>
-				Like [method lookup_transform], but resolved at [param time] rather than at the newest available transform, interpolating between the surrounding samples. Pass a message's [code]header.stamp[/code] to place its data where the robot was when the data was produced.
-				Returns [code]null[/code] when the stamp falls outside the buffer or the frames are not connected; see [method get_last_error].
+				Attempts to find the coordinate transformation from [param source_frame] to [param target_frame]. Returns a [Transform3D] (already converted to the Godot axis convention) representing the position and orientation of the source frame relative to the target frame.
+				With [param time] omitted the newest available transform is used. Given a time, the transform is resolved at that moment instead, interpolating between the surrounding samples — pass a message's [code]header.stamp[/code] to place its data where the robot was when the data was produced.
+				Returns [code]null[/code] if the transform is not available — the frames are not connected, or the stamp falls outside the buffer — so a failed lookup can be distinguished from a genuine identity transform; [method get_last_error] then explains why. If [param timeout_sec] is greater than zero, the lookup blocks for up to that long waiting for the transform to become available (only useful when the executor runs in its default separate thread).
 			</description>
 		</method>
 		<method name="lookup_transform_full">
@@ -116,6 +100,7 @@
 			<param index="5" name="timeout_sec" type="float" default="0.0" />
 			<description>
 				The advanced ("time travel") lookup: where [param source_frame] was at [param source_time], expressed in [param target_frame] as it is at [param target_time], bridged through [param fixed_frame] — a frame assumed not to move over that interval, typically [code]map[/code] or [code]odom[/code].
+				This stays a separate method rather than more optional arguments on [method lookup_transform], matching tf2's own split: relating two different instants is a different question from placing one, and most combinations of the two argument sets are meaningless.
 				Returns [code]null[/code] on failure; see [method get_last_error].
 			</description>
 		</method>

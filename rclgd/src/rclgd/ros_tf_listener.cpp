@@ -5,14 +5,14 @@
 #include <tf2/buffer_core.hpp>
 
 void RosTfListener::_bind_methods() {
-    ClassDB::bind_method(D_METHOD("lookup_transform", "target_frame", "source_frame", "timeout_sec"),
-                         &RosTfListener::lookup_transform, DEFVAL(0.0));
-    ClassDB::bind_method(D_METHOD("can_transform", "target_frame", "source_frame"), &RosTfListener::can_transform);
-
-    ClassDB::bind_method(D_METHOD("lookup_transform_at", "target_frame", "source_frame", "time", "timeout_sec"),
-                         &RosTfListener::lookup_transform_at, DEFVAL(0.0));
-    ClassDB::bind_method(D_METHOD("can_transform_at", "target_frame", "source_frame", "time"),
-                         &RosTfListener::can_transform_at);
+    // One lookup, with the stamp and the timeout both optional: two arguments
+    // for "where is it now", three for "where was it when this message was
+    // taken".
+    ClassDB::bind_method(D_METHOD("lookup_transform", "target_frame", "source_frame",
+                                  "time", "timeout_sec"),
+                         &RosTfListener::lookup_transform, DEFVAL(Variant()), DEFVAL(0.0));
+    ClassDB::bind_method(D_METHOD("can_transform", "target_frame", "source_frame", "time"),
+                         &RosTfListener::can_transform, DEFVAL(Variant()));
     ClassDB::bind_method(D_METHOD("lookup_transform_full", "target_frame", "target_time", "source_frame",
                                   "source_time", "fixed_frame", "timeout_sec"),
                          &RosTfListener::lookup_transform_full, DEFVAL(0.0));
@@ -66,12 +66,8 @@ tf2::TimePoint RosTfListener::_to_time_point(const Variant &p_time) {
     }
 }
 
-Variant RosTfListener::lookup_transform(const String &p_target_frame, const String &p_source_frame, double p_timeout_sec) {
-    return lookup_transform_at(p_target_frame, p_source_frame, Variant(), p_timeout_sec);
-}
-
-Variant RosTfListener::lookup_transform_at(const String &p_target_frame, const String &p_source_frame,
-                                           const Variant &p_time, double p_timeout_sec) {
+Variant RosTfListener::lookup_transform(const String &p_target_frame, const String &p_source_frame,
+                                        const Variant &p_time, double p_timeout_sec) {
     if (!tf_buffer_ || !node_ || !rclcpp::ok()) {
         last_error_ = "ROS context is not running";
         return Variant();
@@ -99,12 +95,8 @@ Variant RosTfListener::lookup_transform_at(const String &p_target_frame, const S
     }
 }
 
-bool RosTfListener::can_transform(const String &p_target_frame, const String &p_source_frame) const {
-    return can_transform_at(p_target_frame, p_source_frame, Variant());
-}
-
-bool RosTfListener::can_transform_at(const String &p_target_frame, const String &p_source_frame,
-                                     const Variant &p_time) const {
+bool RosTfListener::can_transform(const String &p_target_frame, const String &p_source_frame,
+                                  const Variant &p_time) const {
     if (!tf_buffer_ || !node_ || !rclcpp::ok()) return false;
     std::string target = RclgdUtils::resolve_frame(node_, p_target_frame);
     std::string source = RclgdUtils::resolve_frame(node_, p_source_frame);

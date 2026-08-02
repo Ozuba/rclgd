@@ -215,7 +215,7 @@ Creates and returns a :ref:`RosTfBroadcaster<class_RosTfBroadcaster>` for publis
 
 Creates and returns a :ref:`RosTfListener<class_RosTfListener>` for looking up coordinate transforms in the TF2 system.
 
-\ ``cache_time_sec`` is how far back the buffer keeps transforms, which bounds how old a :ref:`RosTfListener.lookup_transform_at()<class_RosTfListener_method_lookup_transform_at>` stamp may be. Raise it when replaying a bag or when data arrives well behind TF.
+\ ``cache_time_sec`` is how far back the buffer keeps transforms, which bounds how old a :ref:`RosTfListener.lookup_transform()<class_RosTfListener_method_lookup_transform>` stamp may be. Raise it when replaying a bag or when data arrives well behind TF.
 
 .. rst-class:: classref-item-separator
 

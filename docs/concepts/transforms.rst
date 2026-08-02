@@ -127,29 +127,30 @@ High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these co
 Looking up transforms at the time data was captured
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``lookup_transform`` always returns the newest transform in the buffer. That is
-the right answer when you are asking "where is the robot now", and the wrong
-one when you are placing data that was captured a moment ago: a laser scan
-stamped 80 ms back belongs where the sensor was 80 ms back, not where it is
-now. Rendering it against the newest transform makes the world appear to slide
-around whenever the robot moves quickly.
+Called with two arguments, ``lookup_transform`` returns the newest transform in
+the buffer. That is the right answer when you are asking "where is the robot
+now", and the wrong one when you are placing data that was captured a moment
+ago: a laser scan stamped 80 ms back belongs where the sensor was 80 ms back,
+not where it is now. Rendering it against the newest transform makes the world
+appear to slide around whenever the robot moves quickly.
 
-``lookup_transform_at`` resolves the transform at a specific time instead,
+Add a third argument and the transform is resolved at that time instead,
 interpolating between the surrounding samples. Feed it the ``header.stamp`` of
 the message you are about to draw:
 
 .. code-block:: gdscript
 
     func _on_scan(msg: RosMsg):
-        var t = listener.lookup_transform_at("map", msg.header.frame_id, msg.header.stamp)
+        var t = listener.lookup_transform("map", msg.header.frame_id, msg.header.stamp)
         if t == null:
             push_warning(listener.get_last_error())
             return
         render_scan_at(t, msg)
 
-The ``time`` argument accepts ``null`` (latest available, i.e. the
-``lookup_transform`` behaviour), a ``float`` of seconds since the epoch, or a
-``RosMsg`` holding a ``builtin_interfaces/msg/Time`` as above.
+The ``time`` argument accepts ``null`` (latest available, the same as leaving it
+out), a ``float`` of seconds since the epoch, or a ``RosMsg`` holding a
+``builtin_interfaces/msg/Time`` as above. ``can_transform`` takes the same
+argument, and answers the same question without doing the work.
 
 How far back you can reach is bounded by the buffer length, which defaults to
 10 seconds and is set when the listener is created —

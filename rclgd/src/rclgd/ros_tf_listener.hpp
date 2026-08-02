@@ -28,7 +28,7 @@ private:
     // produced it.
     mutable String last_error_;
 
-    // Interpret the `time` argument shared by the stamped lookups:
+    // Interpret the `time` argument the lookups share:
     //   null      -> tf2::TimePointZero ("latest available")
     //   float/int -> seconds since epoch
     //   RosMsg    -> builtin_interfaces/msg/Time (sec + nanosec)
@@ -45,16 +45,15 @@ public:
 
     // Returns a Transform3D on success or null on failure, so callers can
     // distinguish "lookup failed" from an actual identity transform.
-    Variant lookup_transform(const String &p_target_frame, const String &p_source_frame, double p_timeout_sec = 0.0);
-    bool can_transform(const String &p_target_frame, const String &p_source_frame) const;
-
-    // Same, but at the time the data was captured rather than "latest". This is
-    // what keeps sensor data pinned to where the robot actually was when the
-    // reading was taken: pass the message's header.stamp.
-    Variant lookup_transform_at(const String &p_target_frame, const String &p_source_frame,
-                                const Variant &p_time, double p_timeout_sec = 0.0);
-    bool can_transform_at(const String &p_target_frame, const String &p_source_frame,
-                          const Variant &p_time) const;
+    //
+    // Omitting p_time gives the newest transform available. Passing a message's
+    // header.stamp instead resolves it at the moment the data was captured,
+    // which is what keeps sensor readings pinned to where the robot actually
+    // was when it took them.
+    Variant lookup_transform(const String &p_target_frame, const String &p_source_frame,
+                             const Variant &p_time = Variant(), double p_timeout_sec = 0.0);
+    bool can_transform(const String &p_target_frame, const String &p_source_frame,
+                       const Variant &p_time = Variant()) const;
 
     // Advanced ("time travel") lookup: where source_frame was at source_time,
     // expressed in target_frame at target_time, bridged through fixed_frame.
