@@ -53,6 +53,21 @@ void RosNode::_bind_methods()
     ClassDB::bind_method(D_METHOD("count_publishers", "topic"), &RosNode::count_publishers);
     ClassDB::bind_method(D_METHOD("count_subscribers", "topic"), &RosNode::count_subscribers);
 
+    // Logging
+    ClassDB::bind_method(D_METHOD("log_debug", "msg"), &RosNode::log_debug);
+    ClassDB::bind_method(D_METHOD("log_info", "msg"), &RosNode::log_info);
+    ClassDB::bind_method(D_METHOD("log_warn", "msg"), &RosNode::log_warn);
+    ClassDB::bind_method(D_METHOD("log_error", "msg"), &RosNode::log_error);
+    ClassDB::bind_method(D_METHOD("log_fatal", "msg"), &RosNode::log_fatal);
+    ClassDB::bind_method(D_METHOD("set_log_level", "level"), &RosNode::set_log_level);
+    ClassDB::bind_method(D_METHOD("get_log_level"), &RosNode::get_log_level);
+    BIND_ENUM_CONSTANT(LOG_UNSET);
+    BIND_ENUM_CONSTANT(LOG_DEBUG);
+    BIND_ENUM_CONSTANT(LOG_INFO);
+    BIND_ENUM_CONSTANT(LOG_WARN);
+    BIND_ENUM_CONSTANT(LOG_ERROR);
+    BIND_ENUM_CONSTANT(LOG_FATAL);
+
     //Helpers
     ClassDB::bind_method(D_METHOD("resolve_frame", "frame_id"), &RosNode::resolve_frame);
 
@@ -378,4 +393,31 @@ int RosNode::count_subscribers(const String &p_topic)
     ERR_FAIL_COND_V(!node_, 0);
     std::string topic = p_topic.utf8().get_data();
     return static_cast<int>(node_->count_subscribers(topic));
+}
+
+void RosNode::_log(int p_severity, const String &p_msg) const
+{
+    RCLGD_FAIL_COND_MSG(!node_, "RosNode must be initialized before logging.");
+    const char *name = node_->get_logger().get_name();
+    if (rcutils_logging_logger_is_enabled_for(name, p_severity))
+        rcutils_log(nullptr, p_severity, name, "%s", p_msg.utf8().get_data());
+}
+
+void RosNode::set_log_level(LogLevel p_level)
+{
+    RCLGD_FAIL_COND_MSG(!node_, "RosNode must be initialized before setting the log level.");
+    try
+    {
+        node_->get_logger().set_level(static_cast<rclcpp::Logger::Level>(p_level));
+    }
+    catch (const std::exception &e)
+    {
+        RCLGD_FAIL_MSG(vformat("RCLGD: Failed to set log level: %s", e.what()));
+    }
+}
+
+RosNode::LogLevel RosNode::get_log_level() const
+{
+    RCLGD_FAIL_COND_V_MSG(!node_, LOG_UNSET, "RosNode must be initialized before getting the log level.");
+    return static_cast<LogLevel>(node_->get_logger().get_effective_level());
 }

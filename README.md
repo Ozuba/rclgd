@@ -34,7 +34,7 @@ As for now only the basic set of the rclcpp api are implemented, keep in mind th
 - [x] Godot Editor Support -> Pseudo-Static Type Wrappers
 - [x] Simulation Time -> `-p publish_sim_time:=true` publishes the Godot physics clock on `/clock`; the standard `-p use_sim_time:=true` makes clocks and timers follow `/clock`
 - [x] Native RCLGD packages in colcon
-
+- [x] ROS node logging
 
 
 ## Repository layout
