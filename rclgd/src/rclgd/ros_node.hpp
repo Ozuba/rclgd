@@ -16,6 +16,7 @@
 #include "ros_tf_listener.hpp"
 #include "ros_timer.hpp"
 #include "ros_msg.hpp"
+#include "ros_logger.hpp"
 
 #include "utils/ros_type_utils.hpp"
 #include "utils/ros_tf_utils.hpp"
@@ -32,23 +33,13 @@ private:
     //Parameter update callback
     rclcpp::Node::OnSetParametersCallbackHandle::SharedPtr param_callback_handle_;
 
-    void _log(int p_severity, const String &p_msg) const;
+    // Cached so once/throttle filter state persists across get_logger() calls
+    Ref<RosLogger> logger_;
 
 protected:
     static void _bind_methods();
 
 public:
-    // Values mirror RCUTILS_LOG_SEVERITY
-    enum LogLevel
-    {
-        LOG_UNSET = 0,
-        LOG_DEBUG = 10,
-        LOG_INFO = 20,
-        LOG_WARN = 30,
-        LOG_ERROR = 40,
-        LOG_FATAL = 50,
-    };
-
     RosNode() {}
     ~RosNode();
 
@@ -96,13 +87,5 @@ public:
     int count_subscribers(const String &p_topic);
 
     // Logging through the node's rclcpp logger (console + /rosout)
-    void log_debug(const String &p_msg) const { _log(LOG_DEBUG, p_msg); }
-    void log_info(const String &p_msg) const { _log(LOG_INFO, p_msg); }
-    void log_warn(const String &p_msg) const { _log(LOG_WARN, p_msg); }
-    void log_error(const String &p_msg) const { _log(LOG_ERROR, p_msg); }
-    void log_fatal(const String &p_msg) const { _log(LOG_FATAL, p_msg); }
-    void set_log_level(LogLevel p_level);
-    LogLevel get_log_level() const;
+    Ref<RosLogger> get_logger() const;
 };
-
-VARIANT_ENUM_CAST(RosNode::LogLevel);

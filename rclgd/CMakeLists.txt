@@ -122,6 +122,7 @@ target_sources(rclgd PRIVATE
     src/rclgd/ros_tf_listener.cpp
     src/rclgd/ros_qos.cpp
     src/rclgd/ros_timer.cpp
+    src/rclgd/ros_logger.cpp
 
     # Type Registration
     src/register_types.cpp

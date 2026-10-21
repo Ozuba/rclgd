@@ -4,9 +4,17 @@ Changelog for package rclgd
 
 Forthcoming
 -----------
-* Feature: Added ROS logging to RosNode (log_debug/info/warn/error/fatal,
-  set_log_level/get_log_level), routed through the node's logger to the
-  console and /rosout
+* Feature: Added RosLogger with rclpy logger API parity: debug/info/
+  warning/error/fatal with once, skip_first and throttle_duration_sec
+  filters, get_child, set_level and get_effective_level. Get one from
+  RosNode.get_logger() (console and /rosout) or rclgd.get_logger(name)
+  (console only); rclgd also gains set_logger_level,
+  get_logger_effective_level and get_logging_severity_from_string
+* Change: classes created by RosNode / rclgd factories (publishers,
+  subscribers, clients, services, requests, timers, action clients and
+  servers, goal handles, TF broadcaster and listener, RosLogger) are now
+  abstract, so ``.new()`` fails instead of returning an unusable object.
+  RosNode, RosMsg and RosQoS remain instantiable
 
 2.1.1 (2026-08-02)
 ------------------

@@ -22,23 +22,26 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	//Registration of ros runtime
 	GDREGISTER_CLASS(rclgd)
 	GDREGISTER_CLASS(RosNode)
+
 	//Publishers & Subscribers
-	GDREGISTER_CLASS(RosPublisher)
-	GDREGISTER_CLASS(RosSubscriber)
+	GDREGISTER_ABSTRACT_CLASS(RosPublisher)
+	GDREGISTER_ABSTRACT_CLASS(RosSubscriber)
 	//Services
-	GDREGISTER_CLASS(RosClient)
-	GDREGISTER_CLASS(RosRequest)
-	GDREGISTER_CLASS(RosService)
+	GDREGISTER_ABSTRACT_CLASS(RosClient)
+	GDREGISTER_ABSTRACT_CLASS(RosRequest)
+	GDREGISTER_ABSTRACT_CLASS(RosService)
 	//Actions
-	GDREGISTER_CLASS(RosActionClient)
-	GDREGISTER_CLASS(RosGoalHandle)
-	GDREGISTER_CLASS(RosActionServer)
-	GDREGISTER_CLASS(RosServerGoalHandle)
+	GDREGISTER_ABSTRACT_CLASS(RosActionClient)
+	GDREGISTER_ABSTRACT_CLASS(RosGoalHandle)
+	GDREGISTER_ABSTRACT_CLASS(RosActionServer)
+	GDREGISTER_ABSTRACT_CLASS(RosServerGoalHandle)
 	//TF2
-	GDREGISTER_CLASS(RosTfBroadcaster)
-	GDREGISTER_CLASS(RosTfListener)
+	GDREGISTER_ABSTRACT_CLASS(RosTfBroadcaster)
+	GDREGISTER_ABSTRACT_CLASS(RosTfListener)
 	//Timer
-	GDREGISTER_CLASS(RosTimer)
+	GDREGISTER_ABSTRACT_CLASS(RosTimer)
+	//Logging
+	GDREGISTER_ABSTRACT_CLASS(RosLogger)
 
 	GDREGISTER_CLASS(RosMsg) //Instance Ros2 Type Creator
 	GDREGISTER_CLASS(RosQoS) //Instance Ros2 Type Creator

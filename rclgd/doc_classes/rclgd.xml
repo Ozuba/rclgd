@@ -13,6 +13,28 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_logger" qualifiers="const">
+			<return type="RosLogger" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns a [RosLogger] with the given [param name] that is not tied to any node, like rclpy's [code]rclpy.logging.get_logger()[/code]. Use it in autoloads, tools or code without a [RosNode]. Messages go to the console only; use [method RosNode.get_logger] (or a child of it) to also publish on [code]/rosout[/code].
+				A new instance is returned on every call, so keep a reference if you use the [code]once[/code], [code]skip_first[/code] or [code]throttle_duration_sec[/code] filters.
+			</description>
+		</method>
+		<method name="get_logger_effective_level" qualifiers="const">
+			<return type="int" enum="RosLogger.LoggingSeverity" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the effective severity threshold of the logger called [param name], inherited from its ancestors when not set explicitly. Equivalent to [code]rclpy.logging.get_logger_effective_level()[/code].
+			</description>
+		</method>
+		<method name="get_logging_severity_from_string" qualifiers="const">
+			<return type="int" enum="RosLogger.LoggingSeverity" />
+			<param index="0" name="log_severity" type="String" />
+			<description>
+				Converts a severity name such as [code]"debug"[/code] or [code]"WARN"[/code] (case-insensitive) to a [enum RosLogger.LoggingSeverity] value. Reports an error and returns [constant RosLogger.UNSET] for unknown names. Equivalent to [code]rclpy.logging.get_logging_severity_from_string()[/code].
+			</description>
+		</method>
 		<method name="godot_to_ros_quat" qualifiers="const">
 			<return type="Quaternion" />
 			<param index="0" name="q" type="Quaternion" />
@@ -53,6 +75,14 @@
 			<param index="0" name="v" type="Vector3" />
 			<description>
 				Converts a vector from the ROS axis convention (+X forward, +Z up) to the Godot axis convention (-Z forward, +Y up). Inverse of [method godot_to_ros_vector] and the exact mapping used internally by [RosTfListener].
+			</description>
+		</method>
+		<method name="set_logger_level">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="level" type="int" enum="RosLogger.LoggingSeverity" />
+			<description>
+				Sets the minimum severity emitted by the logger called [param name], which can be a node's logger or a child logger such as [code]"my_node.lidar"[/code]. Equivalent to [code]rclpy.logging.set_logger_level()[/code].
 			</description>
 		</method>
 		<method name="shutdown">

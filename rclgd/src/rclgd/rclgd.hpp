@@ -22,6 +22,7 @@
 
 //So all other classes have access to macros
 #include "utils/rclgd_macros.hpp"
+#include "ros_logger.hpp"
 
 using namespace godot;
 using namespace ros_babel_fish;
@@ -114,6 +115,12 @@ public:
     Vector3 ros_to_godot_vector(const Vector3 &p_v) const;
     Quaternion godot_to_ros_quat(const Quaternion &p_q) const;
     Quaternion ros_to_godot_quat(const Quaternion &p_q) const;
+
+    // Logging helpers mirroring the rclpy.logging module
+    Ref<RosLogger> get_logger(const String &p_name) const;
+    void set_logger_level(const String &p_name, RosLogger::LoggingSeverity p_level);
+    RosLogger::LoggingSeverity get_logger_effective_level(const String &p_name) const;
+    RosLogger::LoggingSeverity get_logging_severity_from_string(const String &p_severity) const;
 };
 
 #endif

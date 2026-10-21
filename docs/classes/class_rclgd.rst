@@ -37,21 +37,29 @@ Methods
 .. table::
    :widths: auto
 
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`godot_to_ros_quat<class_rclgd_method_godot_to_ros_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|      |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`godot_to_ros_vector<class_rclgd_method_godot_to_ros_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|        |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`init<class_rclgd_method_init>`\ (\ args\: `PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ = PackedStringArray()\ ) |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__             | :ref:`ok<class_rclgd_method_ok>`\ (\ ) |const|                                                                                                                               |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`ros_to_godot_quat<class_rclgd_method_ros_to_godot_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|      |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`ros_to_godot_vector<class_rclgd_method_ros_to_godot_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|        |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`shutdown<class_rclgd_method_shutdown>`\ (\ )                                                                                                                           |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`RosLogger<class_RosLogger>`                                                     | :ref:`get_logger<class_rclgd_method_get_logger>`\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                     |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>`                                | :ref:`get_logger_effective_level<class_rclgd_method_get_logger_effective_level>`\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                     |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | :ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>`                                | :ref:`get_logging_severity_from_string<class_rclgd_method_get_logging_severity_from_string>`\ (\ log_severity\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                 |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`godot_to_ros_quat<class_rclgd_method_godot_to_ros_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|                                                  |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`godot_to_ros_vector<class_rclgd_method_godot_to_ros_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|                                                    |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                | :ref:`init<class_rclgd_method_init>`\ (\ args\: `PackedStringArray <https://docs.godotengine.org/en/stable/classes/class_packedstringarray.html>`__ = PackedStringArray()\ )                                             |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `bool <https://docs.godotengine.org/en/stable/classes/class_bool.html>`__             | :ref:`ok<class_rclgd_method_ok>`\ (\ ) |const|                                                                                                                                                                           |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__ | :ref:`ros_to_godot_quat<class_rclgd_method_ros_to_godot_quat>`\ (\ q\: `Quaternion <https://docs.godotengine.org/en/stable/classes/class_quaternion.html>`__\ ) |const|                                                  |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__       | :ref:`ros_to_godot_vector<class_rclgd_method_ros_to_godot_vector>`\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const|                                                    |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                | :ref:`set_logger_level<class_rclgd_method_set_logger_level>`\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, level\: :ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>`\ ) |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+   | |void|                                                                                | :ref:`shutdown<class_rclgd_method_shutdown>`\ (\ )                                                                                                                                                                       |
+   +---------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 .. rst-class:: classref-section-separator
 
@@ -78,6 +86,44 @@ Emitted when the ROS 2 context has been successfully initialized and is ready to
 
 Method Descriptions
 -------------------
+
+.. _class_rclgd_method_get_logger:
+
+.. rst-class:: classref-method
+
+:ref:`RosLogger<class_RosLogger>` **get_logger**\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_get_logger>`
+
+Returns a :ref:`RosLogger<class_RosLogger>` with the given ``name`` that is not tied to any node, like rclpy's ``rclpy.logging.get_logger()``. Use it in autoloads, tools or code without a :ref:`RosNode<class_RosNode>`. Messages go to the console only; use :ref:`RosNode.get_logger()<class_RosNode_method_get_logger>` (or a child of it) to also publish on ``/rosout``.
+
+A new instance is returned on every call, so keep a reference if you use the ``once``, ``skip_first`` or ``throttle_duration_sec`` filters.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_get_logger_effective_level:
+
+.. rst-class:: classref-method
+
+:ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>` **get_logger_effective_level**\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_get_logger_effective_level>`
+
+Returns the effective severity threshold of the logger called ``name``, inherited from its ancestors when not set explicitly. Equivalent to ``rclpy.logging.get_logger_effective_level()``.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_get_logging_severity_from_string:
+
+.. rst-class:: classref-method
+
+:ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>` **get_logging_severity_from_string**\ (\ log_severity\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_get_logging_severity_from_string>`
+
+Converts a severity name such as ``"debug"`` or ``"WARN"`` (case-insensitive) to a :ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>` value. Reports an error and returns :ref:`RosLogger.UNSET<class_RosLogger_constant_UNSET>` for unknown names. Equivalent to ``rclpy.logging.get_logging_severity_from_string()``.
+
+.. rst-class:: classref-item-separator
+
+----
 
 .. _class_rclgd_method_godot_to_ros_quat:
 
@@ -148,6 +194,18 @@ Converts a rotation from the ROS axis convention to the Godot axis convention. I
 `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__ **ros_to_godot_vector**\ (\ v\: `Vector3 <https://docs.godotengine.org/en/stable/classes/class_vector3.html>`__\ ) |const| :ref:`🔗<class_rclgd_method_ros_to_godot_vector>`
 
 Converts a vector from the ROS axis convention (+X forward, +Z up) to the Godot axis convention (-Z forward, +Y up). Inverse of :ref:`godot_to_ros_vector()<class_rclgd_method_godot_to_ros_vector>` and the exact mapping used internally by :ref:`RosTfListener<class_RosTfListener>`.
+
+.. rst-class:: classref-item-separator
+
+----
+
+.. _class_rclgd_method_set_logger_level:
+
+.. rst-class:: classref-method
+
+|void| **set_logger_level**\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, level\: :ref:`LoggingSeverity<enum_RosLogger_LoggingSeverity>`\ ) :ref:`🔗<class_rclgd_method_set_logger_level>`
+
+Sets the minimum severity emitted by the logger called ``name``, which can be a node's logger or a child logger such as ``"my_node.lidar"``. Equivalent to ``rclpy.logging.set_logger_level()``.
 
 .. rst-class:: classref-item-separator
 

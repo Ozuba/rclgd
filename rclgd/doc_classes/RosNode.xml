@@ -4,7 +4,7 @@
 		A ROS 2 Node that manages publishers, subscribers, and other communication interfaces.
 	</brief_description>
 	<description>
-		The [RosNode] is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers. It also exposes the node's ROS 2 logger through [method log_info] and its siblings, so messages reach the console and [code]/rosout[/code] like any other ROS node's.
+		The [RosNode] is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers. Its ROS 2 logger is available through [method get_logger], so messages reach the console and [code]/rosout[/code] like any other ROS node's.
 		A node must be initialized using [method init] before it can be used to create other communication components.
 	</description>
 	<tutorials>
@@ -112,10 +112,14 @@
 				Declares a parameter on the node with a [param default_value]. Parameters must be declared before they can be retrieved or modified by external tools.
 			</description>
 		</method>
-		<method name="get_log_level" qualifiers="const">
-			<return type="int" enum="RosNode.LogLevel" />
+		<method name="get_logger" qualifiers="const">
+			<return type="RosLogger" />
 			<description>
-				Returns the effective severity threshold of the node's logger, inherited from ancestor loggers when not set explicitly.
+				Returns the node's [RosLogger], named after the node. Messages logged through it go to the console and [code]/rosout[/code]. The same instance is returned on every call, so [code]once[/code], [code]skip_first[/code] and [code]throttle_duration_sec[/code] filter state is kept. Equivalent to rclpy's [code]Node.get_logger()[/code].
+				[codeblock]
+				var logger := ros_node.get_logger()
+				logger.info("Simulation started")
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -151,41 +155,6 @@
 				Initializes the node with a [param node_name] and an optional [param namespace]. This must be called before using any other functions of the node.
 			</description>
 		</method>
-		<method name="log_debug" qualifiers="const">
-			<return type="void" />
-			<param index="0" name="msg" type="String" />
-			<description>
-				Logs [param msg] at DEBUG severity through the node's ROS 2 logger (named after the node). The message goes to the console and [code]/rosout[/code], and is dropped if below [method get_log_level].
-			</description>
-		</method>
-		<method name="log_error" qualifiers="const">
-			<return type="void" />
-			<param index="0" name="msg" type="String" />
-			<description>
-				Logs [param msg] at ERROR severity through the node's ROS 2 logger (named after the node). The message goes to the console and [code]/rosout[/code], and is dropped if below [method get_log_level].
-			</description>
-		</method>
-		<method name="log_fatal" qualifiers="const">
-			<return type="void" />
-			<param index="0" name="msg" type="String" />
-			<description>
-				Logs [param msg] at FATAL severity through the node's ROS 2 logger (named after the node). The message goes to the console and [code]/rosout[/code], and is dropped if below [method get_log_level].
-			</description>
-		</method>
-		<method name="log_info" qualifiers="const">
-			<return type="void" />
-			<param index="0" name="msg" type="String" />
-			<description>
-				Logs [param msg] at INFO severity through the node's ROS 2 logger (named after the node). The message goes to the console and [code]/rosout[/code], and is dropped if below [method get_log_level].
-			</description>
-		</method>
-		<method name="log_warn" qualifiers="const">
-			<return type="void" />
-			<param index="0" name="msg" type="String" />
-			<description>
-				Logs [param msg] at WARN severity through the node's ROS 2 logger (named after the node). The message goes to the console and [code]/rosout[/code], and is dropped if below [method get_log_level].
-			</description>
-		</method>
 		<method name="now">
 			<return type="RosMsg" />
 			<description>
@@ -197,13 +166,6 @@
 			<param index="0" name="frame_id" type="String" />
 			<description>
 				Prepends the node's namespace to a [param frame_id] if it is not already absolute, helping resolve local frame names in multi-agent simulations.
-			</description>
-		</method>
-		<method name="set_log_level">
-			<return type="void" />
-			<param index="0" name="level" type="int" enum="RosNode.LogLevel" />
-			<description>
-				Sets the minimum severity the node's logger emits. Equivalent to [code]--ros-args --log-level &lt;node&gt;:=&lt;level&gt;[/code].
 			</description>
 		</method>
 		<method name="set_parameter">
@@ -224,24 +186,4 @@
 			</description>
 		</signal>
 	</signals>
-	<constants>
-		<constant name="LOG_UNSET" value="0" enum="LogLevel">
-			Unset; the logger inherits its level from its ancestors.
-		</constant>
-		<constant name="LOG_DEBUG" value="10" enum="LogLevel">
-			Debug severity.
-		</constant>
-		<constant name="LOG_INFO" value="20" enum="LogLevel">
-			Info severity.
-		</constant>
-		<constant name="LOG_WARN" value="30" enum="LogLevel">
-			Warning severity.
-		</constant>
-		<constant name="LOG_ERROR" value="40" enum="LogLevel">
-			Error severity.
-		</constant>
-		<constant name="LOG_FATAL" value="50" enum="LogLevel">
-			Fatal severity.
-		</constant>
-	</constants>
 </class>

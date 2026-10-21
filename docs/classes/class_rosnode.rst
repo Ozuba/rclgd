@@ -19,7 +19,7 @@ A ROS 2 Node that manages publishers, subscribers, and other communication inter
 Description
 -----------
 
-The **RosNode** is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers. It also exposes the node's ROS 2 logger through :ref:`log_info()<class_RosNode_method_log_info>` and its siblings, so messages reach the console and ``/rosout`` like any other ROS node's.
+The **RosNode** is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers. Its ROS 2 logger is available through :ref:`get_logger()<class_RosNode_method_get_logger>`, so messages reach the console and ``/rosout`` like any other ROS node's.
 
 A node must be initialized using :ref:`init()<class_RosNode_method_init>` before it can be used to create other communication components.
 
@@ -56,7 +56,7 @@ Methods
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | |void|                                                                                | :ref:`declare_parameter<class_RosNode_method_declare_parameter>`\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, default_value\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ )                                                                                                                                                                                                                                                                            |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | :ref:`LogLevel<enum_RosNode_LogLevel>`                                                | :ref:`get_log_level<class_RosNode_method_get_log_level>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+   | :ref:`RosLogger<class_RosLogger>`                                                     | :ref:`get_logger<class_RosNode_method_get_logger>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__         | :ref:`get_name<class_RosNode_method_get_name>`\ (\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -68,21 +68,9 @@ Methods
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | |void|                                                                                | :ref:`init<class_RosNode_method_init>`\ (\ node_name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, namespace\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ = ""\ )                                                                                                                                                                                                                                                                                                  |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`log_debug<class_RosNode_method_log_debug>`\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                      |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`log_error<class_RosNode_method_log_error>`\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                      |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`log_fatal<class_RosNode_method_log_fatal>`\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                      |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`log_info<class_RosNode_method_log_info>`\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                        |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`log_warn<class_RosNode_method_log_warn>`\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const|                                                                                                                                                                                                                                                                                                                                                                                        |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | :ref:`RosMsg<class_RosMsg>`                                                           | :ref:`now<class_RosNode_method_now>`\ (\ )                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__         | :ref:`resolve_frame<class_RosNode_method_resolve_frame>`\ (\ frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ )                                                                                                                                                                                                                                                                                                                                                                                 |
-   +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-   | |void|                                                                                | :ref:`set_log_level<class_RosNode_method_set_log_level>`\ (\ level\: :ref:`LogLevel<enum_RosNode_LogLevel>`\ )                                                                                                                                                                                                                                                                                                                                                                                                                           |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
    | |void|                                                                                | :ref:`set_parameter<class_RosNode_method_set_parameter>`\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, value\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ )                                                                                                                                                                                                                                                                                            |
    +---------------------------------------------------------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -103,69 +91,6 @@ Signals
 **parameter_changed**\ (\ name\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, value\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__\ ) :ref:`🔗<class_RosNode_signal_parameter_changed>`
 
 Emitted whenever a node parameter is updated by an external tool or by :ref:`set_parameter()<class_RosNode_method_set_parameter>` locally.
-
-.. rst-class:: classref-section-separator
-
-----
-
-.. rst-class:: classref-descriptions-group
-
-Enumerations
-------------
-
-.. _enum_RosNode_LogLevel:
-
-.. rst-class:: classref-enumeration
-
-enum **LogLevel**: :ref:`🔗<enum_RosNode_LogLevel>`
-
-.. _class_RosNode_constant_LOG_UNSET:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_UNSET** = ``0``
-
-Unset; the logger inherits its level from its ancestors.
-
-.. _class_RosNode_constant_LOG_DEBUG:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_DEBUG** = ``10``
-
-Debug severity.
-
-.. _class_RosNode_constant_LOG_INFO:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_INFO** = ``20``
-
-Info severity.
-
-.. _class_RosNode_constant_LOG_WARN:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_WARN** = ``30``
-
-Warning severity.
-
-.. _class_RosNode_constant_LOG_ERROR:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_ERROR** = ``40``
-
-Error severity.
-
-.. _class_RosNode_constant_LOG_FATAL:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`LogLevel<enum_RosNode_LogLevel>` **LOG_FATAL** = ``50``
-
-Fatal severity.
 
 .. rst-class:: classref-section-separator
 
@@ -322,13 +247,18 @@ Declares a parameter on the node with a ``default_value``. Parameters must be de
 
 ----
 
-.. _class_RosNode_method_get_log_level:
+.. _class_RosNode_method_get_logger:
 
 .. rst-class:: classref-method
 
-:ref:`LogLevel<enum_RosNode_LogLevel>` **get_log_level**\ (\ ) |const| :ref:`🔗<class_RosNode_method_get_log_level>`
+:ref:`RosLogger<class_RosLogger>` **get_logger**\ (\ ) |const| :ref:`🔗<class_RosNode_method_get_logger>`
 
-Returns the effective severity threshold of the node's logger, inherited from ancestor loggers when not set explicitly.
+Returns the node's :ref:`RosLogger<class_RosLogger>`, named after the node. Messages logged through it go to the console and ``/rosout``. The same instance is returned on every call, so ``once``, ``skip_first`` and ``throttle_duration_sec`` filter state is kept. Equivalent to rclpy's ``Node.get_logger()``.
+
+::
+
+    var logger := ros_node.get_logger()
+    logger.info("Simulation started")
 
 .. rst-class:: classref-item-separator
 
@@ -394,66 +324,6 @@ Initializes the node with a ``node_name`` and an optional ``namespace``. This mu
 
 ----
 
-.. _class_RosNode_method_log_debug:
-
-.. rst-class:: classref-method
-
-|void| **log_debug**\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosNode_method_log_debug>`
-
-Logs ``msg`` at DEBUG severity through the node's ROS 2 logger (named after the node). The message goes to the console and ``/rosout``, and is dropped if below :ref:`get_log_level()<class_RosNode_method_get_log_level>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_RosNode_method_log_error:
-
-.. rst-class:: classref-method
-
-|void| **log_error**\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosNode_method_log_error>`
-
-Logs ``msg`` at ERROR severity through the node's ROS 2 logger (named after the node). The message goes to the console and ``/rosout``, and is dropped if below :ref:`get_log_level()<class_RosNode_method_get_log_level>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_RosNode_method_log_fatal:
-
-.. rst-class:: classref-method
-
-|void| **log_fatal**\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosNode_method_log_fatal>`
-
-Logs ``msg`` at FATAL severity through the node's ROS 2 logger (named after the node). The message goes to the console and ``/rosout``, and is dropped if below :ref:`get_log_level()<class_RosNode_method_get_log_level>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_RosNode_method_log_info:
-
-.. rst-class:: classref-method
-
-|void| **log_info**\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosNode_method_log_info>`
-
-Logs ``msg`` at INFO severity through the node's ROS 2 logger (named after the node). The message goes to the console and ``/rosout``, and is dropped if below :ref:`get_log_level()<class_RosNode_method_get_log_level>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_RosNode_method_log_warn:
-
-.. rst-class:: classref-method
-
-|void| **log_warn**\ (\ msg\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) |const| :ref:`🔗<class_RosNode_method_log_warn>`
-
-Logs ``msg`` at WARN severity through the node's ROS 2 logger (named after the node). The message goes to the console and ``/rosout``, and is dropped if below :ref:`get_log_level()<class_RosNode_method_get_log_level>`.
-
-.. rst-class:: classref-item-separator
-
-----
-
 .. _class_RosNode_method_now:
 
 .. rst-class:: classref-method
@@ -473,18 +343,6 @@ Returns the current ROS 2 system time as a :ref:`RosMsg<class_RosMsg>` of type `
 `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__ **resolve_frame**\ (\ frame_id\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__\ ) :ref:`🔗<class_RosNode_method_resolve_frame>`
 
 Prepends the node's namespace to a ``frame_id`` if it is not already absolute, helping resolve local frame names in multi-agent simulations.
-
-.. rst-class:: classref-item-separator
-
-----
-
-.. _class_RosNode_method_set_log_level:
-
-.. rst-class:: classref-method
-
-|void| **set_log_level**\ (\ level\: :ref:`LogLevel<enum_RosNode_LogLevel>`\ ) :ref:`🔗<class_RosNode_method_set_log_level>`
-
-Sets the minimum severity the node's logger emits. Equivalent to ``--ros-args --log-level <node>:=<level>``.
 
 .. rst-class:: classref-item-separator
 

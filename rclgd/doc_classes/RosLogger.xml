@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RosLogger" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A named ROS 2 logger, with the same API as rclpy's logger.
+	</brief_description>
+	<description>
+		[RosLogger] writes messages through the ROS 2 logging system, so they get the standard severity formatting, honour [code]--ros-args --log-level[/code] and [code]RCUTILS_CONSOLE_OUTPUT_FORMAT[/code], and can be inspected with ROS tooling. Its API mirrors rclpy's logger: [method debug], [method info], [method warning], [method error] and [method fatal] take the message and an optional [Dictionary] standing in for rclpy's keyword arguments.
+		It cannot be created with [code]new()[/code]; get one from [method RosNode.get_logger] (published on [code]/rosout[/code]), from [method get_child], or from [method rclgd.get_logger] (console only, no node needed).
+		[codeblock]
+		var logger := ros_node.get_logger()
+		logger.info("Simulation started")
+		logger.warning("Wheel slip detected", {"throttle_duration_sec": 1.0})
+		logger.debug("First contact", {"once": true})
+
+		var lidar_logger := logger.get_child("lidar")
+		lidar_logger.set_level(RosLogger.DEBUG)
+		[/codeblock]
+		[b]Filters:[/b] The keyword dictionary accepts [code]once[/code] (log only the first time), [code]skip_first[/code] (skip the first time) and [code]throttle_duration_sec[/code] (log at most once per period, measured on a steady clock). [code]once[/code] cannot be combined with the others. As in rclpy, filter state is kept per call site, so the same line is throttled independently of other lines. Script call stacks are not tracked in release exports unless [code]debug/settings/gdscript/always_track_call_stacks[/code] is enabled; filters then key on the message text instead (with a one-time warning), and log locations are omitted.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="debug">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [constant DEBUG] severity. See [method log] for [param kwargs] and the return value.
+			</description>
+		</method>
+		<method name="error">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [constant ERROR] severity. See [method log] for [param kwargs] and the return value.
+			</description>
+		</method>
+		<method name="fatal">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [constant FATAL] severity. See [method log] for [param kwargs] and the return value.
+			</description>
+		</method>
+		<method name="get_child" qualifiers="const">
+			<return type="RosLogger" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns a child logger named [code]&lt;this logger's name&gt;.&lt;name&gt;[/code]. Its level can be set independently, and it inherits this logger's level while unset. A child of a node's logger is also published on [code]/rosout[/code]. [param name] must not be empty.
+			</description>
+		</method>
+		<method name="get_effective_level" qualifiers="const">
+			<return type="int" enum="RosLogger.LoggingSeverity" />
+			<description>
+				Returns the severity threshold this logger actually uses: its own level if set, otherwise the nearest ancestor's, otherwise the default level ([constant INFO] unless changed).
+			</description>
+		</method>
+		<method name="info">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [constant INFO] severity. See [method log] for [param kwargs] and the return value.
+			</description>
+		</method>
+		<method name="is_enabled_for" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="severity" type="int" enum="RosLogger.LoggingSeverity" />
+			<description>
+				Returns [code]true[/code] if a message of [param severity] would be emitted by this logger. Use it to skip building expensive messages.
+			</description>
+		</method>
+		<method name="log">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="severity" type="int" enum="RosLogger.LoggingSeverity" />
+			<param index="2" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [param severity], which must be [constant DEBUG], [constant INFO], [constant WARN], [constant ERROR] or [constant FATAL]. [param kwargs] takes the optional filters [code]once[/code], [code]skip_first[/code] and [code]throttle_duration_sec[/code] (see the class description). Any other key, or a value of the wrong type, is an error.
+				Returns [code]true[/code] if the message was emitted, and [code]false[/code] if it was below the logger's level or suppressed by a filter.
+			</description>
+		</method>
+		<method name="set_level">
+			<return type="void" />
+			<param index="0" name="level" type="int" enum="RosLogger.LoggingSeverity" />
+			<description>
+				Sets the minimum severity this logger emits. Pass [constant UNSET] to inherit the level from its ancestors again. Equivalent to [code]--ros-args --log-level &lt;name&gt;:=&lt;level&gt;[/code].
+			</description>
+		</method>
+		<method name="warning">
+			<return type="bool" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="kwargs" type="Dictionary" default="{}" />
+			<description>
+				Logs [param message] at [constant WARN] severity. See [method log] for [param kwargs] and the return value.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="name" type="String" setter="" getter="get_name">
+			The logger's fully qualified name, e.g. [code]my_node[/code] or [code]my_node.lidar[/code]. Read-only.
+		</member>
+	</members>
+	<constants>
+		<constant name="UNSET" value="0" enum="LoggingSeverity">
+			No level set; the logger inherits its level from its ancestors.
+		</constant>
+		<constant name="DEBUG" value="10" enum="LoggingSeverity">
+			Debug severity.
+		</constant>
+		<constant name="INFO" value="20" enum="LoggingSeverity">
+			Info severity. This is the default level.
+		</constant>
+		<constant name="WARN" value="30" enum="LoggingSeverity">
+			Warning severity.
+		</constant>
+		<constant name="ERROR" value="40" enum="LoggingSeverity">
+			Error severity.
+		</constant>
+		<constant name="FATAL" value="50" enum="LoggingSeverity">
+			Fatal severity.
+		</constant>
+	</constants>
+</class>

@@ -22,6 +22,7 @@ Variant types
     class_rosactionserver
     class_rosclient
     class_rosgoalhandle
+    class_roslogger
     class_rosmsg
     class_rosnode
     class_rospublisher

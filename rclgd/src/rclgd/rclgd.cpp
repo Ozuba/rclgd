@@ -279,4 +279,40 @@ void rclgd::_bind_methods()
     ClassDB::bind_method(D_METHOD("ros_to_godot_vector", "v"), &rclgd::ros_to_godot_vector);
     ClassDB::bind_method(D_METHOD("godot_to_ros_quat", "q"), &rclgd::godot_to_ros_quat);
     ClassDB::bind_method(D_METHOD("ros_to_godot_quat", "q"), &rclgd::ros_to_godot_quat);
+
+    // Logging (rclpy.logging parity)
+    ClassDB::bind_method(D_METHOD("get_logger", "name"), &rclgd::get_logger);
+    ClassDB::bind_method(D_METHOD("set_logger_level", "name", "level"), &rclgd::set_logger_level);
+    ClassDB::bind_method(D_METHOD("get_logger_effective_level", "name"), &rclgd::get_logger_effective_level);
+    ClassDB::bind_method(D_METHOD("get_logging_severity_from_string", "log_severity"), &rclgd::get_logging_severity_from_string);
+}
+
+Ref<RosLogger> rclgd::get_logger(const String &p_name) const
+{
+    RCLGD_FAIL_COND_V_MSG(p_name.is_empty(), Ref<RosLogger>(), "RCLGD: Logger name must not be empty.");
+    return RosLogger::wrap(rclcpp::get_logger(p_name.utf8().get_data()));
+}
+
+void rclgd::set_logger_level(const String &p_name, RosLogger::LoggingSeverity p_level)
+{
+    Ref<RosLogger> logger = get_logger(p_name);
+    if (logger.is_valid())
+        logger->set_level(p_level);
+}
+
+RosLogger::LoggingSeverity rclgd::get_logger_effective_level(const String &p_name) const
+{
+    Ref<RosLogger> logger = get_logger(p_name);
+    return logger.is_valid() ? logger->get_effective_level() : RosLogger::SEVERITY_UNSET;
+}
+
+RosLogger::LoggingSeverity rclgd::get_logging_severity_from_string(const String &p_severity) const
+{
+    int severity = RCUTILS_LOG_SEVERITY_UNSET;
+    if (rcutils_logging_severity_level_from_string(p_severity.utf8().get_data(), rcutils_get_default_allocator(), &severity) != RCUTILS_RET_OK)
+    {
+        rcutils_reset_error();
+        RCLGD_FAIL_V_MSG(RosLogger::SEVERITY_UNSET, vformat("RCLGD: Unknown logging severity '%s'.", p_severity));
+    }
+    return static_cast<RosLogger::LoggingSeverity>(severity);
 }

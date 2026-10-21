@@ -35,27 +35,42 @@ The `RosNode` is the entry point for all ROS 2 communication. It should be initi
 Logging
 -------
 
-Use the node's logging methods instead of ``print`` when the output should reach ROS tooling. Messages go through the node's ROS 2 logger (named after the node), so they show up on the console with the usual severity formatting and are published on ``/rosout``, where ``rqt_console`` and ``ros2 bag`` can pick them up.
+Use the node's logger instead of ``print`` when the output should reach ROS tooling. :ref:`class_RosLogger` has the same API as rclpy's logger: messages get the usual severity formatting on the console and are published on ``/rosout``, where ``rqt_console`` and ``ros2 bag`` can pick them up.
 
 .. code-block:: gdscript
 
-    ros_node.log_debug("Raw sensor value: %f" % value)
-    ros_node.log_info("Simulation started")
-    ros_node.log_warn("Wheel slip detected")
-    ros_node.log_error("Lost connection to the controller")
-    ros_node.log_fatal("Vehicle state is unrecoverable")
+    var logger: RosLogger
 
-Messages below the logger's severity threshold are dropped. The threshold defaults to ``INFO`` and can be changed at runtime with :ref:`set_log_level<class_RosNode_method_set_log_level>`, or at launch with ``--ros-args --log-level my_godot_node:=debug``:
+    func _ready():
+        # ... after ros_node.init(...)
+        logger = ros_node.get_logger()
+        logger.debug("Raw sensor value: %f" % value)
+        logger.info("Simulation started")
+        logger.warning("Wheel slip detected")
+        logger.error("Lost connection to the controller")
+        logger.fatal("Vehicle state is unrecoverable")
+
+GDScript has no keyword arguments, so rclpy's logging filters are passed as a dictionary. As in rclpy, filter state is kept per call site:
 
 .. code-block:: gdscript
 
-    ros_node.set_log_level(RosNode.LOG_DEBUG)
-    print(ros_node.get_log_level() == RosNode.LOG_DEBUG)  # true
+    func _physics_process(_delta):
+        logger.info("Contact detected", {"once": true})
+        logger.warning("Speed limit exceeded", {"throttle_duration_sec": 1.0})
+        logger.info("Tick", {"skip_first": true})
 
-Setting ``RosNode.LOG_UNSET`` makes the logger inherit its level from its ancestors again. :ref:`get_log_level<class_RosNode_method_get_log_level>` always returns the effective level, including inherited ones.
+Messages below the logger's level are dropped (the log methods return ``false``). The default level is ``INFO``. Change it at runtime with :ref:`set_level<class_RosLogger_method_set_level>`, or at launch with ``--ros-args --log-level my_godot_node:=debug``. Use :ref:`get_child<class_RosLogger_method_get_child>` to give a subsystem its own logger name and level:
+
+.. code-block:: gdscript
+
+    var lidar_logger := logger.get_child("lidar")   # "my_godot_node.lidar"
+    lidar_logger.set_level(RosLogger.DEBUG)
+    print(lidar_logger.get_effective_level() == RosLogger.DEBUG)  # true
+
+Code without a node, such as autoloads or editor tools, can use ``rclgd.get_logger("my_tool")``, which works like ``rclpy.logging.get_logger()`` and logs to the console only. The singleton also has ``set_logger_level``, ``get_logger_effective_level`` and ``get_logging_severity_from_string``, matching the ``rclpy.logging`` functions.
 
 .. note::
-    The node must be initialized with ``init()`` before logging or changing the log level.
+    ``RosNode.get_logger()`` is only available after ``init()``.
 
 Topics (Pub/Sub)
 ----------------
