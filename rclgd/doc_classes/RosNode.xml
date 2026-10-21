@@ -4,7 +4,7 @@
 		A ROS 2 Node that manages publishers, subscribers, and other communication interfaces.
 	</brief_description>
 	<description>
-		The [RosNode] is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers.
+		The [RosNode] is the primary interface for interacting with the ROS 2 network. It provides factory methods to create publishers, subscribers, clients, and services, and allows management of node-level parameters and timers. It also exposes the node's ROS 2 logger through [method log_info] and its siblings, so messages reach the console and [code]/rosout[/code] like any other ROS node's.
 		A node must be initialized using [method init] before it can be used to create other communication components.
 	</description>
 	<tutorials>

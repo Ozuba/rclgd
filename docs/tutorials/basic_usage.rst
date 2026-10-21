@@ -1,7 +1,7 @@
 Basic Usage
 ===========
 
-This guide covers the fundamental building blocks of an **rclgd** application: nodes, communication patterns, and periodic tasks.
+This guide covers the fundamental building blocks of an **rclgd** application: nodes, logging, communication patterns, and periodic tasks.
 
 Initializing a Node
 -------------------
@@ -31,6 +31,31 @@ The `RosNode` is the entry point for all ROS 2 communication. It should be initi
     long as something holds a reference to them. Always store the value
     returned by the ``create_*`` factories in a member variable — a discarded
     subscription or timer is freed immediately and silently stops working.
+
+Logging
+-------
+
+Use the node's logging methods instead of ``print`` when the output should reach ROS tooling. Messages go through the node's ROS 2 logger (named after the node), so they show up on the console with the usual severity formatting and are published on ``/rosout``, where ``rqt_console`` and ``ros2 bag`` can pick them up.
+
+.. code-block:: gdscript
+
+    ros_node.log_debug("Raw sensor value: %f" % value)
+    ros_node.log_info("Simulation started")
+    ros_node.log_warn("Wheel slip detected")
+    ros_node.log_error("Lost connection to the controller")
+    ros_node.log_fatal("Vehicle state is unrecoverable")
+
+Messages below the logger's severity threshold are dropped. The threshold defaults to ``INFO`` and can be changed at runtime with :ref:`set_log_level<class_RosNode_method_set_log_level>`, or at launch with ``--ros-args --log-level my_godot_node:=debug``:
+
+.. code-block:: gdscript
+
+    ros_node.set_log_level(RosNode.LOG_DEBUG)
+    print(ros_node.get_log_level() == RosNode.LOG_DEBUG)  # true
+
+Setting ``RosNode.LOG_UNSET`` makes the logger inherit its level from its ancestors again. :ref:`get_log_level<class_RosNode_method_get_log_level>` always returns the effective level, including inherited ones.
+
+.. note::
+    The node must be initialized with ``init()`` before logging or changing the log level.
 
 Topics (Pub/Sub)
 ----------------

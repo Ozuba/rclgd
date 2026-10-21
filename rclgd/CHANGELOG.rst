@@ -2,6 +2,12 @@
 Changelog for package rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Feature: Added ROS logging to RosNode (log_debug/info/warn/error/fatal,
+  set_log_level/get_log_level), routed through the node's logger to the
+  console and /rosout
+
 2.1.1 (2026-08-02)
 ------------------
 * Bugfix: fixed liveliness unavailability inside RosQoS
