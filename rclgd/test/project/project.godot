@@ -1,0 +1,10 @@
+; Scripts-only project for the headless rclgd system tests. Run it through
+; test/run_tests.sh (or `colcon test --packages-select rclgd`), which wires in
+; the built librclgd.so.
+
+config_version=5
+
+[application]
+
+config/name="rclgd system tests"
+run/max_fps=240

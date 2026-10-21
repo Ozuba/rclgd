@@ -41,7 +41,7 @@
 			<param index="3" name="goal_callback" type="Callable" default="Callable()" />
 			<param index="4" name="qos" type="RosQoS" default="null" />
 			<description>
-				Creates and returns a [RosActionServer] for the specified [param action_name] and [param action_type]. Incoming goals are auto-accepted and handed to [param execute_callback] on the main thread as a [RosServerGoalHandle], which must be driven to a terminal state. The [param goal_callback] can optionally be used to reject goals. Use [param qos] to configure the Quality of Service for the action server. See [RosActionServer] for a full example.
+				Creates and returns a [RosActionServer] for the specified [param action_name] and [param action_type]. Accepted goals are handed to [param execute_callback] on the main thread as a [RosServerGoalHandle], which must be driven to a terminal state. Goals are accepted by default; pass [param goal_callback] to decide yourself: it receives the goal [RosMsg] and returns [code]true[/code] to accept. [param goal_callback] runs on a ROS executor thread, not the main thread, so it must not touch nodes or the scene tree. Cancel requests are always accepted. Use [param qos] to configure the Quality of Service for the action server. See [RosActionServer] for a full example.
 			</description>
 		</method>
 		<method name="create_client">

@@ -131,21 +131,21 @@ The goal has no terminal status yet (still executing), or it was rejected by the
 
 The goal finished successfully. Matches ``action_msgs/GoalStatus.STATUS_SUCCEEDED``.
 
-.. _class_RosGoalHandle_constant_STATUS_ABORTED:
-
-.. rst-class:: classref-enumeration-constant
-
-:ref:`Status<enum_RosGoalHandle_Status>` **STATUS_ABORTED** = ``5``
-
-The server aborted the goal. Matches ``action_msgs/GoalStatus.STATUS_ABORTED``.
-
 .. _class_RosGoalHandle_constant_STATUS_CANCELED:
 
 .. rst-class:: classref-enumeration-constant
 
-:ref:`Status<enum_RosGoalHandle_Status>` **STATUS_CANCELED** = ``6``
+:ref:`Status<enum_RosGoalHandle_Status>` **STATUS_CANCELED** = ``5``
 
 The goal was canceled after a cancel request. Matches ``action_msgs/GoalStatus.STATUS_CANCELED``.
+
+.. _class_RosGoalHandle_constant_STATUS_ABORTED:
+
+.. rst-class:: classref-enumeration-constant
+
+:ref:`Status<enum_RosGoalHandle_Status>` **STATUS_ABORTED** = ``6``
+
+The server aborted the goal. Matches ``action_msgs/GoalStatus.STATUS_ABORTED``.
 
 .. rst-class:: classref-section-separator
 

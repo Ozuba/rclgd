@@ -141,6 +141,22 @@ endif()
 
 
 
+#####################################################[ TESTING ]####################################################################
+
+if(BUILD_TESTING)
+    # Headless system tests: the GDScript suite in test/project runs against
+    # the freshly built library and engine, straight from the build tree.
+    set(_godot_tests_result "${AMENT_TEST_RESULTS_DIR}/${PROJECT_NAME}/godot_system_tests.xunit.xml")
+    ament_add_test(godot_system_tests
+        COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/run_tests.sh"
+            "${CMAKE_CURRENT_BINARY_DIR}/godot-engine/${_godot_name}"
+            "$<TARGET_FILE:rclgd>"
+            "${CMAKE_CURRENT_SOURCE_DIR}/test/project"
+            "--junit=${_godot_tests_result}"
+        RESULT_FILE "${_godot_tests_result}"
+        TIMEOUT 300)
+endif()
+
 #####################################################[ INSTALLATION ]###############################################################
 
 install(TARGETS rclgd DESTINATION lib/${PROJECT_NAME})

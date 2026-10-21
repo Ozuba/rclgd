@@ -26,8 +26,8 @@ public:
     enum Status {
         STATUS_UNKNOWN = 0,
         STATUS_SUCCEEDED = 4,
-        STATUS_ABORTED = 5,
-        STATUS_CANCELED = 6,
+        STATUS_CANCELED = 5,
+        STATUS_ABORTED = 6,
     };
 
 private:

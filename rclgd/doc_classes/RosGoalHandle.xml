@@ -75,11 +75,11 @@
 		<constant name="STATUS_SUCCEEDED" value="4" enum="Status">
 			The goal finished successfully. Matches [code]action_msgs/GoalStatus.STATUS_SUCCEEDED[/code].
 		</constant>
-		<constant name="STATUS_ABORTED" value="5" enum="Status">
-			The server aborted the goal. Matches [code]action_msgs/GoalStatus.STATUS_ABORTED[/code].
-		</constant>
-		<constant name="STATUS_CANCELED" value="6" enum="Status">
+		<constant name="STATUS_CANCELED" value="5" enum="Status">
 			The goal was canceled after a cancel request. Matches [code]action_msgs/GoalStatus.STATUS_CANCELED[/code].
+		</constant>
+		<constant name="STATUS_ABORTED" value="6" enum="Status">
+			The server aborted the goal. Matches [code]action_msgs/GoalStatus.STATUS_ABORTED[/code].
 		</constant>
 	</constants>
 </class>

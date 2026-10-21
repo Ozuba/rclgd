@@ -5,7 +5,15 @@
 	</brief_description>
 	<description>
 		[RosActionServer] lets Godot act as a server for ROS 2 actions. It is created through [method RosNode.create_action_server], passing an execute callback.
-		Incoming goals are accepted automatically and handed to the execute callback on the Godot main thread as a [RosServerGoalHandle]. Cancel requests are accepted automatically too; the execute callback observes them by polling [method RosServerGoalHandle.is_cancel_requested].
+		Incoming goals are accepted by default and handed to the execute callback on the Godot main thread as a [RosServerGoalHandle]. To reject goals, pass a goal callback to [method RosNode.create_action_server]: it receives the goal [RosMsg] and returns [code]true[/code] to accept it. Cancel requests are always accepted; the execute callback observes them by polling [method RosServerGoalHandle.is_cancel_requested] and decides how to finish the goal.
+		[b]Threading:[/b] ROS needs the accept/reject answer immediately, so the goal callback runs synchronously on a ROS executor thread, not the main thread, and possibly on several threads at once. Only inspect the goal message there; do not touch nodes or the scene tree. For checks that need game state, accept the goal and abort it at the start of the execute callback instead. The client then sees the goal accepted and then aborted:
+		[codeblock]
+		func _execute_goal(goal_handle: RosServerGoalHandle):
+		    if not car.is_inside_tree():
+		        goal_handle.abort(goal_handle.create_result())
+		        return
+		    # ... run the goal
+		[/codeblock]
 		The execute callback must drive every goal to exactly one terminal state: [method RosServerGoalHandle.succeed], [method RosServerGoalHandle.abort] or [method RosServerGoalHandle.canceled]. Because the callback runs on the main thread, long-running goals should spread their work over frames with [code]await[/code] rather than blocking.
 		[codeblock]
 		var server = ros_node.create_action_server("fibonacci", "example_interfaces/action/Fibonacci",

@@ -15,6 +15,10 @@ Forthcoming
   servers, goal handles, TF broadcaster and listener, RosLogger) are now
   abstract, so ``.new()`` fails instead of returning an unusable object.
   RosNode, RosMsg and RosQoS remain instantiable
+* Bugfix: RosGoalHandle.STATUS_CANCELED and STATUS_ABORTED had swapped
+  values (6 and 5), so canceled goals reported STATUS_ABORTED and aborted
+  goals STATUS_CANCELED. They now match action_msgs/GoalStatus (5 and 6)
+* Testing: headless GDScript system test suite, run by ``colcon test``
 
 2.1.1 (2026-08-02)
 ------------------

@@ -120,7 +120,7 @@ Threading in Callbacks
 ^^^^^^^^^^^^^^^^^^^^^^
 
 .. tip::
-    **Crucial Detail:** Behind the scenes, ``rclgd`` executes the actual ROS C++ callbacks in a background thread, but marshals **topic, timer and action** GDScript callbacks back to Godot's main thread using ``call_deferred`` — you can safely touch the SceneTree from those. **Service server callbacks are the exception**: they run synchronously on the executor thread (the response must be filled before returning to the client), so defer any scene mutation with ``call_deferred``.
+    **Crucial Detail:** Behind the scenes, ``rclgd`` executes the actual ROS C++ callbacks in a background thread, but marshals **topic, timer and action** GDScript callbacks back to Godot's main thread using ``call_deferred`` — you can safely touch the SceneTree from those. **Service server callbacks and action goal callbacks are the exception**: they run synchronously on the executor thread (the answer must be ready before returning to the client), so defer any scene mutation with ``call_deferred``.
 
 ``turtle.gd`` handles the teleportation service accordingly — the response is
 filled in place, while the scene change is deferred to the main thread:

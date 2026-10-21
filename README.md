@@ -91,6 +91,17 @@ The build installs exactly the Godot version librclgd was compiled against
 `godot-cpp` submodule to the corresponding branch, edit `GODOT_VERSION` and
 the `GODOT_SHA512_*` pins in `rclgd/CMakeLists.txt`, and rebuild.
 
+### Running the tests
+The system tests in `rclgd/test/project/tests` are GDScript: every `test_*`
+method of a `test_*.gd` script is a case, run headless against the freshly
+built library on a private ROS domain. CI runs them on every push and pull
+request.
+
+```bash
+colcon test --packages-select rclgd --event-handlers console_direct+
+colcon test-result --verbose
+```
+
 
 ## Command line tools
 rclgd ships a `ros2 rclgd` command:
@@ -164,7 +175,7 @@ func _on_status_received(msg: RosMsg):
 ```
 
 ### Actions
-Action servers auto-accept incoming goals and hand them to your execute callback as a [RosServerGoalHandle]; drive each goal to exactly one terminal state (`succeed`, `abort` or `canceled`). Clients get a [RosGoalHandle] back from `send_goal`, which exposes `feedback` and `completed` signals you can `await`.
+Action servers accept incoming goals by default (pass a `goal_callback` to reject some; it runs on a ROS thread, so keep it off the scene tree) and hand them to your execute callback as a [RosServerGoalHandle]; drive each goal to exactly one terminal state (`succeed`, `abort` or `canceled`). Clients get a [RosGoalHandle] back from `send_goal`, which exposes `feedback` and `completed` signals you can `await`.
 
 ```GDScript
 # Server: classic Fibonacci action

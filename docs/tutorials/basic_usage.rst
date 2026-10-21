@@ -166,6 +166,11 @@ Actions
 
 Actions are made for long-running tasks: they stream feedback while the goal executes and can be canceled mid-flight. Servers receive each accepted goal as a :ref:`class_RosServerGoalHandle` on the main thread and must finish it with ``succeed``, ``abort`` or ``canceled``.
 
+Goals are accepted by default. To reject some, pass a goal callback as the fourth argument of ``create_action_server``; it receives the goal message and returns ``true`` to accept. Cancel requests are always accepted, and the execute callback decides how to react through ``is_cancel_requested()``.
+
+.. warning::
+    The goal callback runs synchronously on a ROS executor thread, because ROS needs the answer immediately. Only inspect the goal message there and don't touch the scene tree. For checks that need game state, accept the goal and call ``abort`` at the start of the execute callback.
+
 .. code-block:: gdscript
 
     # Server: classic Fibonacci action

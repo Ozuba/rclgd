@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.distro }}
+    runs-on: ubuntu-latest
+    container: ros:${{ matrix.distro }}-ros-base
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [jazzy]
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/rclgd
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          apt-get update
+          rosdep update --rosdistro "$ROS_DISTRO"
+          rosdep install --from-paths src --ignore-src --rosdistro "$ROS_DISTRO" -y
+
+      - name: Build
+        run: |
+          source "/opt/ros/$ROS_DISTRO/setup.bash"
+          colcon build --event-handlers console_cohesion+
+
+      - name: Test
+        run: |
+          source "/opt/ros/$ROS_DISTRO/setup.bash"
+          colcon test --packages-select rclgd --event-handlers console_direct+
+          colcon test-result --verbose
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.distro }}
+          path: build/rclgd/test_results
+          if-no-files-found: ignore
