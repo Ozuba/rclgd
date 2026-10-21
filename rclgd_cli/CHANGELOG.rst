@@ -2,6 +2,11 @@
 Changelog for package rclgd_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix: template rclgd.gdextension now declares compatibility_minimum
+  4.7, matching the Godot API rclgd is built against (was 4.3)
+
 2.1.0 (2026-07-17)
 ------------------
 * Initial release: ros2 rclgd command with create, editor, list and
