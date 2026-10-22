@@ -13,7 +13,6 @@ class RosService : public RefCounted {
 
 private:
     ros_babel_fish::BabelFishService::SharedPtr service_;
-    Callable callback_;
 
 protected:
     static void _bind_methods();
