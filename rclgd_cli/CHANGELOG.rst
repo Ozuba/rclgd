@@ -2,8 +2,8 @@
 Changelog for package rclgd_cli
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2026-10-22)
+------------------
 * Fix: template rclgd.gdextension now declares compatibility_minimum
   4.7, matching the Godot API rclgd is built against (was 4.3)
 
