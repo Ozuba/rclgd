@@ -17,6 +17,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup ROS 2
         uses: ros-tooling/setup-ros@0.7.19
+        with:
+          # Rolling binaries for Ubuntu 26.04 are only in the pre-release repository
+          use-ros2-testing: true
       - name: build and test
         id: action_ros_ci
         uses: ros-tooling/action-ros-ci@0.4.8
