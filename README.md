@@ -11,7 +11,7 @@
 [![lyrical](https://github.com/Ozuba/rclgd/actions/workflows/lyrical.yaml/badge.svg?branch=lyrical)](https://github.com/Ozuba/rclgd/actions/workflows/lyrical.yaml)
 [![rolling](https://github.com/Ozuba/rclgd/actions/workflows/rolling.yaml/badge.svg?branch=rolling)](https://github.com/Ozuba/rclgd/actions/workflows/rolling.yaml)
 <br>
-[![Docs](https://readthedocs.org/projects/rclgd/badge/?version=latest)](https://rclgd.readthedocs.io/)
+[![Docs](https://app.readthedocs.org/projects/rclgd/badge/?version=latest)](https://rclgd.readthedocs.io/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18440938.svg)](https://doi.org/10.5281/zenodo.18440938)
 
