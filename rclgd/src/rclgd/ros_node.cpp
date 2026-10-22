@@ -111,9 +111,12 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
         RCLGD_FAIL_MSG("RCLGD: Global singleton not found. Node will not be processed by the executor.");
     }
 
-    // Setup Parameter update callback
+    // Setup Parameter update callback. The rclcpp node can outlive this
+    // RosNode (TF objects share it), so the callback reaches us through a
+    // Callable, which only refers to this object by id, not through `this`.
+    Callable emit = Callable(this, "emit_signal");
     param_callback_handle_ = node_->add_on_set_parameters_callback(
-        [this](const std::vector<rclcpp::Parameter> &parameters)
+        [emit](const std::vector<rclcpp::Parameter> &parameters)
         {
             rcl_interfaces::msg::SetParametersResult result;
             result.successful = true;
@@ -123,7 +126,7 @@ void RosNode::init(const String &p_node_name, const String &p_namespace)
                 Variant val = RosTypeMapping::ros_param_to_variant(param);
 
                 // Emit signal on Godot thread to remain thread-safe with the UI/Editor
-                this->call_deferred("emit_signal", "parameter_changed", String(param.get_name().c_str()), val);
+                emit.call_deferred("parameter_changed", String(param.get_name().c_str()), val);
             }
             return result;
         });

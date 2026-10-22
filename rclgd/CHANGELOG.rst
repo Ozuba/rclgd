@@ -2,8 +2,8 @@
 Changelog for package rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2026-10-22)
+------------------
 * Feature: Added RosLogger with rclpy logger API parity: debug/info/
   warning/error/fatal with once, skip_first and throttle_duration_sec
   filters, get_child, set_level and get_effective_level. Get one from
@@ -22,10 +22,10 @@ Forthcoming
   could corrupt the heap and crash or hang the process; the listener now
   owns its /tf subscriptions and keeps the buffer alive for callbacks
   still in flight
+* Bugfix: RosService request callbacks and RosNode parameter callbacks
+  no longer reach the object through a raw pointer, so freeing a service
+  or node while one of its callbacks runs is safe
 * Testing: headless GDScript system test suite, run by ``colcon test``
-
-2.1.1 (2026-08-02)
-------------------
 * Bugfix: fixed liveliness unavailability inside RosQoS
 * Feature: Added support for stamped TF lookups and other TF listener features
 * Bugfix: TF lookup timeouts are now honoured; the buffer was never told the
