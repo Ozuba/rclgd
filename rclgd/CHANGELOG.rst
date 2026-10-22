@@ -18,6 +18,10 @@ Forthcoming
 * Bugfix: RosGoalHandle.STATUS_CANCELED and STATUS_ABORTED had swapped
   values (6 and 5), so canceled goals reported STATUS_ABORTED and aborted
   goals STATUS_CANCELED. They now match action_msgs/GoalStatus (5 and 6)
+* Bugfix: freeing a RosTfListener while a /tf message was being handled
+  could corrupt the heap and crash or hang the process; the listener now
+  owns its /tf subscriptions and keeps the buffer alive for callbacks
+  still in flight
 * Testing: headless GDScript system test suite, run by ``colcon test``
 
 2.1.1 (2026-08-02)
