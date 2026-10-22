@@ -19,6 +19,15 @@ func test_scalar_parameters():
 	expect_eq(node.get_parameter("enabled"), true, "bool")
 
 
+func test_parameter_changed_signal():
+	var node := make_node("params_signal")
+	node.declare_parameter("speed", 1.0)
+	var changes := []
+	node.parameter_changed.connect(func(param_name, value): changes.append([param_name, value]))
+	node.set_parameter("speed", 2.5)
+	expect(await wait_until(func(): return changes.has(["speed", 2.5])), "parameter_changed emitted")
+
+
 func test_array_parameters():
 	var node := make_node("params_array")
 

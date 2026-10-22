@@ -1,6 +1,6 @@
 short_name = "rclgd"
 name = "Ros Client Library for Godot"
-major = 1
+major = 3
 minor = 0
 patch = 0
 status = "dev"

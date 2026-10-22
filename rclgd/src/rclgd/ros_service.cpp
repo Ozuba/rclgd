@@ -22,7 +22,10 @@ void RosService::_bind_methods()
  */
 void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv_name, const String &p_srv_type, const Callable &p_callback, const Ref<RosQoS> &p_qos)
 {
-    callback_ = p_callback;
+    // Captured by value so the executor-side callback never touches `this`: a
+    // request still being handled when this service is freed must not reach
+    // it (same lifetime pattern as RosSubscriber).
+    Callable callback = p_callback;
 
     // BabelFish takes an rmw_qos_profile_t for services; fall back to the ROS
     // service defaults when no profile was provided.
@@ -37,7 +40,7 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
             *p_node,
             p_srv_name.utf8().get_data(),
             p_srv_type.utf8().get_data(),
-            [this](const ros_babel_fish::CompoundMessage::SharedPtr req_in,
+            [callback](const ros_babel_fish::CompoundMessage::SharedPtr req_in,
                    ros_babel_fish::CompoundMessage::SharedPtr res_out)
             {
                 // Wrap the incoming raw buffers into Godot RosMsg objects
@@ -51,10 +54,10 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
 
                 // Execute GDScript callback immediately (synchronously)
                 // Function signature: func my_srv(req: RosMsg, res: RosMsg):
-                if (callback_.is_valid())
+                if (callback.is_valid())
                 {
                     // Call synchronously so the response is populated before returning to the client
-                    callback_.call(godot_req, godot_res);
+                    callback.call(godot_req, godot_res);
                 }
             },
             qos_profile);
