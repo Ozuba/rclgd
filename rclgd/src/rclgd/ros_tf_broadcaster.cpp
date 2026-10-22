@@ -10,8 +10,11 @@ void RosTfBroadcaster::_bind_methods() {
 
 void RosTfBroadcaster::setup(std::shared_ptr<rclcpp::Node> p_node) {
     node_ = p_node;
-    broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(node_);
-    static_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(node_);
+    // Pass the node by reference: Rolling's tf2_ros only accepts node
+    // interfaces (built from a node-like reference, not a shared_ptr), and
+    // older distros take any node-like argument.
+    broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(*node_);
+    static_broadcaster_ = std::make_unique<tf2_ros::StaticTransformBroadcaster>(*node_);
 }
 
 void RosTfBroadcaster::send_transform(const Transform3D &p_transform, const String &p_frame_id, const String &p_parent_frame_id, bool p_is_static, const Ref<RosMsg> &p_time_msg) {
