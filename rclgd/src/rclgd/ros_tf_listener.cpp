@@ -32,15 +32,40 @@ void RosTfListener::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_cache_time"), &RosTfListener::get_cache_time);
 }
 
+// Same handling as tf2_ros::TransformListener::subscription_callback.
+void RosTfListener::_store_transforms(tf2_ros::Buffer &p_buffer, const tf2_msgs::msg::TFMessage &p_msg,
+                                      bool p_is_static, const rclcpp::Logger &p_logger) {
+    for (const auto &transform : p_msg.transforms) {
+        try {
+            p_buffer.setTransform(transform, "Authority undetectable", p_is_static);
+        } catch (const tf2::TransformException &e) {
+            RCLCPP_ERROR(p_logger, "Failure to set received transform from %s to %s with error: %s",
+                         transform.child_frame_id.c_str(), transform.header.frame_id.c_str(), e.what());
+        }
+    }
+}
+
 void RosTfListener::setup(std::shared_ptr<rclcpp::Node> p_node, double p_cache_time_sec) {
     node_ = p_node;
     if (p_cache_time_sec <= 0.0)
         p_cache_time_sec = 10.0; // tf2's own default
-    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(node_->get_clock(),
+    tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock(),
                                                    tf2::durationFromSec(p_cache_time_sec));
-    // Subscribe through the owning node (spun by the global executor) instead
-    // of letting TransformListener spawn its own internal node and thread.
-    tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node_, false);
+    // Subscribe through the owning node (spun by the global executor), with the
+    // same QoS and options as tf2_ros::TransformListener. Each callback owns a
+    // reference to the buffer (see the header).
+    std::shared_ptr<tf2_ros::Buffer> buffer = tf_buffer_;
+    rclcpp::Logger logger = node_->get_logger();
+    tf_sub_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
+        "/tf", tf2_ros::DynamicListenerQoS(),
+        [buffer, logger](tf2_msgs::msg::TFMessage::ConstSharedPtr msg)
+        { _store_transforms(*buffer, *msg, false, logger); },
+        tf2_ros::detail::get_default_transform_listener_sub_options());
+    tf_static_sub_ = node_->create_subscription<tf2_msgs::msg::TFMessage>(
+        "/tf_static", tf2_ros::StaticListenerQoS(),
+        [buffer, logger](tf2_msgs::msg::TFMessage::ConstSharedPtr msg)
+        { _store_transforms(*buffer, *msg, true, logger); },
+        tf2_ros::detail::get_default_transform_listener_static_sub_options());
 
     // Without this TF2 rejects every non-zero timeout ("Do not call
     // canTransform or lookupTransform with a timeout unless you are using

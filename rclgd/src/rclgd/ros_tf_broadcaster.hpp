@@ -6,8 +6,8 @@
 #include <godot_cpp/classes/ref.hpp>
 
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_broadcaster.h>
-#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_broadcaster.hpp>
+#include <tf2_ros/static_transform_broadcaster.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include "ros_msg.hpp"
