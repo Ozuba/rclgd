@@ -540,7 +540,8 @@ struct Godot2Ros
                     size_t target = g_arr.size();
                     if (ros_array.isBounded())
                         target = std::min(target, ros_array.maxSize());
-                    if (!ros_array.isFixedSize())
+                    // Compile-time: newer babel_fish rejects resize() on fixed-length arrays
+                    if constexpr (!std::is_same_v<std::decay_t<decltype(ros_array)>, FixedLengthCompoundArrayMessage>)
                         ros_array.resize(target);
                     size_t limit = std::min((size_t)ros_array.size(), (size_t)g_arr.size());
                     for (size_t i = 0; i < limit; ++i)
