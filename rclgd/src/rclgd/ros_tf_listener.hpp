@@ -7,8 +7,9 @@
 #include <godot_cpp/variant/packed_string_array.hpp>
 
 #include <rclcpp/rclcpp.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.hpp>
+#include <tf2_ros/buffer.hpp>
+#include <tf2_msgs/msg/tf_message.hpp>
 #include "rclgd.hpp"
 
 
@@ -20,8 +21,13 @@ class RosTfListener : public RefCounted {
 
 private:
     std::shared_ptr<rclcpp::Node> node_;
-    std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
-    std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+    // Shared with the /tf callbacks instead of using tf2_ros::TransformListener,
+    // whose callbacks hold a raw `this`: rclcpp keeps a subscription alive
+    // while its callback runs, so a callback still in flight when this
+    // listener is freed writes into a live buffer rather than a freed one.
+    std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+    rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_sub_;
+    rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr tf_static_sub_;
 
     // Text of the most recent failed lookup. Viewers surface this verbatim as
     // the reason a display cannot be drawn, so it has to outlive the call that
@@ -33,6 +39,9 @@ private:
     //   float/int -> seconds since epoch
     //   RosMsg    -> builtin_interfaces/msg/Time (sec + nanosec)
     static tf2::TimePoint _to_time_point(const Variant &p_time);
+
+    static void _store_transforms(tf2_ros::Buffer &p_buffer, const tf2_msgs::msg::TFMessage &p_msg,
+                                  bool p_is_static, const rclcpp::Logger &p_logger);
 
 protected:
     static void _bind_methods();

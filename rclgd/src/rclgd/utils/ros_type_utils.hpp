@@ -33,8 +33,8 @@ namespace RosTypeMapping
 
     // Helper to safely get the address of the underlying data in a BabelFish array.
     // BabelFish storage for arithmetic types is always contiguous.
-    template <typename T, bool B, bool FL>
-    static void *get_ros_ptr(ArrayMessage_<T, B, FL> &ros_array)
+    template <typename T, ArraySize S>
+    static void *get_ros_ptr(ArrayMessage_<T, S> &ros_array)
     {
         if (ros_array.size() == 0)
             return nullptr;
@@ -44,8 +44,8 @@ namespace RosTypeMapping
     // --- ROS TO GODOT (Reading/Subscribing) ---
     struct RosToGodotProvider
     {
-        template <typename T, bool B, bool FL>
-        static void handle(ArrayMessage_<T, B, FL> &ros_array, Variant &r_ret)
+        template <typename T, ArraySize S>
+        static void handle(ArrayMessage_<T, S> &ros_array, Variant &r_ret)
         {
             size_t size = ros_array.size();
 
@@ -146,15 +146,15 @@ namespace RosTypeMapping
             }
         }
 
-        template <bool B, bool FL>
-        static void handle(CompoundArrayMessage_<B, FL> &ros_array, Variant &r_ret) {}
+        template <ArraySize S>
+        static void handle(CompoundArrayMessage_<S> &ros_array, Variant &r_ret) {}
     };
 
     // --- GODOT TO ROS (Writing/Publishing) ---
     struct GodotToRosProvider
     {
-        template <typename T, bool B, bool FL>
-        static void handle(ArrayMessage_<T, B, FL> &ros_array, const Variant &p_val)
+        template <typename T, ArraySize S>
+        static void handle(ArrayMessage_<T, S> &ros_array, const Variant &p_val)
         {
 
             // FAST PATH: PackedByteArray -> uint8_t
@@ -163,7 +163,7 @@ namespace RosTypeMapping
                 if (p_val.get_type() == Variant::PACKED_BYTE_ARRAY)
                 {
                     PackedByteArray pba = p_val;
-                    if constexpr (!FL)
+                    if constexpr (S != ArraySize::FIXED_LENGTH)
                         ros_array.resize(pba.size());
                     size_t limit = std::min((size_t)pba.size(), (size_t)ros_array.size());
                     if (limit > 0)
@@ -177,7 +177,7 @@ namespace RosTypeMapping
                 if (p_val.get_type() == Variant::PACKED_FLOAT32_ARRAY)
                 {
                     PackedFloat32Array pfa = p_val;
-                    if constexpr (!FL)
+                    if constexpr (S != ArraySize::FIXED_LENGTH)
                         ros_array.resize(pfa.size());
                     size_t limit = std::min((size_t)pfa.size(), (size_t)ros_array.size());
                     if (limit > 0)
@@ -191,7 +191,7 @@ namespace RosTypeMapping
                 if (p_val.get_type() == Variant::PACKED_FLOAT64_ARRAY)
                 {
                     PackedFloat64Array pfa = p_val;
-                    if constexpr (!FL)
+                    if constexpr (S != ArraySize::FIXED_LENGTH)
                         ros_array.resize(pfa.size());
                     size_t limit = std::min((size_t)pfa.size(), (size_t)ros_array.size());
                     if (limit > 0)
@@ -205,7 +205,7 @@ namespace RosTypeMapping
                 if (p_val.get_type() == Variant::PACKED_INT32_ARRAY)
                 {
                     PackedInt32Array pia = p_val;
-                    if constexpr (!FL)
+                    if constexpr (S != ArraySize::FIXED_LENGTH)
                         ros_array.resize(pia.size());
                     size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
                     if (limit > 0)
@@ -219,7 +219,7 @@ namespace RosTypeMapping
                 if (p_val.get_type() == Variant::PACKED_INT64_ARRAY)
                 {
                     PackedInt64Array pia = p_val;
-                    if constexpr (!FL)
+                    if constexpr (S != ArraySize::FIXED_LENGTH)
                         ros_array.resize(pia.size());
                     size_t limit = std::min((size_t)pia.size(), (size_t)ros_array.size());
                     if (limit > 0)
@@ -231,7 +231,7 @@ namespace RosTypeMapping
             // SLOW PATH: Strings, Bools, or Mixed Arrays
             Array arr_view = p_val;
             size_t g_size = arr_view.size();
-            if constexpr (!FL)
+            if constexpr (S != ArraySize::FIXED_LENGTH)
                 ros_array.resize(g_size);
             size_t limit = std::min((size_t)ros_array.size(), g_size);
             for (size_t i = 0; i < limit; ++i)
@@ -249,8 +249,8 @@ namespace RosTypeMapping
             }
         }
 
-        template <bool B, bool FL>
-        static void handle(CompoundArrayMessage_<B, FL> &ros_array, const Variant &p_val) {}
+        template <ArraySize S>
+        static void handle(CompoundArrayMessage_<S> &ros_array, const Variant &p_val) {}
     };
 
     // For a generic (untyped) Godot Array, infer the ROS array type from the
@@ -540,7 +540,8 @@ struct Godot2Ros
                     size_t target = g_arr.size();
                     if (ros_array.isBounded())
                         target = std::min(target, ros_array.maxSize());
-                    if (!ros_array.isFixedSize())
+                    // Compile-time: newer babel_fish rejects resize() on fixed-length arrays
+                    if constexpr (!std::is_same_v<std::decay_t<decltype(ros_array)>, FixedLengthCompoundArrayMessage>)
                         ros_array.resize(target);
                     size_t limit = std::min((size_t)ros_array.size(), (size_t)g_arr.size());
                     for (size_t i = 0; i < limit; ++i)
