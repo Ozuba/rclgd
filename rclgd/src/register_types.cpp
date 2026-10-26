@@ -14,6 +14,13 @@ static rclgd *_rclgd_singleton = nullptr;
 // Modules initialization
 void rclgd_init(ModuleInitializationLevel p_level)
 {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR)
+	{
+		// The help system exists from this level on; the classes themselves
+		// were registered at SCENE level.
+		RosTypeRegistry::load_editor_docs();
+		return;
+	}
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE)
 	{
 		return;
@@ -59,6 +66,11 @@ void rclgd_init(ModuleInitializationLevel p_level)
 	//Create the rclgd singleton
 	_rclgd_singleton = memnew(rclgd);
     Engine::get_singleton()->register_singleton("rclgd", rclgd::get_singleton());
+
+	// Native typed message classes (RosGeometryMsgsTwist, ...) for every
+	// interface the project depends on. Needs RosMsg registered as their parent
+	// and the singleton's BabelFish to read schemas.
+	RosTypeRegistry::register_project_types();
 }
 
 void rclgd_deinit(ModuleInitializationLevel p_level)
@@ -68,12 +80,6 @@ void rclgd_deinit(ModuleInitializationLevel p_level)
 		// Remove the global name
 		Engine::get_singleton()->unregister_singleton("rclgd");
 
-		// Drop cached shadow-type Script refs while the engine (and its
-		// ResourceDB) is still alive. If left to destruct at libc atexit, those
-		// static Refs would unref Scripts whose backing Godot already freed,
-		// crashing with SIGSEGV on exit.
-		RosMsg::clear_type_registry();
-
 		// Destroying the singleton joins the executor thread and shuts
 		// rclcpp down (see rclgd::~rclgd), so the process can exit cleanly
 		// even if the user never called rclgd.shutdown().
@@ -82,6 +88,11 @@ void rclgd_deinit(ModuleInitializationLevel p_level)
 			memdelete(_rclgd_singleton);
 			_rclgd_singleton = nullptr;
 		}
+
+		// Unregister the typed message classes now: the executor (the only
+		// other reader of the registry) is joined above, and godot-cpp
+		// unregisters their parent RosMsg right after this terminator returns.
+		RosTypeRegistry::unregister_all();
 	}
 }
 

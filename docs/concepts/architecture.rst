@@ -11,6 +11,16 @@ A core component of **rclgd** is `ros_babel_fish`. This library enables dynamic 
 *   **No Recompilation**: You do not need to recompile the GDExtension every time you introduce a new custom ROS 2 message type to your workspace.
 *   **Type Mapping**: **rclgd** automatically maps ROS 2 primitive types to Godot `Variant` types. Complex structures (nested messages, arrays) are parsed and exposed recursively.
 
+Typed Message Classes
+---------------------
+
+On top of the dynamic core, **rclgd** registers a native engine class for every interface type the project depends on (see :doc:`/tutorials/custom_messages`):
+
+*   **Discovery**: when the extension loads, the dependencies in ``res://package.xml`` are resolved through the ament index (``share/ament_index/resource_index/rosidl_interfaces/<pkg>`` on ``AMENT_PREFIX_PATH``), and every ``msg``, ``srv`` (request and response) and ``action`` (goal, result and feedback) type is registered, together with the closure of the types they nest. The set is fixed from then on; picking up new types takes a restart.
+*   **Registration**: each type (``geometry_msgs/msg/Twist``) becomes a class (``RosGeometryMsgsTwist``) deriving from :ref:`RosMsg<class_RosMsg>` in Godot's ``ClassDB``, with one typed property per field. Nested messages are typed objects and arrays of messages typed arrays. Fields that clash with a ``RosMsg`` member or a GDScript keyword are left out (``get_member``/``set_member`` still reach them).
+*   **Same core underneath**: a typed instance *is* a ``RosMsg`` — the same BabelFish buffer, lazy member conversion and aliasing of nested messages — and its properties are backed by ``get_member``/``set_member``. Field access still goes through Godot's property lookup, so typed classes are about ergonomics and type safety, not speed.
+*   **Wrapping**: every message rclgd hands to scripts (subscriptions, service requests and responses, action goals, feedback and results, nested fields, ``RosMsg.from_type``) is built by a single factory that picks the typed class from a read-only table, so it is safe on the executor thread. Types without a class stay dynamic ``RosMsg`` instances.
+
 Threading and Lifecycle
 -----------------------
 

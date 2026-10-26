@@ -104,6 +104,17 @@ class DoctorVerb(VerbExtension):
                     f'project {cwd.name}: no addons/rclgd/bin/rclgd.gdextension',
                     'the addon ships with rclgd_cli — copy addons/rclgd from '
                     'a freshly created package (ros2 rclgd create)')
+            if (cwd / 'addons' / 'rclgd' / 'gen').is_dir():
+                report.warn(
+                    f'project {cwd.name}: legacy typed wrappers in addons/rclgd/gen',
+                    'message types are now native classes; delete addons/rclgd/gen '
+                    '(its class_name scripts clash with them)')
+            if (cwd / 'addons' / 'rclgd' / 'plugin.cfg').is_file():
+                report.warn(
+                    f'project {cwd.name}: legacy rclgd editor plugin in addons/rclgd',
+                    'delete addons/rclgd/plugin.cfg and rclgd.gd and drop it from '
+                    '[editor_plugins] in project.godot (it calls the removed '
+                    'RosMsg.gen_editor_support)')
             if not (cwd / '.godot').is_dir():
                 report.warn(
                     f'project {cwd.name}: assets never imported (.godot/ missing)',

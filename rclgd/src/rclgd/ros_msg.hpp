@@ -6,13 +6,8 @@
 #include <godot_cpp/variant/variant.hpp>
 #include <godot_cpp/variant/string_name.hpp>
 #include <godot_cpp/variant/string.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
 #include <godot_cpp/core/class_db.hpp>
 #include <godot_cpp/templates/hash_map.hpp> 
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/classes/script.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
 
 //BabelFish
 #include <ros_babel_fish/babel_fish.hpp>
@@ -31,6 +26,7 @@ using namespace godot;
     class RosMsg : public RefCounted
     {
         GDCLASS(RosMsg, RefCounted)
+        friend class RosTypeRegistry;
 
     private:
         //Fish dynamic support
@@ -44,9 +40,18 @@ using namespace godot;
         // stays cheap. Mutable because population happens inside const accessors.
         mutable HashMap<StringName, Variant> members_;
 
+        // True when this instance is a native typed class (RosGeometryMsgsTwist,
+        // ...) built by RosTypeRegistry. Its fields are then real ClassDB
+        // properties, so the dynamic property list is skipped.
+        bool typed_ = false;
+
         // Convert a single member (compound -> nested RosMsg, leaf -> Variant)
         // straight from the BabelFish buffer, without consulting/updating the cache.
         Variant _convert_member(const StringName &p_name) const;
+
+        // Allocate a BabelFish message of the given type; reports and returns
+        // null if the type can't be resolved. Shared by init() and from_type().
+        static CompoundMessage::SharedPtr _create_babel(const String &p_ros_type);
 
 
     protected:
@@ -67,19 +72,23 @@ using namespace godot;
 
         //GODOT EXPOSED
 
-        //Internal recursive generator
-        static void _gen_recursive(const String &p_type, const String &p_dest_folder, HashSet<String> &p_processed);
-
         //Initialization Method, makes the RosMsgType point to a Compound Message object
         void init(const String &ros_type_name);
 
         // Factory Builder method
         static Ref<RosMsg> from_type(const String &ros_type_name);
 
-        // Generates editor autocomplete support in target folder
-        static void gen_editor_support(const String &p_type, const String &p_dest_folder);
+        // Central factory for every message wrapper built from C++ (received,
+        // nested, service/action payloads). Returns the native typed class when
+        // the ROS type is registered, a dynamic RosMsg otherwise, and an empty
+        // RosMsg for a null message (e.g. a missing action result). Only reads
+        // the registry table, so it is safe on the executor thread.
+        static Ref<RosMsg> wrap(const CompoundMessage::SharedPtr &p_msg);
 
-        //Alternate accesors to prevent recursion on inherited classes
+        // Field access by name: the single entry point to the lazy cache. The
+        // native typed classes' property accessors delegate here, and it is how
+        // scripts reach fields that are not exposed as properties (name clashes,
+        // unsupported types) or are only known at runtime.
         void set_member(const StringName &p_name, const Variant &p_value);
         Variant get_member(const StringName &p_name) const;
 
@@ -87,31 +96,10 @@ using namespace godot;
         String get_type_name() const;
         String get_ros_interface_name() const ;
 
-        // Map a ROS datatype ("geometry_msgs::msg::Pose") to its shadow class
-        // name ("RosGeometryMsgsPose"). Shared by get_type_name and the array
-        // element typing in ros_type_utils so both agree.
-        static String shadow_class_name(const String &p_ros_datatype);
-
-        // --- Typed (shadow) overlay ---
-        // The dynamic C++ core is always correct on its own; the generated
-        // `class_name RosXxx` scripts are an optional convenience layer on top.
-        // To make typed access resolve to a real, typed instance, every message
-        // built by init_babel gets the matching script attached (if generated).
-
-        // Resolve the Script resource for a shadow class name (e.g. "RosStdMsgsHeader"),
-        // using the project's global class list. Returns an invalid Ref if the type
-        // was never generated, in which case the object stays a plain dynamic RosMsg.
-        static Ref<Script> script_for_class(const String &p_class_name);
-
-        // Attach the matching shadow script to a freshly built message (no-op if it
-        // already carries a script, e.g. when created via `RosXxx.new()`).
-        static void _apply_script(RosMsg *p_msg);
-
-        // Drop the cached Script Refs. MUST be called during extension de-init
-        // (engine still alive); otherwise the static Refs destruct at atexit after
-        // Godot freed their backing -> use-after-free crash on exit.
-        static void clear_type_registry();
-
+        // Map a ROS datatype ("geometry_msgs::msg::Pose") to its class name
+        // ("RosGeometryMsgsPose"). Shared by get_type_name and the native class
+        // registry so both agree.
+        static String class_name_for_datatype(const String &p_ros_datatype);
 
     };
 

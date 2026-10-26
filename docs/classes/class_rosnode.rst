@@ -167,7 +167,7 @@ Creates and returns a :ref:`RosClient<class_RosClient>` for the specified servic
 
 :ref:`RosPublisher<class_RosPublisher>` **create_publisher**\ (\ topic\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, type\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, qos\: :ref:`RosQoS<class_RosQoS>` = null\ ) :ref:`🔗<class_RosNode_method_create_publisher>`
 
-Creates and returns a :ref:`RosPublisher<class_RosPublisher>` to send messages to a specific ``topic``. Use ``qos`` to configure the Quality of Service for the publisher.
+Creates and returns a :ref:`RosPublisher<class_RosPublisher>` to send messages to a specific ``topic``. ``type`` is the message type: an interface name (``"geometry_msgs/msg/Twist"``), a typed message class (``RosGeometryMsgsTwist``) or a message instance. Use ``qos`` to configure the Quality of Service for the publisher.
 
 .. rst-class:: classref-item-separator
 
@@ -191,7 +191,7 @@ Creates and returns a :ref:`RosService<class_RosService>` server for the specifi
 
 :ref:`RosSubscriber<class_RosSubscriber>` **create_subscription**\ (\ topic\: `String <https://docs.godotengine.org/en/stable/classes/class_string.html>`__, type\: `Variant <https://docs.godotengine.org/en/stable/classes/class_variant.html>`__, callback\: `Callable <https://docs.godotengine.org/en/stable/classes/class_callable.html>`__, qos\: :ref:`RosQoS<class_RosQoS>` = null\ ) :ref:`🔗<class_RosNode_method_create_subscription>`
 
-Creates and returns a :ref:`RosSubscriber<class_RosSubscriber>` to receive messages from a specific ``topic``. The ``callback`` is triggered for every new message received, always on the Godot main thread. Use ``qos`` to configure the Quality of Service for the subscription.
+Creates and returns a :ref:`RosSubscriber<class_RosSubscriber>` to receive messages from a specific ``topic``. ``type`` is given as for :ref:`create_publisher()<class_RosNode_method_create_publisher>`. The ``callback`` is triggered for every new message received, always on the Godot main thread; messages of a type with a typed class arrive as that class (see :ref:`RosMsg<class_RosMsg>`). Use ``qos`` to configure the Quality of Service for the subscription.
 
 .. rst-class:: classref-item-separator
 

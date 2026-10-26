@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!-- Interface dependencies of the test project: rclgd registers a native
+     typed class for every type these packages provide (test_native_types.gd). -->
+<package format="3">
+  <name>rclgd_system_tests</name>
+  <version>0.0.0</version>
+  <description>Headless rclgd system tests</description>
+  <maintainer email="noreply@example.com">rclgd</maintainer>
+  <license>Apache-2.0</license>
+
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>example_interfaces</depend>
+</package>
