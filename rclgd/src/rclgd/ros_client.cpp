@@ -105,10 +105,7 @@ Ref<RosMsg> RosClient::create_request()
     try
     {
         auto req_msg = rclgd_ptr->get_fish().create_service_request_shared(service_type_);
-        Ref<RosMsg> req;
-        req.instantiate();
-        req->init_babel(req_msg);
-        return req;
+        return RosMsg::wrap(req_msg);
     }
     catch (const std::exception &e)
     {
@@ -131,12 +128,8 @@ Ref<RosRequest> RosClient::async_send_request(Ref<RosMsg> p_req) {
             // 1. Get result from ROS thread
             auto response_ptr = future.get();
 
-            // 2. Prepare the Godot message
-            Ref<RosMsg> res_msg;
-            res_msg.instantiate();
-            if (response_ptr) {
-                res_msg->init_babel(response_ptr);
-            }
+            // 2. Prepare the Godot message (empty if there is no response)
+            Ref<RosMsg> res_msg = RosMsg::wrap(response_ptr);
 
             // 3. Defer the whole completion (state + signal) to the main
             // Godot thread so it never races a GDScript poller reading
