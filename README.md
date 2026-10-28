@@ -23,7 +23,8 @@ rclgd runs rclcpp inside Godot as a GDExtension, built on
 [ROS Babel Fish](https://github.com/LOEWE-emergenCITY/ros_babel_fish): no
 rosbridge, no WebSockets, any message type at runtime. Nodes, topics,
 services, actions, parameters, TF2, QoS, sim time and logging, all from
-GDScript.
+GDScript, with native typed classes (autocompletion, type checking) for the
+interfaces your `package.xml` depends on.
 
 ## Quick start
 

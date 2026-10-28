@@ -1,30 +1,42 @@
 Introduction to rclgd
 =====================
 
-**rclgd** (ROS Client Library for Godot) provides a high-performance, native ROS 2 integration for Godot Engine 4.
+**rclgd** (ROS Client Library for Godot) integrates ROS 2 natively into Godot Engine 4.
 
 Why rclgd?
 ----------
 
-Traditional ROS-Godot integrations often rely on WebSockets (like `rosbridge`) or intermediate standalone bridge nodes. These approaches introduce network latency, serialization overhead, and significant architectural complexity. 
+Many ROS-Godot integrations go through a bridge: WebSockets with ``rosbridge``,
+or a separate bridge node. Every message is then serialized twice (once to JSON
+or a custom format, once to DDS) and crosses an extra process.
 
-**rclgd** solves this by running natively as a GDExtension, directly exposing the official `rclcpp` API to GDScript. This allows for:
+**rclgd** runs as a GDExtension and exposes ``rclcpp`` directly to GDScript, so
+your Godot project *is* a ROS 2 node:
 
-1. **Direct Communication**: Utilizes shared memory and local transport via DDS, exactly like a standard C++ ROS 2 node.
-2. **Zero-Latency Bridging**: No intermediate JSON serialization or bridge processes.
-3. **Full ROS 2 Power**: Gain direct access to Parameters, Services, Timers, and complex Message types right from the Godot Editor.
+1. **Same transport as any C++ node**: messages go straight to DDS, including
+   intra-host shared memory where the middleware supports it.
+2. **No bridge process**: nothing to launch, configure or keep in sync.
+3. **The whole ROS 2 feature set**: parameters, QoS, services, actions, TF2,
+   simulation time and logging, all from GDScript.
 
 Core Concepts Mapping
 ---------------------
 
-**rclgd** maps standard ROS 2 concepts directly into Godot objects that feel natural and idiomatic to GDScript developers:
+ROS 2 concepts map to Godot objects:
 
-*   **Nodes** (`RosNode`): The basic unit of communication, handling connections to the ROS 2 graph.
-*   **Messages** (`RosMsg`): Dynamic data structures passed between nodes, powered by BabelFish.
-*   **Topics** (`RosPublisher` / `RosSubscriber`): Named channels for continuous data streams.
-*   **Services** (`RosService` / `RosClient`): Asynchronous Request/Response communication patterns.
-*   **Actions** (`RosActionServer` / `RosActionClient`): Long-running, cancelable goals with continuous feedback.
-*   **Timers** (`RosTimer`): Executor-synchronized periodic tasks.
-*   **Transforms** (`RosTfBroadcaster` / `RosTfListener`): TF2 integration with automatic Godot/ROS axis convention mapping.
-
-By bringing these concepts natively into GDScript, **rclgd** empowers you to build complex robotics simulations and visualizations with exceptional performance.
+*   **Nodes** (``RosNode``): the unit of communication on the ROS 2 graph.
+*   **Messages** (``RosMsg``): any ROS 2 message, resolved at runtime by
+    BabelFish. Interfaces your ``package.xml`` depends on also get native typed
+    classes such as ``RosGeometryMsgsTwist`` (see :doc:`/tutorials/custom_messages`).
+*   **Topics** (``RosPublisher`` / ``RosSubscriber``): continuous data streams,
+    with optional ``RosQoS`` profiles.
+*   **Services** (``RosService`` / ``RosClient``): request/response, awaitable
+    from GDScript.
+*   **Actions** (``RosActionServer`` / ``RosActionClient``): long-running,
+    cancelable goals with feedback.
+*   **Timers** (``RosTimer``): periodic callbacks driven by the node's clock,
+    including simulation time.
+*   **Parameters**: declared on a ``RosNode``, with a signal for external changes.
+*   **Logging** (``RosLogger``): rclpy-style logging to the console and ``/rosout``.
+*   **Transforms** (``RosTfBroadcaster`` / ``RosTfListener``): TF2 with automatic
+    conversion between the Godot and ROS axis conventions.
