@@ -23,9 +23,8 @@ The generated package contains:
     ├── project.godot        # Godot project (named after the package)
     ├── main.tscn / main.gd  # demo scene: a publisher + subscriber on /chatter
     ├── .gitignore           # ignores .godot/ import artifacts
-    └── addons/rclgd/        # the rclgd editor addon
-        ├── plugin.cfg
-        ├── rclgd.gd         # editor plugin: generates typed message wrappers
+    └── addons/rclgd/        # the rclgd addon
+        ├── icon.svg         # class icons
         ├── ros_init.gd      # autoload: initializes the ROS context at game start
         └── bin/rclgd.gdextension
 

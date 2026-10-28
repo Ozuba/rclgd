@@ -13,8 +13,4 @@ config/features=PackedStringArray("$godot_version", "$renderer_feature")
 [autoload]
 
 ROS="*res://addons/rclgd/ros_init.gd"
-
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/rclgd/plugin.cfg")
 $rendering_section

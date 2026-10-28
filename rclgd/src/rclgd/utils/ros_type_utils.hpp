@@ -19,6 +19,7 @@
 #include <ros_babel_fish/messages/value_message.hpp>
 
 #include "../ros_msg.hpp"
+#include "../ros_type_registry.hpp"
 
 #include <type_traits>
 #include <string>
@@ -460,10 +461,7 @@ struct Ros2Godot
         // Handle Compound
         if constexpr (std::is_same_v<T, CompoundMessage>)
         {
-            Ref<RosMsg> sub;
-            sub.instantiate();
-            sub->init_babel(std::static_pointer_cast<CompoundMessage>(p_msg));
-            r_ret = sub;
+            r_ret = RosMsg::wrap(std::static_pointer_cast<CompoundMessage>(p_msg));
         }
         // Handle Array
         else if constexpr (std::is_base_of_v<ArrayMessageBase, T>)
@@ -474,13 +472,11 @@ struct Ros2Godot
                 RosTypeMapping::with_compound_array(*p_msg, [&](auto &ros_array)
                 {
                     Array g_arr;
-                    // Type the array as Array[RosXxx] (when the shadow script exists)
-                    // so it satisfies the generated typed property. set_typed must run
-                    // on the empty array, before we fill it.
-                    String elem_class = RosMsg::shadow_class_name(String(ros_array.elementDatatype().c_str()));
-                    Ref<Script> elem_script = RosMsg::script_for_class(elem_class);
-                    if (elem_script.is_valid())
-                        g_arr.set_typed(Variant::OBJECT, "RosMsg", elem_script);
+                    // Type the array as Array[RosXxx] when the element type is a
+                    // registered native class, so it satisfies the typed property.
+                    // set_typed must run on the empty array, before we fill it.
+                    if (const RosTypeRegistry::TypeInfo *elem_type = RosTypeRegistry::find(ros_array.elementDatatype()))
+                        g_arr.set_typed(Variant::OBJECT, elem_type->class_name, Variant());
                     g_arr.resize(ros_array.size());
                     for (size_t i = 0; i < ros_array.size(); ++i)
                     {

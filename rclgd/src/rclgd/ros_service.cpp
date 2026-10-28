@@ -44,13 +44,8 @@ void RosService::setup(std::shared_ptr<rclcpp::Node> p_node, const String &p_srv
                    ros_babel_fish::CompoundMessage::SharedPtr res_out)
             {
                 // Wrap the incoming raw buffers into Godot RosMsg objects
-                Ref<RosMsg> godot_req;
-                godot_req.instantiate();
-                godot_req->init_babel(req_in);
-
-                Ref<RosMsg> godot_res;
-                godot_res.instantiate();
-                godot_res->init_babel(res_out);
+                Ref<RosMsg> godot_req = RosMsg::wrap(req_in);
+                Ref<RosMsg> godot_res = RosMsg::wrap(res_out);
 
                 // Execute GDScript callback immediately (synchronously)
                 // Function signature: func my_srv(req: RosMsg, res: RosMsg):

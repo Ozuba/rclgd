@@ -25,10 +25,7 @@ void RosServerGoalHandle::_bind_methods()
 void RosServerGoalHandle::_set_native(const std::shared_ptr<BabelFishActionServerGoalHandle> &p_handle)
 {
     handle_ = p_handle;
-    goal_.instantiate();
-    auto goal = std::const_pointer_cast<CompoundMessage>(p_handle->get_goal());
-    if (goal)
-        goal_->init_babel(goal);
+    goal_ = RosMsg::wrap(std::const_pointer_cast<CompoundMessage>(p_handle->get_goal()));
 }
 
 String RosServerGoalHandle::get_goal_id() const
@@ -51,19 +48,13 @@ bool RosServerGoalHandle::is_active() const
 Ref<RosMsg> RosServerGoalHandle::create_feedback()
 {
     RCLGD_FAIL_COND_V_MSG(!handle_, nullptr, "RosServerGoalHandle: Handle not initialized.");
-    Ref<RosMsg> fb;
-    fb.instantiate();
-    fb->init_babel(std::make_shared<CompoundMessage>(handle_->create_feedback_message()));
-    return fb;
+    return RosMsg::wrap(std::make_shared<CompoundMessage>(handle_->create_feedback_message()));
 }
 
 Ref<RosMsg> RosServerGoalHandle::create_result()
 {
     RCLGD_FAIL_COND_V_MSG(!handle_, nullptr, "RosServerGoalHandle: Handle not initialized.");
-    Ref<RosMsg> res;
-    res.instantiate();
-    res->init_babel(std::make_shared<CompoundMessage>(handle_->create_result_message()));
-    return res;
+    return RosMsg::wrap(std::make_shared<CompoundMessage>(handle_->create_result_message()));
 }
 
 void RosServerGoalHandle::publish_feedback(const Ref<RosMsg> &p_feedback)
@@ -163,10 +154,7 @@ void RosActionServer::setup(std::shared_ptr<rclcpp::Node> p_node, const String &
                 if (!goal_callback.is_valid())
                     return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
 
-                Ref<RosMsg> g;
-                g.instantiate();
-                if (goal)
-                    g->init_babel(std::const_pointer_cast<CompoundMessage>(goal));
+                Ref<RosMsg> g = RosMsg::wrap(std::const_pointer_cast<CompoundMessage>(goal));
 
                 bool accept = goal_callback.call(g);
                 return accept ? rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE

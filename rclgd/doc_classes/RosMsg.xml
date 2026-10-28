@@ -6,7 +6,9 @@
 	<description>
 		[RosMsg] provides a flexible way to handle ROS 2 messages within Godot. It uses [b]BabelFish[/b] to dynamically translate ROS 2 message buffers into Godot-friendly [Variant] data and vice versa.
 		Fields can be accessed dynamically using [method get_member] and [method set_member], or via Godot's property system if the message has been initialized.
-		To improve the development experience, [RosMsg] includes a utility to generate GDScript "wrapper" classes that provide IDE autocomplete for specific message types.
+		[b]Typed classes:[/b] when the extension loads, rclgd registers a native class deriving from [RosMsg] for every interface type provided by the packages listed as dependencies in the project's [code]res://package.xml[/code] (and every type they nest). Messages ([code]msg/[/code]), service requests and responses ([code]srv/[/code], e.g. [code]RosExampleInterfacesSrvAddTwoIntsRequest[/code]) and action goals, results and feedback ([code]action/[/code]) are covered. [code]geometry_msgs/msg/Twist[/code] becomes [code]RosGeometryMsgsTwist[/code], with one typed property per field: nested messages are typed objects and arrays of messages are typed arrays ([code]Array[RosGeometryMsgsPose][/code]). These classes give editor autocomplete and type checking, can be created with [code]new()[/code], and are what [method from_type] and every received message (subscriptions, services, actions) return for their type.
+		Types not registered this way keep working as plain dynamic [RosMsg] instances. A field whose name clashes with a [RosMsg] member or a GDScript keyword is not exposed as a property of the typed class; reach it with [method get_member] and [method set_member].
+		[b]Note:[/b] the set of typed classes is fixed when the extension loads. After adding a dependency to [code]package.xml[/code], or building a new interface package, reload the project (or restart the game). Exported games need [code]package.xml[/code] in the export preset's non-resource include filter.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,15 +17,7 @@
 			<return type="RosMsg" />
 			<param index="0" name="ros_type_name" type="String" />
 			<description>
-				Factory method that creates and returns a new [RosMsg] instance for the given [param ros_type_name] (e.g., [code]"std_msgs/msg/String"[/code]).
-			</description>
-		</method>
-		<method name="gen_editor_support" qualifiers="static">
-			<return type="void" />
-			<param index="0" name="p_type" type="String" />
-			<param index="1" name="p_dest_folder" type="String" />
-			<description>
-				Generates GDScript wrapper classes for the specified [param p_type] and all its nested dependencies in the [param p_dest_folder]. These generated scripts inherit from [RosMsg] and provide typed properties for every message field, enabling IDE autocomplete and better type safety in Godot.
+				Factory method that creates and returns a new message for the given [param ros_type_name] (e.g., [code]"std_msgs/msg/String"[/code]). If the type has a registered typed class, the returned instance is of that class (e.g. [code]RosStdMsgsString[/code]); otherwise it is a dynamic [RosMsg]. Returns [code]null[/code] if the type cannot be resolved.
 			</description>
 		</method>
 		<method name="get_member" qualifiers="const">
@@ -42,14 +36,14 @@
 		<method name="get_type_name" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the Godot-formatted name of the message type (e.g., [code]"RosStdMsgsString"[/code]). This name matches the class name of generated editor support scripts.
+				Returns the Godot-formatted name of the message type (e.g., [code]"RosStdMsgsString"[/code]). This is the name of the typed class registered for the type, whether or not this instance is of that class.
 			</description>
 		</method>
 		<method name="init">
 			<return type="void" />
 			<param index="0" name="ros_type_name" type="String" />
 			<description>
-				Initializes the [RosMsg] instance to represent a message of the specified [param ros_type_name]. This clears any previous data and allocates a new ROS 2 message buffer.
+				Initializes a [RosMsg] created with [code]RosMsg.new()[/code] to represent a message of the specified [param ros_type_name], allocating a new ROS 2 message buffer. Does nothing on an already initialized message (e.g. any typed class instance). The instance stays a dynamic [RosMsg] even when the type has a typed class; use [method from_type] or the class's [code]new()[/code] to get a typed one.
 			</description>
 		</method>
 		<method name="set_member">

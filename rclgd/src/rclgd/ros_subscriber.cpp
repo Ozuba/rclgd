@@ -27,9 +27,7 @@ void RosSubscriber::setup(const std::shared_ptr<rclcpp::Node> &node,
                     return;
 
                 // Wrap the raw BabelFish message into our Godot RosMsg object
-                Ref<RosMsg> wrapper;
-                wrapper.instantiate();
-                wrapper->init_babel(msg);
+                Ref<RosMsg> wrapper = RosMsg::wrap(msg);
 
                 // Call immediately or defer depending on the thread we are in
                 if (Thread::is_main_thread())

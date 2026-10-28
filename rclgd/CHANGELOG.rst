@@ -2,6 +2,33 @@
 Changelog for package rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Feature: native typed message classes. Every interface type provided by
+  the dependencies in the project's package.xml (msg, srv Request/Response,
+  action Goal/Result/Feedback, plus nested types) is registered at startup
+  as a native class deriving from RosMsg (e.g. RosGeometryMsgsTwist), with
+  typed properties, editor help and ``new()``. RosMsg.from_type and every
+  received or created message (subscriptions, services, actions, nested
+  fields, RosNode.now) come back as the typed class; unregistered types stay
+  dynamic RosMsg. create_publisher/create_subscription also accept a typed
+  class or a message instance as the type
+* Breaking: the generated GDScript wrappers (shadow classes) and the editor
+  plugin that generated them are gone. RosMsg.gen_editor_support is removed;
+  delete res://addons/rclgd/gen, addons/rclgd/plugin.cfg and
+  addons/rclgd/rclgd.gd, and drop the plugin from [editor_plugins] in
+  project.godot (the ROS autoload stays). Class names are unchanged
+* Breaking: the set of typed classes is fixed when the extension loads; new
+  dependencies or interface packages need a project reload (or game
+  restart). Exported games need package.xml in the export preset's
+  non-resource include filter
+* Breaking: a script passed as the type to RosNode.create_* is no longer
+  resolved through its ROS_TYPE_NAME constant
+* Change: fields whose names clash with RosMsg members or GDScript keywords
+  are not typed properties (reach them with get_member/set_member)
+* Change: a script extending RosMsg now lists the message fields in its
+  property list (they used to be hidden whenever a script was attached)
+
 3.0.0 (2026-10-22)
 ------------------
 * Feature: Added RosLogger with rclpy logger API parity: debug/info/
