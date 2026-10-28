@@ -3,7 +3,6 @@
 # Godot Engine documentation build configuration file
 
 import sphinx
-import sphinx_rtd_theme
 import sys
 import os
 
@@ -156,7 +155,6 @@ highlight_language = "gdscript"
 # -- Options for HTML output ----------------------------------------------
 
 html_theme = "sphinx_rtd_theme"
-html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 if on_rtd:
     using_rtd_theme = True
 
@@ -169,8 +167,8 @@ html_theme_options = {
     "collapse_navigation": False,
     # Max depth of navigation in the sidebar.
     "navigation_depth": 2,
-    # Hide the documentation version name/number under the logo
-    "display_version": False,
+    # Hide the documentation version selector under the logo
+    "version_selector": False,
 }
 
 html_title = supported_languages[language] % ( "(" + version + ")" )

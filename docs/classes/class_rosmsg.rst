@@ -12,7 +12,7 @@ RosMsg
 
 **Inherits:** `RefCounted <https://docs.godotengine.org/en/stable/classes/class_refcounted.html>`__
 
-A dynamic wrapper for ROS 2 messages.
+A ROS 2 message, with native typed subclasses for the interfaces a project depends on.
 
 .. rst-class:: classref-introduction-group
 

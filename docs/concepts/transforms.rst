@@ -43,9 +43,7 @@ To maintain a Right-Handed System across both environments, mapping requires a d
 Axis Mapping in rclgd
 ---------------------
 
-To ensure absolute compatibility with core ROS 2 navigation packages (like Nav2 and `robot_localization`), **rclgd** implements the standard **Ground Vehicle Convention**. 
-
-
+To stay compatible with core ROS 2 navigation packages (like Nav2 and ``robot_localization``), **rclgd** implements the standard **Ground Vehicle Convention**.
 
 By negating exactly two components (the ground plane axes), we preserve the Right-Hand Rule globally—ensuring positions, linear velocities, quaternions, and angular forces transfer flawlessly.
 
@@ -94,12 +92,12 @@ The exact mapping used internally by the TF broadcaster and listener is exposed 
 
         return msg
 
-Under the hood the vector helper applies the table above (``ros = Vector3(-godot.z, -godot.x, godot.y)``), and the quaternion helper shuffles the components the same way, which preserves structural symmetry and eliminates matrix shearing or skewing errors.
+Under the hood the vector helper applies the table above (``ros = Vector3(-godot.z, -godot.x, godot.y)``), and the quaternion helper maps the rotation axis the same way, so rotations stay rotations in both conventions.
 
 Using TF Broadcasters and Listeners
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these conversions natively under the hood, transforming local scene trees directly into valid ROS 2 `/tf` configurations. Each broadcaster/listener belongs to the `RosNode` that created it, so transforms show up in the ROS graph under the node that publishes them.
+``RosTfBroadcaster`` and ``RosTfListener`` apply these conversions for you: you pass and receive Godot ``Transform3D`` values, and ``/tf`` carries the ROS convention. Each broadcaster/listener belongs to the ``RosNode`` that created it, so transforms show up in the ROS graph under the node that publishes them.
 
 .. code-block:: gdscript
 
@@ -112,8 +110,7 @@ High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these co
         listener = ros_node.create_tf_listener()
 
     func publish_my_move(t: Transform3D):
-        # Broadcasts a local Godot transform instantly converted into the ROS vehicle frame
-        # send_transform(transform, frame_id, parent_frame_id, is_static)
+        # send_transform(transform, frame_id, parent_frame_id, is_static = false, timestamp = null)
         broadcaster.send_transform(t, "base_link", "odom")
 
     func get_robot_position():
@@ -124,8 +121,11 @@ High-level objects like `RosTfBroadcaster` and `RosTfListener` abstract these co
         if t != null:
             print("Robot Position in Godot space: ", t.origin)
             print("Robot Rotation Basis: ", t.basis)
+
+Static transforms (``is_static = true``) go to ``/tf_static`` and are latched for late subscribers. Without a ``timestamp``, transforms are stamped with the node's current time; pass a ``builtin_interfaces/msg/Time`` (for example the stamp of the sensor data they belong to) to override it.
+
 Looking up transforms at the time data was captured
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Called with two arguments, ``lookup_transform`` returns the newest transform in
 the buffer. That is the right answer when you are asking "where is the robot
@@ -150,7 +150,9 @@ the message you are about to draw:
 The ``time`` argument accepts ``null`` (latest available, the same as leaving it
 out), a ``float`` of seconds since the epoch, or a ``RosMsg`` holding a
 ``builtin_interfaces/msg/Time`` as above. ``can_transform`` takes the same
-argument, and answers the same question without doing the work.
+argument, and answers the same question without doing the work. Both also take
+an optional ``timeout_sec`` to wait for the transform to arrive; it blocks the
+calling thread, so keep it short on the main thread.
 
 How far back you can reach is bounded by the buffer length, which defaults to
 10 seconds and is set when the listener is created —
@@ -159,6 +161,21 @@ missing frame does: the lookup returns ``null`` and ``get_last_error()``
 carries TF2's own explanation, which is worth surfacing to the user rather than
 swallowing, because it distinguishes "this frame does not exist" from "this
 stamp is too old".
+
+Comparing frames at different times
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``lookup_transform_full`` (and ``can_transform_full``) resolves each frame at
+its own time, through a ``fixed_frame`` that doesn't move between the two, such
+as ``odom`` or ``map``. Use it to answer questions like "where was the robot
+one second ago, seen from where it is now":
+
+.. code-block:: gdscript
+
+    var now := ros_node.now()
+    var now_sec: float = now.sec + now.nanosec * 1e-9
+    # lookup_transform_full(target_frame, target_time, source_frame, source_time, fixed_frame)
+    var t = listener.lookup_transform_full("base_link", now_sec, "base_link", now_sec - 1.0, "odom")
 
 Inspecting the frame graph
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
