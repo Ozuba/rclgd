@@ -9,7 +9,8 @@ it was compiled against and provisions it for you (see :ref:`godot-setup`).
 Prerequisites
 -------------
 
-*   **ROS 2** (developed and tested on Jazzy).
+*   **ROS 2** Jazzy, Kilted, Lyrical or Rolling. Each has its own branch;
+    binary packages are available for Jazzy.
 *   For building from source: a colcon workspace (e.g. ``~/ros2_ws``) and the
     build essentials for C++ ROS 2 packages (``colcon``, a compiler,
     ``rosdep``).
@@ -35,17 +36,12 @@ provision, no extra step. Source your ROS 2 environment and verify:
    source /opt/ros/jazzy/setup.bash
    ros2 rclgd doctor
 
-.. note::
-
-   Replace ``jazzy`` with your ROS 2 distribution if you are on a different
-   release. rclgd is developed and tested on Jazzy.
-
 Building from Source
 --------------------
 
-Build from source when you want to track ``main``, hack on rclgd itself, or
-target a Godot version other than the released one. The repository contains
-three ROS 2 packages that are built together:
+Build from source on distributions without binary packages, to hack on rclgd
+itself, or to target a different Godot version. The repository contains three
+ROS 2 packages that are built together:
 
 .. list-table::
    :widths: 25 20 55
@@ -64,12 +60,13 @@ three ROS 2 packages that are built together:
      - ament_python
      - the ``ros2 rclgd`` command and the project template
 
-1. **Clone the repository** (with the ``godot-cpp`` submodule):
+1. **Clone the branch for your distribution** (``jazzy``, ``kilted``,
+   ``lyrical`` or ``rolling``) with the ``godot-cpp`` submodule:
 
    .. code-block:: bash
 
       cd ~/ros2_ws/src
-      git clone --recurse-submodules https://github.com/Ozuba/rclgd.git
+      git clone -b jazzy --recurse-submodules https://github.com/Ozuba/rclgd.git
 
 2. **Install dependencies** (pulls in ``ros_babel_fish`` among others):
 
@@ -91,19 +88,10 @@ The Godot Editor binary
 -----------------------
 
 The engine binary is provisioned at **build time**: the ``rclgd`` build
-downloads exactly the release ``librclgd.so`` was compiled against — verified
-against a pinned SHA-512 — and installs it into the prefix as
-``lib/rclgd/godot-bin``, right next to ``librclgd.so``. That's the whole
-mechanism: no caches, no environment variables, no separate CLI step. Because
-the binary lands in the package's own install prefix, an apt/deb install ships
-it like any other file and a built or apt-installed rclgd is complete out of
-the box.
-
-.. note::
-
-   Earlier versions exposed a ``ros2 rclgd setup`` verb that fetched the engine
-   after the build. That step is gone — provisioning now happens inside the
-   build, so there is nothing to run by hand.
+downloads exactly the release ``librclgd.so`` was compiled against (verified
+against a pinned SHA-512) and installs it as ``lib/rclgd/godot-bin``, next to
+``librclgd.so``. There are no caches, environment variables or extra steps, and
+an apt install ships the binary like any other file.
 
 To verify everything is wired up:
 
@@ -112,8 +100,8 @@ To verify everything is wired up:
    ros2 rclgd doctor
 
 ``doctor`` checks the ROS environment, the extension library, the launcher,
-the version pin and the engine binary, and prints a hint for anything that
-is off.
+the version pin and the engine binary (and, run inside a project, the
+project's setup), and prints a hint for anything that is off.
 
 Targeting a different Godot version
 -----------------------------------

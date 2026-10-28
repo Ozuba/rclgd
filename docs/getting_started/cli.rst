@@ -19,7 +19,8 @@ create
 
 Scaffolds a complete, buildable package from the bundled template: a
 ``package.xml`` with ``build_type: rclgd``, a minimal Godot project, the rclgd
-editor addon and a demo publisher/subscriber scene.
+addon (extension wiring and the ``ROS`` autoload) and a demo
+publisher/subscriber scene.
 
 .. code-block:: bash
 
@@ -30,9 +31,9 @@ editor addon and a demo publisher/subscriber scene.
 
 Useful options:
 
-*   ``--dependencies geometry_msgs sensor_msgs`` — message packages the project
-    uses; they become ``<exec_depend>`` entries, and the editor generates typed
-    wrappers for them (see :doc:`/tutorials/custom_messages`).
+*   ``--dependencies geometry_msgs sensor_msgs`` — interface packages the
+    project uses; they become ``<exec_depend>`` entries, and rclgd registers
+    typed message classes for them (see :doc:`/tutorials/custom_messages`).
 *   ``--renderer gl_compatibility`` — for headless CI machines or weak GPUs
     (default: ``forward_plus``).
 *   ``--maintainer-name`` / ``--maintainer-email`` — default to your git config.
@@ -77,8 +78,9 @@ doctor
 
 Checks the whole chain — ROS environment, ``librclgd.so``, launcher, version
 pin, engine binary (exists, runs, matches the pin) and, when run inside a
-project, the project's extension wiring and import state. Every failure comes
-with a hint:
+project, the project's extension wiring, import state and leftovers from older
+rclgd versions (the ``addons/rclgd/gen`` wrappers and the old editor plugin).
+Every problem comes with a hint:
 
 .. code-block:: text
 

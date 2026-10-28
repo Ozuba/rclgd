@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="RosMsg" inherits="RefCounted" api_type="extension" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
 	<brief_description>
-		A dynamic wrapper for ROS 2 messages.
+		A ROS 2 message, with native typed subclasses for the interfaces a project depends on.
 	</brief_description>
 	<description>
 		[RosMsg] provides a flexible way to handle ROS 2 messages within Godot. It uses [b]BabelFish[/b] to dynamically translate ROS 2 message buffers into Godot-friendly [Variant] data and vice versa.

@@ -1,44 +1,45 @@
 Architecture & Integration
 ==========================
 
-**rclgd** bridges the gap between Godot Engine's GDExtension system and ROS 2, focusing on flexibility, performance, and an idiomatic GDScript API.
+**rclgd** connects Godot's GDExtension system to ROS 2 (``rclcpp``), aiming for flexibility, performance and an idiomatic GDScript API.
 
 BabelFish Integration
 ---------------------
 
-A core component of **rclgd** is `ros_babel_fish`. This library enables dynamic runtime processing of ROS 2 messages.
+Messages are handled at runtime by ``ros_babel_fish``, which reads each type's introspection data:
 
-*   **No Recompilation**: You do not need to recompile the GDExtension every time you introduce a new custom ROS 2 message type to your workspace.
-*   **Type Mapping**: **rclgd** automatically maps ROS 2 primitive types to Godot `Variant` types. Complex structures (nested messages, arrays) are parsed and exposed recursively.
+*   **No recompilation**: a new or custom interface package works as soon as it is built and sourced; the GDExtension never needs rebuilding.
+*   **Type mapping**: fields map to Godot ``Variant`` types (numbers, strings, ``Packed*Array`` for numeric arrays, nested messages as objects, arrays of messages as arrays). Fields are converted lazily, on first access, and nested messages write straight into their parent's buffer.
 
 Typed Message Classes
 ---------------------
 
 On top of the dynamic core, **rclgd** registers a native engine class for every interface type the project depends on (see :doc:`/tutorials/custom_messages`):
 
-*   **Discovery**: when the extension loads, the dependencies in ``res://package.xml`` are resolved through the ament index (``share/ament_index/resource_index/rosidl_interfaces/<pkg>`` on ``AMENT_PREFIX_PATH``), and every ``msg``, ``srv`` (request and response) and ``action`` (goal, result and feedback) type is registered, together with the closure of the types they nest. The set is fixed from then on; picking up new types takes a restart.
-*   **Registration**: each type (``geometry_msgs/msg/Twist``) becomes a class (``RosGeometryMsgsTwist``) deriving from :ref:`RosMsg<class_RosMsg>` in Godot's ``ClassDB``, with one typed property per field. Nested messages are typed objects and arrays of messages typed arrays. Fields that clash with a ``RosMsg`` member or a GDScript keyword are left out (``get_member``/``set_member`` still reach them).
-*   **Same core underneath**: a typed instance *is* a ``RosMsg`` — the same BabelFish buffer, lazy member conversion and aliasing of nested messages — and its properties are backed by ``get_member``/``set_member``. Field access still goes through Godot's property lookup, so typed classes are about ergonomics and type safety, not speed.
-*   **Wrapping**: every message rclgd hands to scripts (subscriptions, service requests and responses, action goals, feedback and results, nested fields, ``RosMsg.from_type``) is built by a single factory that picks the typed class from a read-only table, so it is safe on the executor thread. Types without a class stay dynamic ``RosMsg`` instances.
+*   **Discovery**: when the extension loads, the dependencies in ``res://package.xml`` are resolved through the ament index (``share/ament_index/resource_index/rosidl_interfaces/<pkg>`` on ``AMENT_PREFIX_PATH``). Every ``msg``, ``srv`` (request and response) and ``action`` (goal, result and feedback) type is registered, together with the types they nest. The set is fixed from then on; new types need a project reload.
+*   **Registration**: each type (``geometry_msgs/msg/Twist``) becomes a class (``RosGeometryMsgsTwist``) deriving from :ref:`RosMsg<class_RosMsg>` in Godot's ``ClassDB``, with one typed property per field. Fields that clash with a ``RosMsg`` member or a GDScript keyword are left out (``get_member``/``set_member`` still reach them).
+*   **Same core underneath**: a typed instance *is* a ``RosMsg`` (same buffer, same lazy conversion), and its properties are backed by ``get_member``/``set_member``.
+*   **Wrapping**: every message rclgd hands to scripts (subscriptions, services, actions, nested fields, ``RosMsg.from_type``) is built by one factory that picks the typed class from a read-only table, so it is safe on the executor thread. Types without a class stay dynamic ``RosMsg`` instances.
+
+Field access goes through Godot's property system, so it costs about as much as any native property. When reading several fields of a nested message, keep it in a local variable (``var p := msg.pose.position``) instead of repeating the chain.
 
 Threading and Lifecycle
 -----------------------
 
-Under the hood, **rclgd** runs the standard `rclcpp` executor in a background thread (a `MultiThreadedExecutor`) to manage network traffic without blocking the Godot main thread. Launching with ``--ros-args -p use_separate_thread:=false`` switches to a single-threaded executor spun synchronously on the physics tick, for deterministic setups.
+**rclgd** runs the standard ``rclcpp`` executor (a ``MultiThreadedExecutor``) in a background thread, so network traffic never blocks the Godot main thread. Launching with ``--ros-args -p use_separate_thread:=false`` switches to a single-threaded executor spun synchronously on the physics tick, for deterministic setups.
 
 Where do callbacks run?
 
-*   **Subscriptions, timers, action clients and action servers**: always dispatched to the Godot main thread (via ``call_deferred``), so plain GDScript is safe.
-*   **Service servers**: the callback runs synchronously on the executor thread, because the response must be filled before it is returned to the client. Keep these callbacks self-contained, or use an action server for long-running work.
+*   **Subscriptions, timers, action execute callbacks and action client signals**: dispatched to the Godot main thread (via ``call_deferred``), so plain GDScript is safe.
+*   **Service server callbacks and action goal callbacks**: run synchronously on the executor thread, because ROS needs the answer before they return. Keep them self-contained and defer scene changes with ``call_deferred``.
 *   In physics-synchronous mode everything runs on the main thread and no caveats apply.
 
 Lifecycle details:
 
-*   **Node Lifecycle**: The `RosNode` GDScript objects manage the lifetime of their underlying C++ `rclcpp::Node` counterparts.
-*   **Initialization**: ``rclgd.init()`` initializes the ROS 2 context and starts the executor; call it once before creating nodes.
-*   **Shutdown**: ``rclgd.shutdown()`` stops the executor and tears the context down. It is also invoked automatically when the extension unloads, so the process always exits cleanly. ``Ctrl+C`` (SIGINT) and SIGTERM (``ros2 launch`` shutdown, timeouts, systemd) are caught and translated into a regular ``SceneTree.quit()`` on the main thread, so DDS participants are always torn down cleanly.
-*   **Memory Management**: Most **rclgd** classes inherit from `RefCounted`. They are automatically freed by Godot's memory manager when they fall out of scope, cleanly unregistering themselves from the ROS 2 graph. The flip side: keep a reference to every entity you create, or it disappears (see the warning in :doc:`/tutorials/basic_usage`).
-*   **Hidden node**: rclgd maintains one internal node per process, named ``rclgd_<pid>`` so several Godot apps can run side by side. It carries the process-level parameters below and, when enabled, the ``/clock`` publisher.
+*   **Initialization**: ``rclgd.init()`` initializes the ROS 2 context and starts the executor; call it once before creating nodes. In projects created with ``ros2 rclgd create``, the ``ROS`` autoload does it (see :doc:`/tutorials/basic_usage`).
+*   **Shutdown**: ``rclgd.shutdown()`` stops the executor and tears the context down. It also runs automatically when the extension unloads, so the process always exits cleanly. ``Ctrl+C`` (SIGINT) and SIGTERM (``ros2 launch`` shutdown, timeouts, systemd) are translated into a regular ``SceneTree.quit()`` on the main thread, so DDS participants are torn down cleanly.
+*   **Memory management**: most **rclgd** classes are ``RefCounted``. They are freed when the last reference goes away, unregistering themselves from the ROS 2 graph. The flip side: keep a reference to every entity you create, or it disappears.
+*   **Hidden node**: rclgd keeps one internal node per process, named ``rclgd_<pid>`` so several Godot apps can run side by side. It holds the process-level parameters (``use_separate_thread``, ``use_sim_time``, ``publish_sim_time``) and, when enabled, the ``/clock`` publisher.
 
 Simulation Time
 ---------------
@@ -55,17 +56,20 @@ rclgd separates the two roles around ``/clock``:
 
 A Godot app that is itself the simulator typically passes both.
 
+Error Handling
+--------------
+
+rclgd reports errors (an unknown message type, an entity that fails to create, a parameter that can't be declared, ...) through Godot's error log, with a link to the C++ source. While the debugger is attached, they also break into the script debugger at the calling line. Set the ``rclgd/debug/break_on_error`` project setting to ``false`` to only log them.
+
 Signals vs. Callbacks
 ---------------------
 
-While Godot heavily relies on Signals for event handling, **rclgd** opts for `Callable` function references for high-frequency data streams (like topic subscriptions).
-
-This approach drastically reduces the overhead of signal emission on the main thread for messages arriving at 100+ Hz. If you need standard signal behavior, you can easily emit a custom signal from within your subscription callback:
+Godot relies heavily on signals, but **rclgd** takes ``Callable`` references for high-frequency streams such as subscriptions, which avoids the cost of signal emission for messages arriving at 100+ Hz. If you need signal behavior, emit your own signal from the callback:
 
 .. code-block:: gdscript
 
     signal message_received(data)
 
     func _on_ros_message(msg: RosMsg):
-        # Safely emit a signal on the main thread for UI or other complex logic
-        emit_signal("message_received", msg.get_member("data"))
+        # Runs on the main thread, so connected UI code is safe
+        message_received.emit(msg.data)
