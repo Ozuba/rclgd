@@ -8,21 +8,23 @@ rclgd Documentation
    :width: 400px
    :alt: rclgd Logo
 
-Welcome to the documentation for **rclgd**, a ROS2 GDExtension for Godot Engine 4.
-**rclgd** allows you to seamlessly integrate ROS2 into your Godot projects, providing high-performance communication and easy-to-use GDScript wrappers. Developed and maintained by **Ozuba**.
+Welcome to the documentation for **rclgd**, a native ROS 2 client library for
+Godot Engine 4, developed and maintained by **Ozuba**.
 
-Motivation
-----------
+rclgd runs ``rclcpp`` inside Godot as a GDExtension, so a Godot project is a
+real ROS 2 node: no rosbridge, no WebSockets, no bridge process. It is built
+for robot simulators, digital twins and operator interfaces.
 
-The **rclgd** library is designed to bring the power of ROS2 to Godot, enabling developers to build sophisticated robotic simulations, digital twins, and interface applications with ease.
-
-- **Seamless Integration**: Use ROS2 nodes directly within Godot (now with Godot 4.7 support).
-- **High Performance**: Built on top of `rclcpp` and `ros_babel_fish` for efficient message handling.
-- **GDScript Friendly**: Simple and intuitive API for GDScript users, with native typed message classes registered automatically from your package's dependencies.
-- **Dynamic Messaging**: Support for custom ROS2 messages without recompilation thanks to BabelFish.
-- **Full Communication Support**: Full support for Publishers, Subscribers, Timers, as well as awaitable Services and Actions.
-- **Advanced ROS2 Features**: Comprehensive Quality of Service (QoS) support, parameters (including arrays) and simulation time.
-- **First-class Tooling**: Godot projects are native colcon packages (``build_type: rclgd``), managed end to end by the ``ros2 rclgd`` command.
+- **Any message, no recompilation**: messages are handled at runtime through
+  ``ros_babel_fish``; a sourced interface package just works.
+- **Typed in GDScript**: every interface your ``package.xml`` depends on becomes
+  a native class (``RosGeometryMsgsTwist``, ...) with autocompletion and type
+  checking.
+- **Complete API**: publishers, subscribers, timers, awaitable services and
+  actions, parameters, QoS, TF2, simulation time and logging.
+- **Native tooling**: Godot projects are colcon packages
+  (``build_type: rclgd``), created, opened and diagnosed with
+  ``ros2 rclgd``.
 
 .. toctree::
    :hidden:

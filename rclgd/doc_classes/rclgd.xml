@@ -5,8 +5,8 @@
 	</brief_description>
 	<description>
 		The [rclgd] singleton is the core of the ROS 2 bridge for Godot. It manages the global ROS 2 context, the executor thread, and the lifecycle of ROS 2 nodes.
-		Before using any other ROS 2 components, you must call [method init] to initialize the environment.
-		[b]Executor modes:[/b] By default the ROS 2 executor spins in a separate thread (subscription, timer and action callbacks are deferred to the Godot main thread, so regular GDScript stays safe). Launch with [code]--ros-args -p use_separate_thread:=false[/code] to spin synchronously on the physics tick instead.
+		Before using any other ROS 2 components, [method init] must be called to initialize the environment. In projects created with [code]ros2 rclgd create[/code], the [code]ROS[/code] autoload does this at startup, passing the command-line arguments and the [code]ros/parameters/*[/code] project settings.
+		[b]Executor modes:[/b] By default the ROS 2 executor spins in a separate thread. Subscription, timer and action execute callbacks are deferred to the Godot main thread, so regular GDScript stays safe; service callbacks and action goal callbacks run on the executor thread. Launch with [code]--ros-args -p use_separate_thread:=false[/code] to spin synchronously on the physics tick instead.
 		[b]Simulation time:[/b] Launch with [code]--ros-args -p publish_sim_time:=true[/code] to make Godot the time source: the physics tick drives and publishes [code]/clock[/code], scaled by [code]Engine.time_scale[/code]. The standard [code]use_sim_time:=true[/code] instead makes node clocks (and timers) [i]follow[/i] [code]/clock[/code] — use it alone in a visualizer running next to an external simulator, or together with [code]publish_sim_time[/code] when the Godot app is itself the simulator.
 		[b]Error handling:[/b] RCLGD errors break into the script debugger by default. Set the [code]rclgd/debug/break_on_error[/code] project setting to [code]false[/code] to only log them instead.
 	</description>

@@ -1,7 +1,7 @@
 Building turtlesim_rclgd
 ==========================
 
-This tutorial showcases how to build a fully-featured ROS 2 Node in Godot 4 using ``rclgd``. We will look at snippets from the ``turtlesim_rclgd`` package—a 100% native Godot reimplementation of the classic ``ros2_tutorials/turtlesim``.
+This tutorial shows how to build a complete ROS 2 node in Godot 4 with ``rclgd``. We will look at snippets from the ``turtlesim_rclgd`` package, a Godot reimplementation of the classic ``ros2_tutorials/turtlesim``.
 
 Through this example, you will see how to leverage ``RosNode``, Publishers, Subscribers, Services, and Parameters using GDScript.
 All code for this example is at `turtlesim_rclgd <https://github.com/Ozuba/turtlesim_rclgd>`_.
@@ -15,7 +15,7 @@ All code for this example is at `turtlesim_rclgd <https://github.com/Ozuba/turtl
 1. Initializing the ROS 2 Node
 ------------------------------
 
-Before you can communicate over the ROS network, the global ``rclcpp`` context must be initialized. In our ``world.gd`` script (attached to the main Godot scene), we ensure the context is active and spin up a new Node:
+Before you can communicate over the ROS network, the global ``rclcpp`` context must be initialized. In projects created with ``ros2 rclgd create`` the ``ROS`` autoload already does this; ``world.gd`` (attached to the main scene) only initializes it when missing, then creates its node:
 
 .. code-block:: gdscript
 
@@ -44,7 +44,7 @@ Our Turtle node needs to dynamically create topics matching standard ROS 2 messa
 Subscribing to Velocity (cmd_vel)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We create a subscriber during the turtle's setup. The callback automatically receives a dynamically mapped ``RosMsg`` object representing the ``Twist``:
+We create a subscriber during the turtle's setup. The callback receives the ``Twist`` as a message object. With ``geometry_msgs`` declared in ``package.xml`` it is a ``RosGeometryMsgsTwist`` and the parameter can be typed as such (see :doc:`/tutorials/custom_messages`); ``RosMsg`` works for any type:
 
 .. code-block:: gdscript
 
@@ -90,7 +90,7 @@ In our physics loop, we continuously publish our Godot ``position`` back to ROS 
 3. Creating and Using Services
 ------------------------------
 
-Services handle one-off remote procedural calls (like spawning a new turtle). ``rclgd`` handles service callbacks natively.
+Services handle one-off remote procedure calls, like spawning a new turtle.
 
 Hosting a Service Server
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -140,7 +140,7 @@ filled in place, while the scene change is deferred to the main thread:
 4. Handling ROS 2 Parameters
 ----------------------------
 
-Modern ROS 2 configuring is heavily parameter-driven. We can use ``rclgd`` to declare parameters and react to changes (like a user running ``ros2 param set``) using native Godot Signals.
+ROS 2 configuration is parameter-driven. With ``rclgd`` you declare parameters and react to changes (like a user running ``ros2 param set``) through a Godot signal.
 
 .. code-block:: gdscript
 
@@ -172,4 +172,4 @@ Modern ROS 2 configuring is heavily parameter-driven. We can use ``rclgd`` to de
 
 Conclusion
 ----------
-By mapping ``rclcpp`` constructs to GDScript classes (``RosNode``, ``RosPublisher``, ``RosService``) and dynamic dictionaries (``RosMsg``), ``rclgd`` makes writing native ROS robots and simulators in Godot 4 fluid and powerful!
+``rclgd`` maps ``rclcpp`` constructs to GDScript classes (``RosNode``, ``RosPublisher``, ``RosService``, ...) and ROS messages to message objects (``RosMsg`` and its typed classes), so a ROS robot or simulator in Godot is written like any other Godot project.
