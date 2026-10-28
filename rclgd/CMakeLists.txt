@@ -113,6 +113,7 @@ target_sources(rclgd PRIVATE
     # RCLGD
     src/rclgd/rclgd.cpp
     src/rclgd/ros_msg.cpp
+    src/rclgd/ros_type_registry.cpp
     src/rclgd/ros_node.cpp
     src/rclgd/ros_publisher.cpp
     src/rclgd/ros_subscriber.cpp

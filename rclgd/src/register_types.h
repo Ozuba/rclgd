@@ -8,6 +8,7 @@
 // RCLGD
 #include "rclgd/rclgd.hpp"
 #include "rclgd/ros_msg.hpp"
+#include "rclgd/ros_type_registry.hpp"
 #include "rclgd/ros_node.hpp"
 #include "rclgd/ros_publisher.hpp"
 #include "rclgd/ros_subscriber.hpp"

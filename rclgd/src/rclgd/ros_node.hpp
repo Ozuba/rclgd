@@ -2,7 +2,6 @@
 
 #include <godot_cpp/classes/ref_counted.hpp>
 #include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/script.hpp>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -50,7 +49,8 @@ public:
     String get_name() const;
     String get_namespace() const;
 
-    // Helper to get ros types from shadow scripts
+    // Resolve the ROS type name from a "pkg/msg/Type" String, a native message
+    // class (RosGeometryMsgsTwist) or a message instance
     String _get_type_from_variant(const Variant &p_type);
 
     // Publisher and subscription creation

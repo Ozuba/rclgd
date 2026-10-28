@@ -219,14 +219,23 @@ String RosNode::_get_type_from_variant(const Variant &p_type) {
         return p_type;
     }
 
-    // Handle Objects (Scripts or Instances)
-    if (p_type.get_type() == Variant::OBJECT) {
-        Ref<Script> scr = p_type;
-        if (scr.is_valid()) {
-            Dictionary constants = scr->get_script_constant_map();
-            if (constants.has("ROS_TYPE_NAME")) {
-                return constants["ROS_TYPE_NAME"];
-            }
+    Object *obj = p_type.get_validated_object();
+    if (!obj) {
+        return ""; // Failed to resolve
+    }
+
+    // A message instance knows its own type
+    if (RosMsg *msg = Object::cast_to<RosMsg>(obj)) {
+        return msg->get_ros_interface_name();
+    }
+
+    // A native class used as a value (`create_publisher(t, RosGeometryMsgsTwist)`)
+    // reaches us as GDScript's class reference, which exposes no class name, so
+    // build one throwaway instance and ask it. Only at entity creation, not per message.
+    if (obj->is_class("GDScriptNativeClass")) {
+        Ref<RosMsg> msg = obj->call("new");
+        if (msg.is_valid()) {
+            return msg->get_ros_interface_name();
         }
     }
     return ""; // Failed to resolve
@@ -334,18 +343,16 @@ String RosNode::resolve_frame(const String &p_id) {
 
 Ref<RosMsg> RosNode::now()
 {
-    // 1. Create the specific ROS Time message
-    Ref<RosMsg> time_msg;
-    time_msg.instantiate();
-    time_msg->init("builtin_interfaces/msg/Time");
+    // 1. Create the specific ROS Time message (typed when registered)
+    Ref<RosMsg> time_msg = RosMsg::from_type("builtin_interfaces/msg/Time");
 
-    if (node_)
+    if (node_ && time_msg.is_valid())
     {
         // Derive both fields from the integer nanosecond count to avoid any
         // floating point rounding mismatch at second boundaries.
         int64_t ns = node_->now().nanoseconds();
-        time_msg->set("sec", (int64_t)(ns / 1000000000));
-        time_msg->set("nanosec", (int64_t)(ns % 1000000000));
+        time_msg->set_member("sec", (int64_t)(ns / 1000000000));
+        time_msg->set_member("nanosec", (int64_t)(ns % 1000000000));
     }
 
     return time_msg;

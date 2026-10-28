@@ -219,10 +219,7 @@ Ref<RosMsg> RosActionClient::create_goal()
     try
     {
         auto goal_msg = rclgd_ptr->get_fish().create_action_goal_shared(action_type_);
-        Ref<RosMsg> goal;
-        goal.instantiate();
-        goal->init_babel(goal_msg);
-        return goal;
+        return RosMsg::wrap(goal_msg);
     }
     catch (const std::exception &e)
     {
@@ -257,19 +254,13 @@ Ref<RosGoalHandle> RosActionClient::send_goal(const Ref<RosMsg> &p_goal)
     {
         if (!feedback)
             return;
-        Ref<RosMsg> fb;
-        fb.instantiate();
-        fb->init_babel(std::const_pointer_cast<ros_babel_fish::CompoundMessage>(feedback));
+        Ref<RosMsg> fb = RosMsg::wrap(std::const_pointer_cast<ros_babel_fish::CompoundMessage>(feedback));
         gh->call_deferred("_on_feedback", fb);
     };
 
     options.result_callback = [gh](const BabelGoalHandle::WrappedResult &result)
     {
-        Ref<RosMsg> res;
-        res.instantiate();
-        if (result.result)
-            res->init_babel(result.result);
-        gh->call_deferred("_on_result", res, (int)result.code);
+        gh->call_deferred("_on_result", RosMsg::wrap(result.result), (int)result.code);
     };
 
     try

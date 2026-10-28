@@ -59,7 +59,7 @@
 			<param index="1" name="type" type="Variant" />
 			<param index="2" name="qos" type="RosQoS" default="null" />
 			<description>
-				Creates and returns a [RosPublisher] to send messages to a specific [param topic]. Use [param qos] to configure the Quality of Service for the publisher.
+				Creates and returns a [RosPublisher] to send messages to a specific [param topic]. [param type] is the message type: an interface name ([code]"geometry_msgs/msg/Twist"[/code]), a typed message class ([code]RosGeometryMsgsTwist[/code]) or a message instance. Use [param qos] to configure the Quality of Service for the publisher.
 			</description>
 		</method>
 		<method name="create_service">
@@ -79,7 +79,7 @@
 			<param index="2" name="callback" type="Callable" />
 			<param index="3" name="qos" type="RosQoS" default="null" />
 			<description>
-				Creates and returns a [RosSubscriber] to receive messages from a specific [param topic]. The [param callback] is triggered for every new message received, always on the Godot main thread. Use [param qos] to configure the Quality of Service for the subscription.
+				Creates and returns a [RosSubscriber] to receive messages from a specific [param topic]. [param type] is given as for [method create_publisher]. The [param callback] is triggered for every new message received, always on the Godot main thread; messages of a type with a typed class arrive as that class (see [RosMsg]). Use [param qos] to configure the Quality of Service for the subscription.
 			</description>
 		</method>
 		<method name="create_tf_broadcaster">
