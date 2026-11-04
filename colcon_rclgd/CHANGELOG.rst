@@ -2,7 +2,7 @@
 Changelog for package colcon_rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-3.0.0 (2026-10-22)
+3.0.0 (2026-11-04)
 ------------------
 * No changes, version bump to match rclgd
 
