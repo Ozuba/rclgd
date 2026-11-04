@@ -2,8 +2,8 @@
 Changelog for package rclgd
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.0.0 (2026-11-04)
+------------------
 * Feature: native typed message classes. Every interface type provided by
   the dependencies in the project's package.xml (msg, srv Request/Response,
   action Goal/Result/Feedback, plus nested types) is registered at startup
@@ -28,9 +28,6 @@ Forthcoming
   are not typed properties (reach them with get_member/set_member)
 * Change: a script extending RosMsg now lists the message fields in its
   property list (they used to be hidden whenever a script was attached)
-
-3.0.0 (2026-10-22)
-------------------
 * Feature: Added RosLogger with rclpy logger API parity: debug/info/
   warning/error/fatal with once, skip_first and throttle_duration_sec
   filters, get_child, set_level and get_effective_level. Get one from
